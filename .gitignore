@@ -1,0 +1,14 @@
+*.out
+*.zip
+*.gz
+*.tar
+*.bz2
+*.rar
+*.o
+*.bak
+*.a
+*.so
+*~
+*.lib
+.DS_Store
+core
