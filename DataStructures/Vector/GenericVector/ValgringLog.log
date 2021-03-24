@@ -1,0 +1,35 @@
+==2242528== Memcheck, a memory error detector
+==2242528== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==2242528== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==2242528== Command: ./TestGenVectorMain.out
+==2242528== Parent PID: 1909410
+==2242528== 
+==2242528== Warning: set address range perms: large range [0x4e54040, 0x34944840) (undefined)
+==2242528== Warning: set address range perms: large range [0x4e54028, 0x34944858) (noaccess)
+==2242528== Argument 'size' of function realloc has a fishy (possibly negative) value: -8
+==2242528==    at 0x483DFAF: realloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2242528==    by 0x10AB75: TryAddMoreMemoryToVector (GenericVector.c:323)
+==2242528==    by 0x10A6F0: VectorAppend (GenericVector.c:128)
+==2242528==    by 0x109B4E: Test_BigBlockFailedReAllocation_VectorAppend (MainTestVector.c:372)
+==2242528==    by 0x1096CF: Test_VectorAppend (MainTestVector.c:249)
+==2242528==    by 0x1091FF: main (MainTestVector.c:55)
+==2242528== 
+==2242528== 
+==2242528== HEAP SUMMARY:
+==2242528==     in use at exit: 0 bytes in 0 blocks
+==2242528==   total heap usage: 56 allocs, 56 frees, 800,004,424 bytes allocated
+==2242528== 
+==2242528== All heap blocks were freed -- no leaks are possible
+==2242528== 
+==2242528== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+==2242528== 
+==2242528== 1 errors in context 1 of 1:
+==2242528== Argument 'size' of function realloc has a fishy (possibly negative) value: -8
+==2242528==    at 0x483DFAF: realloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2242528==    by 0x10AB75: TryAddMoreMemoryToVector (GenericVector.c:323)
+==2242528==    by 0x10A6F0: VectorAppend (GenericVector.c:128)
+==2242528==    by 0x109B4E: Test_BigBlockFailedReAllocation_VectorAppend (MainTestVector.c:372)
+==2242528==    by 0x1096CF: Test_VectorAppend (MainTestVector.c:249)
+==2242528==    by 0x1091FF: main (MainTestVector.c:55)
+==2242528== 
+==2242528== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)

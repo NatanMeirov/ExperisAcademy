@@ -1,0 +1,43 @@
+==1819678== Memcheck, a memory error detector
+==1819678== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==1819678== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==1819678== Command: ./TestGenLinkedList.out
+==1819678== Parent PID: 1795644
+==1819678== 
+==1819678== Use of uninitialised value of size 8
+==1819678==    at 0x10A884: LinkedListRemoveTailTest3 (TestLinkedListMain.c:521)
+==1819678==    by 0x1097E0: main (TestLinkedListMain.c:46)
+==1819678==  Uninitialised value was created by a stack allocation
+==1819678==    at 0x10A7D8: LinkedListRemoveTailTest3 (TestLinkedListMain.c:504)
+==1819678== 
+==1819678== Conditional jump or move depends on uninitialised value(s)
+==1819678==    at 0x10A88B: LinkedListRemoveTailTest3 (TestLinkedListMain.c:521)
+==1819678==    by 0x1097E0: main (TestLinkedListMain.c:46)
+==1819678==  Uninitialised value was created by a stack allocation
+==1819678==    at 0x10A880: LinkedListRemoveTailTest3 (TestLinkedListMain.c:521)
+==1819678== 
+==1819678== 
+==1819678== HEAP SUMMARY:
+==1819678==     in use at exit: 0 bytes in 0 blocks
+==1819678==   total heap usage: 60 allocs, 60 frees, 2,704 bytes allocated
+==1819678== 
+==1819678== All heap blocks were freed -- no leaks are possible
+==1819678== 
+==1819678== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)
+==1819678== 
+==1819678== 1 errors in context 1 of 2:
+==1819678== Conditional jump or move depends on uninitialised value(s)
+==1819678==    at 0x10A88B: LinkedListRemoveTailTest3 (TestLinkedListMain.c:521)
+==1819678==    by 0x1097E0: main (TestLinkedListMain.c:46)
+==1819678==  Uninitialised value was created by a stack allocation
+==1819678==    at 0x10A880: LinkedListRemoveTailTest3 (TestLinkedListMain.c:521)
+==1819678== 
+==1819678== 
+==1819678== 1 errors in context 2 of 2:
+==1819678== Use of uninitialised value of size 8
+==1819678==    at 0x10A884: LinkedListRemoveTailTest3 (TestLinkedListMain.c:521)
+==1819678==    by 0x1097E0: main (TestLinkedListMain.c:46)
+==1819678==  Uninitialised value was created by a stack allocation
+==1819678==    at 0x10A7D8: LinkedListRemoveTailTest3 (TestLinkedListMain.c:504)
+==1819678== 
+==1819678== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)
