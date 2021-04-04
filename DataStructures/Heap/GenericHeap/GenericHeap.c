@@ -55,7 +55,7 @@ Heap* HeapBuild(Vector* _vector, LessThanComparator _ptrFuncLessThen)
 {
     Heap* newHeap = NULL;
 
-    if(ValidateNotNullVector(_vector) == HEAP_NOT_INITIALIZED)
+    if(ValidateNotNullVector(_vector) == HEAP_NOT_INITIALIZED || !_ptrFuncLessThen)
     {
         return NULL;
     }

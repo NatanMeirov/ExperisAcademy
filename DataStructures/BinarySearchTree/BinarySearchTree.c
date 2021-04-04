@@ -13,9 +13,9 @@
 typedef struct Node
 {
     int m_data;
-    Node* m_left;
-    Node* m_right;
-    Node* m_father;
+    struct Node* m_left;
+    struct Node* m_right;
+    struct Node* m_father;
 } Node;
 
 struct BinarySearchTree
@@ -37,6 +37,7 @@ static BinarySearchTree* InitializeNewBinarySearchTree(BinarySearchTree* _tree);
 static Node* CreateNewNode(Node* _fatherNode, int _data);
 static void DestroySubTree(Node* _currentNode);
 static void DestroySingleNode(Node* _node);
+static Node* FindPlaceForNodeByData(Node* _node, int _data);
 static Node* FindNodeByData(Node* _node, int _data);
 static int IsFullTree(Node* _node);
 static int AreSimilarTrees(Node* _firstTreeNode, Node* _secondTreeNode);
@@ -93,13 +94,12 @@ ADTErr BinarySearchTreeInsert(BinarySearchTree* _tree, int _data)
     if(!_tree->m_root) /* The root is still NULL - the tree is empty */
     {
         _tree->m_root = CreateNewNode(NULL, _data);
-        
         statusCode = ValidateNotNullNode(_tree->m_root);
-        
+
         return statusCode; /* ERR_OK status if succeed, else error status */
     }
 
-    fatherNode = FindNodeByData(_tree->m_root, _data);
+    fatherNode = FindPlaceForNodeByData(_tree->m_root, _data);
 
     if(ValidateNotNullNode(fatherNode) != ERR_OK)
     {
@@ -128,7 +128,12 @@ int BinarySearchTreeIsDataFound(BinarySearchTree* _tree, int _data)
         return -1;
     }
 
+    if(FindNodeByData(_tree->m_root, _data))
+    {
+        return 1; /* If not NULL - Data was found */
+    }
 
+    return 0;
 }
 
 
@@ -219,7 +224,7 @@ void BinarySearchTreePrint(BinarySearchTree* _tree, BinarySearchTreeTraverse _tr
         return;
     }
 
-    /*TODO*/
+    /*TODO - validate correct _traverseMode, and then implement 3 diff recursive functions */
 }
 
 
@@ -246,6 +251,8 @@ static BinarySearchTree* InitializeNewBinarySearchTree(BinarySearchTree* _tree)
 {
     _tree->m_root = NULL;
     _tree->m_magicNumber = MAGIC_NUM;
+
+    return _tree;
 }
 
 
@@ -291,23 +298,68 @@ static void DestroySubTree(Node* _currentNode)
         return;
     }
 
-    DestroySubTree2(_currentNode->m_left);  
-    DestroySubTree2(_currentNode->m_right);
+    DestroySubTree(_currentNode->m_left);
+    DestroySubTree(_currentNode->m_right);
     DestroySingleNode(_currentNode);
 }
 
 
 static void DestroySingleNode(Node* _node)
 {
-    _node->m_left = NULL;
-    _node->m_right = NULL;
     free(_node);
 }
 
+static Node* FindPlaceForNodeByData(Node* _node, int _data)
+{
+    if(_node->m_data == _data)
+    {
+        return NULL;
+    }
+
+    if(_node->m_data > _data)
+    {
+        if(_node->m_left)
+        {
+            return FindPlaceForNodeByData(_node->m_left, _data);
+        }
+        else /* No left son: Found the correct place to insert (left son of current node) */
+        {
+            return _node;
+        }
+    }
+    else /* _node->m_data < _data */
+    {
+        if(_node->m_right)
+        {
+            return FindPlaceForNodeByData(_node->m_right, _data);
+        }
+        else /* No right son: Found the correct place to insert (right son of current node) */
+        {
+            return _node;
+        }
+    }
+}
 
 static Node* FindNodeByData(Node* _node, int _data)
 {
-    //TODO:
+    if(!_node)
+    {
+        return NULL;
+    }
+
+    if(_node->m_data == _data)
+    {
+        return _node;
+    }
+
+    if(_node->m_data > _data)
+    {
+        return FindNodeByData(_node->m_left, _data);
+    }
+    else /* _node->m_data < _data */
+    {
+        return FindNodeByData(_node->m_right, _data);
+    }
 }
 
 
@@ -317,7 +369,7 @@ static int IsFullTree(Node* _node)
     {
         return 1;
     }
-    
+
     if(!_node->m_left ||  !_node->m_right)
     {
         return 0;
@@ -339,7 +391,7 @@ static int AreSimilarTrees(Node* _firstTreeNode, Node* _secondTreeNode)
         return 0;
     }
 
-    return AreSimilarTrees(_firstTreeNode->m_left, _secondTreeNode->m_left) && AreSimilarTrees(_firstTreeNode->m_right, _secondTreeNode->m_right)
+    return AreSimilarTrees(_firstTreeNode->m_left, _secondTreeNode->m_left) && AreSimilarTrees(_firstTreeNode->m_right, _secondTreeNode->m_right);
 }
 
 
@@ -370,7 +422,9 @@ static void MirrorTree(Node* _node)
 
 static int IsPerfectTree(Node* _node)
 {
-    
+    /* TODO */
+
+    return 0;
 }
 
 

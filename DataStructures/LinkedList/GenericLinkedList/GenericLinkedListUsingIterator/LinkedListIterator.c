@@ -21,43 +21,75 @@
 
 LinkedListIterator LinkedListIteratorBegin(const LinkedList* _list)
 {
+    if(!_list)
+    {
+        return NULL;
+    }
+
     return (LinkedListIterator)_list->m_head.m_next;
 }
 
 
 LinkedListIterator LinkedListIteratorEnd(const LinkedList* _list)
 {
-    return (LinkedListIterator)(&(_list->m_tail));
+    if(!_list)
+    {
+        return NULL;
+    }
+
+    return (LinkedListIterator)&(_list->m_tail);
 }
 
 
 int LinkedListIteratorEquals(const LinkedListIterator _firstIterator, const LinkedListIterator _secondIterator)
 {
-    return (_firstIterator == _secondIterator) ? 1 : 0;
+    return _firstIterator == _secondIterator; /* Works even if one of them is NULL */
 }
 
 
 LinkedListIterator LinkedListIteratorNext(LinkedListIterator _iterator)
 {
+    if(!_iterator)
+    {
+        return NULL;
+    }
+
     return (LinkedListIterator)((Node*)_iterator)->m_next; /* No need to check if reached to LinkedList's end, because of the use of the tail's self pointing (next is tail too) */
 }
 
 
 LinkedListIterator LinkedListIteratorPrev(LinkedListIterator _iterator)
 {
+    if(!_iterator)
+    {
+        return NULL;
+    }
+
     return (LinkedListIterator)((Node*)_iterator)->m_prev; /* No need to check if reached to LinkedList's begin, because of the use of the head's self pointing (prev is head too) */
 }
 
 
 void* LinkedListIteratorGet(LinkedListIterator _iterator)
 {
+    if(!_iterator)
+    {
+        return NULL;
+    }
+
     return ((Node*)_iterator)->m_element;
 }
 
 
 void* LinkedListIteratorSet(LinkedListIterator _iterator, void* _element)
 {
-    void* tempElement = ((Node*)_iterator)->m_element;
+    void* tempElement = NULL;
+
+    if(!_iterator)
+    {
+        return NULL;
+    }
+
+    tempElement = ((Node*)_iterator)->m_element;
     ((Node*)_iterator)->m_element = _element;
 
     return tempElement;
@@ -66,7 +98,14 @@ void* LinkedListIteratorSet(LinkedListIterator _iterator, void* _element)
 
 LinkedListIterator LinkedListIteratorInsertBefore(LinkedListIterator _iterator, void* _element)
 {
-    Node* node = CreateNewNode(_element);
+    Node* node = NULL;
+
+    if(!_iterator)
+    {
+        return NULL;
+    }
+
+    node = CreateNewNode(_element);
     if(!node)
     {
         return NULL;
@@ -80,7 +119,14 @@ LinkedListIterator LinkedListIteratorInsertBefore(LinkedListIterator _iterator, 
 
 void* LinkedListIteratorRemove(LinkedListIterator _iterator)
 {
-    void* tempElement = ((Node*)_iterator)->m_element;
+    void* tempElement = NULL;
+
+    if(!_iterator)
+    {
+        return NULL;
+    }
+
+    tempElement = ((Node*)_iterator)->m_element;
     RemoveNodeFromLinkedList((Node*)_iterator);
     DestroySingleNode((Node*)_iterator, NULL);
 

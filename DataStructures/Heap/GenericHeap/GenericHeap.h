@@ -55,6 +55,7 @@ typedef int	(*LessThanComparator)(const void *_left, const void *_right);
  * @param[in] _ptrFuncLessThen: A Less Than (<) comparison callback function, to be used to compare two elements
  * @return Heap* - on success / NULL - on failure
  * @warning Allocating and freeing the underlying Vector is the user responsibility
+ * @warning If _ptrFuncLessThen is NULL: function will fail and return NULL
  */
 Heap* HeapBuild(Vector* _vector, LessThanComparator _ptrFuncLessThen);
 

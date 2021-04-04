@@ -11,8 +11,8 @@
  */
 
 
-#ifndef __VECTOR_H__
-#define __VECTOR_H__
+#ifndef __GENERICVECTOR_H__
+#define __GENERICVECTOR_H__
 
 /* Includes: */
 
@@ -175,4 +175,4 @@ size_t VectorForEach(const Vector* _vector, VectorElementAction _actionCallbackF
 /* --------------------------------------- End of Main API Functions ---------------------------------- */
 
 
-#endif /* #ifndef __VECTOR_H__ */
+#endif /* #ifndef __GENERICVECTOR_H__ */
