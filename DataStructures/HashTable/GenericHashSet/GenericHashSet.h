@@ -56,14 +56,14 @@ typedef int (*EqualityFunction)(void* _firstElement, void* _secondElement);
 /* TODO: finish the header file by writing API Functions description */
 
 /**
- * @brief 
+ * @brief Creates a heap allocated Hash Set
  * 
- * @param _size 
- * @param _hashFunction 
- * @param _reHashFunction 
- * @param _reHashFunctionContext 
- * @param _equalityFunction 
- * @return HashSet* 
+ * @param[in] _size: Size of the new Hash Set, must be more then 2
+ * @param[in] _hashFunction: Hash function
+ * @param[in] _reHashFunction: ReHash function
+ * @param[in] _reHashFunctionContext: ReHash function's context
+ * @param[in] _equalityFunction: Equality function to check if two elements are the same (used to prevent duplicates while inserting, and while finding and removing)
+ * @return HashSet* - on success / NULL - on failure
  */
 HashSet* HashSetCreate(size_t _size, HashFunction _hashFunction, ReHashFunction _reHashFunction, void* _reHashFunctionContext, EqualityFunction _equalityFunction);
 
@@ -71,8 +71,8 @@ HashSet* HashSetCreate(size_t _size, HashFunction _hashFunction, ReHashFunction 
 /**
  * @brief 
  * 
- * @param _hash 
- * @param _destroyElement 
+ * @param[in] _hash 
+ * @param[in] _destroyElement 
  */
 void HashSetDestroy(HashSet** _hash, void (*_destroyElement)(void* _element));
 
@@ -80,8 +80,8 @@ void HashSetDestroy(HashSet** _hash, void (*_destroyElement)(void* _element));
 /**
  * @brief 
  * 
- * @param _hash 
- * @param _element 
+ * @param[in] _hash 
+ * @param[in] _element 
  * @return HashSetResult 
  */
 HashSetResult HashSetInsert(HashSet* _hash, void* _element);
@@ -90,9 +90,9 @@ HashSetResult HashSetInsert(HashSet* _hash, void* _element);
 /**
  * @brief 
  * 
- * @param _hash 
- * @param _key 
- * @param _pElement 
+ * @param[in] _hash 
+ * @param[in] _key 
+ * @param[out] _pElement 
  * @return HashSetResult 
  */
 HashSetResult HashSetRemove(HashSet* _hash, void* _key, void** _pElement);
@@ -101,8 +101,8 @@ HashSetResult HashSetRemove(HashSet* _hash, void* _key, void** _pElement);
 /**
  * @brief 
  * 
- * @param _hash 
- * @param _key 
+ * @param[in] _hash 
+ * @param[in] _key 
  * @return int 
  */
 int HashSetIsFoundKey(const HashSet* _hash, void* _key);
@@ -111,7 +111,7 @@ int HashSetIsFoundKey(const HashSet* _hash, void* _key);
 /**
  * @brief 
  * 
- * @param _hash 
+ * @param[in] _hash 
  * @return size_t 
  */
 size_t HashSetGetNumOfElements(const HashSet* _hash);
@@ -120,7 +120,7 @@ size_t HashSetGetNumOfElements(const HashSet* _hash);
 /**
  * @brief 
  * 
- * @param _hash 
+ * @param[in] _hash 
  * @return size_t 
  */
 size_t HashSetGetCapacity(const HashSet* _hash);
@@ -129,7 +129,7 @@ size_t HashSetGetCapacity(const HashSet* _hash);
 /**
  * @brief 
  * 
- * @param _hash 
+ * @param[in] _hash 
  * @return double 
  */
 double HashSetGetAverageAmountOfReHashOperations(const HashSet* _hash);
@@ -138,7 +138,7 @@ double HashSetGetAverageAmountOfReHashOperations(const HashSet* _hash);
 /**
  * @brief 
  * 
- * @param _hash 
+ * @param[in] _hash 
  * @return size_t 
  */
 size_t HashSetGetTotalCountOfReHashOperations(const HashSet* _hash);

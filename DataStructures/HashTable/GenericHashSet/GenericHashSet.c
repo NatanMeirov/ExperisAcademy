@@ -63,7 +63,7 @@ HashSet* HashSetCreate(size_t _size, HashFunction _hashFunction, ReHashFunction 
 {
     HashSet* newHashSet = NULL;
 
-    if(!_hashFunction || !_equalityFunction)
+    if(!_hashFunction || !_equalityFunction || _size < 2)
     {
         return NULL;
     }
@@ -106,7 +106,6 @@ void HashSetDestroy(HashSet** _hash, void (*_destroyElement)(void* _element))
 
 HashSetResult HashSetInsert(HashSet* _hash, void* _element)
 {
-    HashSetResult statusCode;
     size_t hashSetIndex, reHashesNeeded = 0;
 
     if(!_hash || !_element)
@@ -191,7 +190,7 @@ int HashSetIsFoundKey(const HashSet* _hash, void* _key)
 
     if(!_hash || !_key)
     {
-        return HASHSET_UNINITIALIZED;
+        return -1; /* On error */
     }
 
     hashSetIndex = _hash->m_hashFunction(_key) % _hash->m_hashSetCapacity;
@@ -214,6 +213,11 @@ size_t HashSetGetCapacity(const HashSet* _hash)
 
 double HashSetGetAverageAmountOfReHashOperations(const HashSet* _hash)
 {
+    if(_hash->m_totalCountOfInsertions == 0) /* Prevents divide by 0 */
+    {
+        return 0.0;
+    }
+
     return ((double)_hash->m_totalCountOfReHashOperations / _hash->m_totalCountOfInsertions);
 }
 
