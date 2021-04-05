@@ -29,7 +29,7 @@
  * @param _context : context to be used
  * @return none zero if predicate holds
  */
-typedef int (*PredicateFunction)(void * _element, void* _context);
+typedef int (*PredicateFunction)(void* _element, void* _context);
 
 
 /** 
