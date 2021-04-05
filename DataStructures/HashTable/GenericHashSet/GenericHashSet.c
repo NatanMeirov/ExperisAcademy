@@ -201,19 +201,29 @@ int HashSetIsFoundKey(const HashSet* _hash, void* _key)
 
 size_t HashSetGetNumOfElements(const HashSet* _hash)
 {
+    if(!_hash)
+    {
+        return MAX_SIZE_T;
+    }
+
     return _hash->m_numOfElementsInHashSet;
 }
 
 
 size_t HashSetGetCapacity(const HashSet* _hash)
 {
+    if(!_hash)
+    {
+        return MAX_SIZE_T;
+    }
+
     return _hash->m_hashSetOriginalSize;
 }
 
 
 double HashSetGetAverageAmountOfReHashOperations(const HashSet* _hash)
 {
-    if(_hash->m_totalCountOfInsertions == 0) /* Prevents divide by 0 */
+    if(!_hash || _hash->m_totalCountOfInsertions == 0) /* Prevents divide by 0 */
     {
         return 0.0;
     }
@@ -224,6 +234,11 @@ double HashSetGetAverageAmountOfReHashOperations(const HashSet* _hash)
 
 size_t HashSetGetTotalCountOfReHashOperations(const HashSet* _hash)
 {
+    if(!_hash)
+    {
+        return MAX_SIZE_T;
+    }
+
     return _hash->m_totalCountOfReHashOperations;
 }
 
