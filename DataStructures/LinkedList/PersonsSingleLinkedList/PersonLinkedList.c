@@ -184,11 +184,11 @@ void PrintList(Person* _head)
 	{
 		if(!_head->m_next)
 		{
-			printf("[{%d, %s, %d}] ---> [NULL]\n", _head->m_id, _head->m_name, _head->m_age);
+			printf("[{%ld, %s, %ld}] ---> [NULL]\n", _head->m_id, _head->m_name, _head->m_age);
 		}
 		else
 		{
-			printf("[{%d, %s, %d}] ---> ", _head->m_id, _head->m_name, _head->m_age);
+			printf("[{%ld, %s, %ld}] ---> ", _head->m_id, _head->m_name, _head->m_age);
 		}
 		
 		_head = _head->m_next;	

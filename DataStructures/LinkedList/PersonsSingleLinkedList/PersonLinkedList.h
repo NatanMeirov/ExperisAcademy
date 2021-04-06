@@ -1,11 +1,13 @@
 #ifndef __PERSONLINKEDLIST_H__
 #define __PERSONLINKEDLIST_H__
 
+#include <stddef.h> /* size_t */
+
 typedef struct Person
 {
-	int m_id;
-	char m_name[128];
-	int m_age;
+	size_t m_id;
+	char m_name[256];
+	size_t m_age;
 	struct Person* m_next;
 } Person;
 

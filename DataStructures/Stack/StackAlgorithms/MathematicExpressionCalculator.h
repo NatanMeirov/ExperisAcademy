@@ -2,6 +2,7 @@
 #ifndef __MATHEMATICEXPRESSIONCALCULATOR_H__
 #define __MATHEMATICEXPRESSIONCALCULATOR_H__
 
+#include <stddef.h>
 
 /* Returns -1 if error */
 int MathematicExpressionCalculator(const char* _expression);
