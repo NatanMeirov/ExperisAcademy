@@ -4,7 +4,7 @@
  * @brief Create a Generic Hash Map of Key-Value pairs, implemented with separate chaining using LinkedLists
  * @details The HashMap (sometimes called: Dictionary or Associative Array),
  * is a set of unique (distinct) keys (or indexes) mapped (associated) to values
- * Size of allocated table will be the nearest prime number greater than the requested capacity
+ * Size of allocated HashMap will be the nearest prime number greater than the requested capacity
  * THe HashMap using lazy approach while allocating LinkedLists (that used for chaining)
  * @version 1.0
  * @date 2021-04-05
@@ -36,7 +36,7 @@ struct HashMap
     HashFunction m_hashFunction;
     EqualityFunction m_keysEqualityFunction;
     size_t m_hashMapCapacity; /* Real HashMap capacity, overflow cannot be occurred because of the use with LinkedLists when collision in an insertion occurs */
-    size_t m_numOfKeyValuePairsInHashMap; /* Number of key-value pairs in the table */
+    size_t m_numOfKeyValuePairsInHashMap; /* Number of key-value pairs in the map */
     /* HashMapStats m_hashMapStatistics; */
 };
 
@@ -409,13 +409,14 @@ static LinkedListIterator GetPlaceOfKeyValuePairInLinkedList(LinkedList* _list, 
 {
     KeyFinder keyFinder;
     LinkedListIterator iterator = NULL;
+    LinkedListIterator endOfList = LinkedListIteratorEnd(_list);
 
     keyFinder.m_keyToFind = (void*)_keyToFind;
     keyFinder.m_keysEqualityFunction = _keysEqualityFunction;
 
-    iterator = LinkedListIteratorFindFirst(LinkedListIteratorBegin(_list), LinkedListIteratorEnd(_list), &IsKeyExists, (void*)&keyFinder);
+    iterator = LinkedListIteratorFindFirst(LinkedListIteratorBegin(_list), endOfList, &IsKeyExists, (void*)&keyFinder);
 
-    if(iterator == LinkedListIteratorEnd(_list)) /* If iterator is placed on the end of the LinkedList -> key was not found */
+    if(iterator == endOfList) /* If iterator is placed on the end iterator of the LinkedList -> key was not found */
     {
         return NULL;
     }

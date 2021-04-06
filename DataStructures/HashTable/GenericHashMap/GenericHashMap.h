@@ -4,7 +4,7 @@
  * @brief Create a Generic Hash Map of Key-Value pairs, implemented with separate chaining using LinkedLists
  * @details The HashMap (sometimes called: Dictionary or Associative Array),
  * is a set of unique (distinct) keys (or indexes) mapped (associated) to values
- * Size of allocated table will be the nearest prime number greater than the requested capacity
+ * Size of allocated HashMap will be the nearest prime number greater than the requested capacity
  * THe HashMap using lazy approach while allocating LinkedList that used for chaining
  * @version 1.0
  * @date 2021-04-05
