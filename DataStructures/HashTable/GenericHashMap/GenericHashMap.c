@@ -187,7 +187,7 @@ HashMapResult HashMapInsert(HashMap* _map, const void* _key, const void* _value)
 
     if(LinkedListInsertTail(_map->m_hashMap[hashMapIndex], (void*)newKeyValuePair) != LINKEDLIST_SUCCESS) /* Can be only LinkedList allocation failed error */
     {
-        DestroySingleKeyValuePair(newKeyValuePair); /* Destroys the newly created unused key-value pair */
+        free(newKeyValuePair); /* Destroys the newly created unused key-value pair */
         return HASHMAP_ALLOCATION_ERROR; /* Failed to allocate memory for a new LinkedList Node */
     }
 
@@ -231,7 +231,7 @@ HashMapResult HashMapRemove(HashMap* _map, const void* _searchKey, void** _pKey,
     *_pKey = removedKeyValuePair->m_key;
     *_pValue = removedKeyValuePair->m_value;
 
-    DestroySingleKeyValuePair(removedKeyValuePair);
+    free(removedKeyValuePair); /* Destroys the removed key-value pair */
     _map->m_numOfKeyValuePairsInHashMap--;
 
     return HASHMAP_SUCCESS;
