@@ -1,7 +1,7 @@
 /**
  * @file LinkedListInternal.h
  * @author Natan Meirov (NatanMeirov@gmail.com)
- * @brief LinkedList Internal file to be used as the base to GenericLinkedList, LinkedListIterator and LinkedListFunctions - creation and management of a Generic Double Linked List data type that stores pointer to user provided elements of generic type
+ * @brief LinkedList Internal file to be used as the base to GenericLinkedList and LinkedListIterator - creation and management of a Generic Double Linked List data type that stores pointer to user provided elements of generic type
  * Using head and tail sentinels
  * Each node is allocated in the heap, and stores a pointer to user proveded element
  * @version 1.0
@@ -24,11 +24,11 @@ typedef struct Node
 	struct Node* m_next;
 } Node;
 
-typedef struct LinkedList
+struct LinkedList
 {
 	Node m_head; /* Head Sentinel */
 	Node m_tail; /* Tail Sentinel */
-} LinkedList;
+};
 
 
 /* ----------------------------------------- Main API Functions ------------------------------------ */

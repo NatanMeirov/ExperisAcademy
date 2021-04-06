@@ -2,7 +2,7 @@
 #include <stdio.h> /* printf */
 #include "../GenericLinkedList.h"
 #include "../LinkedListIterator.h"
-#include "../LinkedListFunctions.h"
+#include "../LinkedListIteratorFunctions.h"
 
 #define ARRAY_SIZE 5
 #define TIMES_IN_ARRAY 1

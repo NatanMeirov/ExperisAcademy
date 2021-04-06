@@ -14,6 +14,7 @@
 
 #include <stddef.h> /* NULL */
 #include "LinkedListInternal.h"
+#include "GenericLinkedList.h"
 #include "LinkedListIterator.h"
 
 

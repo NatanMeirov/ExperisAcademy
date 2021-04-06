@@ -15,7 +15,7 @@
 
 /* Includes: */
 
-#include "LinkedListInternal.h"
+#include "GenericLinkedList.h"
 
 
 /* Defines: */

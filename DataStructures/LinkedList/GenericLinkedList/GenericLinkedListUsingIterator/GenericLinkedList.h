@@ -19,10 +19,11 @@
 /* Includes: */
 
 #include <stddef.h>  /* size_t */
-#include "LinkedListInternal.h"
 
 
 /* Defines: */
+
+typedef struct LinkedList LinkedList;
 
 typedef enum LinkedListResult
 {

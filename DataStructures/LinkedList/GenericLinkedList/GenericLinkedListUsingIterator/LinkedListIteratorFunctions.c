@@ -1,5 +1,5 @@
 /**
- * @file LinkedListFunctions.c
+ * @file LinkedListIteratorFunctions.c
  * @author Natan Meirov (NatanMeirov@gmail.com)
  * @brief Adds additional Iterator functions to support the LinkedListIterator
  * @version 1.0
@@ -13,9 +13,8 @@
  /* Includes: */
 
 #include <stddef.h> /* size_t */
-#include "LinkedListInternal.h"
 #include "LinkedListIterator.h"
-#include "LinkedListFunctions.h"
+#include "LinkedListIteratorFunctions.h"
 
 
 /* Defines: */

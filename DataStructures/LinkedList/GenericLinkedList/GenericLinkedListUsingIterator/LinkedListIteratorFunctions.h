@@ -1,5 +1,5 @@
 /**
- * @file LinkedListFunctions.h
+ * @file LinkedListIteratorFunctions.h
  * @author Natan Meirov (NatanMeirov@gmail.com)
  * @brief Adds additional Iterator functions to support the LinkedListIterator
  * @version 1.0
@@ -10,13 +10,12 @@
  */
 
 
-#ifndef __LINKEDLISTFUNCTIONS_H__
-#define __LINKEDLISTFUNCTIONS_H__
+#ifndef __LINKEDLISTITERATORFUNCTIONS_H__
+#define __LINKEDLISTITERATORFUNCTIONS_H__
 
 /* Includes: */
 
 #include <stddef.h> /* size_t */
-#include "LinkedListInternal.h"
 #include "LinkedListIterator.h"
 
 
@@ -167,4 +166,4 @@ LinkedList* LinkedListIteratorUnique(LinkedListIterator _begin, LinkedListIterat
 
 /*------------------------------------------- End of Main API Functions -------------------------------------------*/
 
-#endif /* #ifndef __LINKEDLISTFUNCTIONS_H__ */
+#endif /* #ifndef __LINKEDLISTITERATORFUNCTIONS_H__ */
