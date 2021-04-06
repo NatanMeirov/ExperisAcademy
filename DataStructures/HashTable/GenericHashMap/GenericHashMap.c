@@ -23,7 +23,7 @@
 #include "GenericHashMap.h"
 #include "../../LinkedList/GenericLinkedList/GenericLinkedListUsingIterator/GenericLinkedList.h"
 #include "../../LinkedList/GenericLinkedList/GenericLinkedListUsingIterator/LinkedListIterator.h"
-#include "../../LinkedList/GenericLinkedList/GenericLinkedListUsingIterator/LinkedListFunctions.h"
+#include "../../LinkedList/GenericLinkedList/GenericLinkedListUsingIterator/LinkedListIteratorFunctions.h"
 
 
 /* Defines: */
@@ -35,7 +35,7 @@ struct HashMap
     LinkedList** m_hashMap;
     HashFunction m_hashFunction;
     EqualityFunction m_keysEqualityFunction;
-    size_t m_hashMapCapacity; /* Real HashMap capacity, overflow cannot be occurred because of the use in LinkedLists when collision occurs */
+    size_t m_hashMapCapacity; /* Real HashMap capacity, overflow cannot be occurred because of the use with LinkedLists when collision in an insertion occurs */
     size_t m_numOfKeyValuePairsInHashMap; /* Number of key-value pairs in the table */
     /* HashMapStats m_hashMapStatistics; */
 };
@@ -61,6 +61,14 @@ typedef struct KeyFinder
 } KeyFinder;
 
 
+typedef struct ForEachWrapper
+{
+    KeyValueActionFunction m_userKeyValueActionFunction;
+    void* m_userContext;
+    size_t m_countOfTriggeredActions;
+} ForEachWrapper;
+
+
 /* Helper Function Declarations: */
 
 static size_t FindNearestPrimeNumber(size_t _number);
@@ -70,6 +78,7 @@ static int DestroyKeyAndValueOfSinglePair(void* _pair, void* _destroyerContext);
 static void DestroySingleKeyValuePair(void* _pair);
 static int IsKeyExists(void* _pair, void* _keyFinderObject);
 static LinkedListIterator GetPlaceOfKeyValuePairInLinkedList(LinkedList* _list, const void* _keyToFind, EqualityFunction _keysEqualityFunction);
+static int ExtractKeyValuePairAndTriggerAction(void* _pair, void* _ForeEachWrapperContext);
 
 
 /* ------------------------------------------- Main API Functions ------------------------------------- */
@@ -128,7 +137,7 @@ void HashMapDestroy(HashMap** _map, void (*_destroyKey)(void* _key), void (*_des
 }
 
 
-HashMapResult HashMapRehash(HashMap* _map, size_t _newCapacity)
+HashMapResult HashMapReHash(HashMap* _map, size_t _newCapacity)
 {
     /* TODO */
     return HASHMAP_SUCCESS;
@@ -176,7 +185,12 @@ HashMapResult HashMapInsert(HashMap* _map, const void* _key, const void* _value)
     newKeyValuePair->m_key = (void*)_key;
     newKeyValuePair->m_value = (void*)_value;
 
-    LinkedListInsertTail(_map->m_hashMap[hashMapIndex], (void*)newKeyValuePair);
+    if(LinkedListInsertTail(_map->m_hashMap[hashMapIndex], (void*)newKeyValuePair) != LINKEDLIST_SUCCESS) /* Can be only LinkedList allocation failed error */
+    {
+        DestroySingleKeyValuePair(newKeyValuePair); /* Destroys the newly created unused key-value pair */
+        return HASHMAP_ALLOCATION_ERROR; /* Failed to allocate memory for a new LinkedList Node */
+    }
+
     _map->m_numOfKeyValuePairsInHashMap++;
 
     return HASHMAP_SUCCESS;
@@ -273,24 +287,29 @@ size_t HashMapSize(const HashMap* _map)
 size_t HashMapForEach(const HashMap* _map, KeyValueActionFunction _actionFunction, void* _context)
 {
     size_t i;
+    ForEachWrapper wrapper;
 
     if(!_map || !_actionFunction)
     {
         return MAX_SIZE_T;
     }
 
-    /* TODO:
+    wrapper.m_userKeyValueActionFunction = _actionFunction;
+    wrapper.m_userContext = _context;
+    wrapper.m_countOfTriggeredActions = 0;
+
     for(i = 0; i < _map->m_hashMapCapacity; i++)
     {
         if(_map->m_hashMap[i])
         {
-            LinkedListIteratorForEach(LinkedListIteratorBegin(_map->m_hashMap[i]), LinkedListIteratorEnd(_map->m_hashMap[i]), _actionFunction, (void*)_context);
-
+            if(LinkedListIteratorForEach(LinkedListIteratorBegin(_map->m_hashMap[i]), LinkedListIteratorEnd(_map->m_hashMap[i]), &ExtractKeyValuePairAndTriggerAction, (void*)&wrapper) == 0)
+            {
+                break;
+            }
         }
     }
-    */
 
-    return 0;
+    return wrapper.m_countOfTriggeredActions;
 }
 
 /* --------------------------------------- End of Main API Functions ---------------------------------- */
@@ -402,4 +421,17 @@ static LinkedListIterator GetPlaceOfKeyValuePairInLinkedList(LinkedList* _list, 
     }
 
     return iterator;
+}
+
+
+static int ExtractKeyValuePairAndTriggerAction(void* _pair, void* _ForeEachWrapperContext)
+{
+    ((ForEachWrapper*)_ForeEachWrapperContext)->m_countOfTriggeredActions++;
+
+    if(((ForEachWrapper*)_ForeEachWrapperContext)->m_userKeyValueActionFunction(((KeyValuePair*)_pair)->m_key, ((KeyValuePair*)_pair)->m_value, ((ForEachWrapper*)_ForeEachWrapperContext)->m_userContext) == 0 /* Should stop the whole iteration */)
+    {
+        return 0;
+    }
+
+    return 1; /* Continue the iteration */
 }

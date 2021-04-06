@@ -3,10 +3,10 @@
 #include "GenericHashMap.h"
 #include "../../LinkedList/GenericLinkedList/GenericLinkedListUsingIterator/GenericLinkedList.h"
 #include "../../LinkedList/GenericLinkedList/GenericLinkedListUsingIterator/LinkedListIterator.h"
-#include "../../LinkedList/GenericLinkedList/GenericLinkedListUsingIterator/LinkedListFunctions.h"
+#include "../../LinkedList/GenericLinkedList/GenericLinkedListUsingIterator/LinkedListIteratorFunctions.h"
 
 #define CAPACITY 10
-#define ARR_SIZE 2000
+#define ARR_SIZE 200
 #define MAX_SIZE_T ((size_t)-1)
 
 #define SUCCESS ("\033[1;32mSuccess\033[0m")
@@ -29,6 +29,23 @@ static void FreeElement(void *_element)
 {
 	free(_element);
 }
+
+static int PrintEachKeyAndValue(const void* _key, void* _value, void* _context)
+{
+	printf("Key: %d, Value: %d\n", *(int*)_key, *(int*)_value);
+
+	return 1; /* Continue the iteration */
+}
+
+
+static int IncrementValueAndPrintEachKeyAndValue(const void* _key, void* _value, void* _context)
+{
+	(*(int*)_value)++;
+	printf("Key: %d, Value: %d\n", *(int*)_key, *(int*)_value);
+
+	return 1; /* Continue the iteration */
+}
+
 
 /*********************************************************************************/
 
@@ -198,7 +215,7 @@ void HashMapInsertTest2(void)
 
     printf("\nInsert Func Test:\n\n");
 
-    for (i = 0;i < 1500;++i)
+    for (i = 0;i < 150;++i)
 	{
 		keyArr[i] = i;
 
@@ -211,7 +228,13 @@ void HashMapInsertTest2(void)
 		CHECK_FUNC(HASHMAP_SUCCESS == status);
 	}
 	
-    printf("\nExpected: 100 SUCCESS (check status)\n");
+    printf("\nExpected: 150 SUCCESS (check status)\n");
+
+	HashMapForEach(hashMapTest, &PrintEachKeyAndValue, NULL);
+	printf("Each Key should be with offset of 10 comparing to the Value\n");
+
+	HashMapForEach(hashMapTest, &IncrementValueAndPrintEachKeyAndValue, NULL);
+	printf("Each Key should be with offset of 11 comparing to the Value\n");
 
 	HashMapDestroy(&hashMapTest, NULL, NULL);
 }

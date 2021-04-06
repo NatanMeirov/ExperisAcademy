@@ -75,7 +75,7 @@ HashMap* HashMapCreate(size_t _capacity, HashFunction _hashFunction, EqualityFun
 
 /** 
  * @brief Dynamically deallocates a previously allocated HashMap, NULLs the HashMap's pointer
- * @details Optionally can trigger given callback functions to destroy all keys and values using user provided functions (can provide both, just one, or none)
+ * @details Optionally can trigger given callback functions to destroy all keys and values using user provided functions (can provide both, just one, or none of them)
  * @param[in] _map: HashMap to be deallocated
  * @param[in] _destroyKey: A function pointer to be used to destroy each key in the HashMap
  * 			 			   or a NULL if no such destroy is required
@@ -87,7 +87,7 @@ void HashMapDestroy(HashMap** _map, void (*_destroyKey)(void* _key), void (*_des
 
 
 /** 
- * @brief Adjust new HashMap capacity and ReHash all key-value pairs
+ * @brief Adjust new HashMap capacity and ReHashes all key-value pairs
  * @param[in] _map: An existing HashMap to ReHash
  * @param[in] _newCapacity: new capacity shall be rounded to nearest larger prime number
  * @return HashMapResult - success or error status code
@@ -96,7 +96,7 @@ void HashMapDestroy(HashMap** _map, void (*_destroyKey)(void* _key), void (*_des
  * @retval HASHMAP_ALLOCATION_ERROR on error - allocation failed while trying to allocate memory
  * @retval HASHMAP_WRONG_CAPACITY_ERROR on error - given new initialize capacity is less then 2
  */
-HashMapResult HashMapRehash(HashMap* _map, size_t _newCapacity);
+HashMapResult HashMapReHash(HashMap* _map, size_t _newCapacity);
 
 
 /** 
@@ -165,8 +165,7 @@ size_t HashMapSize(const HashMap* _map);
  * @param[in] _map: HashMap to iterate over
  * @param[in] _actionFunction: User provided action callback function pointer to be invoked for each key-value pair
  * @param[in] _context: User provided context, that will be sent to the action callback function
- * @return size_t - number of times the user function was invoked (if successfully iterated all the key-value pairs of the HashMap),
- 			or the index of the element that the fuction was stopped on if not completed to iterate the whole all the key-value pairs of the HashMap, on success
+ * @return size_t - number of times the user function was invoked (if successfully iterated all the key-value pairs of the HashMap), on success
 			/ MAX_SIZE_T (-1 in size_t - is the maximum size_t value), on failure
  * 
  */
