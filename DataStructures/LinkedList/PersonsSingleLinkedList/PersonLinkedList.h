@@ -2,6 +2,7 @@
 #define __PERSONLINKEDLIST_H__
 
 #include <stddef.h> /* size_t */
+#include <stdio.h>
 
 typedef struct Person
 {
