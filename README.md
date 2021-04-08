@@ -1,2 +1,2 @@
-# ExperisAcademy
-Experis Academy works and projects - Natan Meirov
+# Experis Academy
+Natan Meirov's - Experis Academy works and projects, written in C / C++
