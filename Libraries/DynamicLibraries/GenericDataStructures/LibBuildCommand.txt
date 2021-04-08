@@ -1,0 +1,1 @@
+gcc -shared -o libGenericDataStructures.so ObjectFiles/GenericHeap.o ObjectFiles/GenericHashMap.o ObjectFiles/GenericLinkedList.o ObjectFiles/GenericQueue.o ObjectFiles/GenericVector.o ObjectFiles/LinkedListInternal.o ObjectFiles/LinkedListIterator.o ObjectFiles/LinkedListIteratorFunctions.o

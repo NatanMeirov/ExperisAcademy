@@ -1,0 +1,14 @@
+*To compile a file and create only object files:
+
+"gcc <...all_flags...> -c <some_source_file.c>" ---> output will be <c_file_name>.o
+
+*To create a STATIC library, use the command (must notice the STANDARD NAME STARTS WITH lib):
+"ar cr <libNAME_OF_LIB>.a <all_o_files_to_put_in_the_library>"
+(It creates a "big" archieve from the whole .o files)
+The file is .a in linux
+
+*Example in using this static lib:
+"gcc -ansi -pedantic -g3 -Wall -Werror ../../../../DataStructures/Vector/GenericVector/MainTestVector.c -L. -lGenericVector -o VectorTest.out"
+
+-L. is flag: seaching the library at the given PATH (here its . == current directory)
+-l<name_of_lib_without_starting_lib_string> is flag: search the library with the name GenericVector (the starting of the name "lib" is not included here)
