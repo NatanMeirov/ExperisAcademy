@@ -1,0 +1,35 @@
+==38922== Memcheck, a memory error detector
+==38922== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==38922== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==38922== Command: ./MainTestVector.out
+==38922== Parent PID: 9154
+==38922== 
+==38922== Warning: set address range perms: large range [0x4faa040, 0x34a9a840) (undefined)
+==38922== Warning: set address range perms: large range [0x4faa028, 0x34a9a858) (noaccess)
+==38922== Argument 'size' of function realloc has a fishy (possibly negative) value: -8
+==38922==    at 0x483DFAF: realloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==38922==    by 0x484E32C: TryAddMoreMemoryToVector (in /home/meirov/Work/Libraries/DynamicLibraries/GenericDataStructures/libGenericDataStructures.so)
+==38922==    by 0x484DFB9: VectorAppend (in /home/meirov/Work/Libraries/DynamicLibraries/GenericDataStructures/libGenericDataStructures.so)
+==38922==    by 0x109BEE: Test_BigBlockFailedReAllocation_VectorAppend (MainTestVector.c:372)
+==38922==    by 0x10976F: Test_VectorAppend (MainTestVector.c:249)
+==38922==    by 0x10929F: main (MainTestVector.c:55)
+==38922== 
+==38922== 
+==38922== HEAP SUMMARY:
+==38922==     in use at exit: 0 bytes in 0 blocks
+==38922==   total heap usage: 56 allocs, 56 frees, 800,004,424 bytes allocated
+==38922== 
+==38922== All heap blocks were freed -- no leaks are possible
+==38922== 
+==38922== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+==38922== 
+==38922== 1 errors in context 1 of 1:
+==38922== Argument 'size' of function realloc has a fishy (possibly negative) value: -8
+==38922==    at 0x483DFAF: realloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==38922==    by 0x484E32C: TryAddMoreMemoryToVector (in /home/meirov/Work/Libraries/DynamicLibraries/GenericDataStructures/libGenericDataStructures.so)
+==38922==    by 0x484DFB9: VectorAppend (in /home/meirov/Work/Libraries/DynamicLibraries/GenericDataStructures/libGenericDataStructures.so)
+==38922==    by 0x109BEE: Test_BigBlockFailedReAllocation_VectorAppend (MainTestVector.c:372)
+==38922==    by 0x10976F: Test_VectorAppend (MainTestVector.c:249)
+==38922==    by 0x10929F: main (MainTestVector.c:55)
+==38922== 
+==38922== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)

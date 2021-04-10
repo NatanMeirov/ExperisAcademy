@@ -1,0 +1,16 @@
+1) First create an object (.o) file:
+"gcc -ansi -pedantic -g3 {-Wall -Wextra -Werror} -c <c_source_file>.c"
+
+2) Create an executable (.out) file with the created dynamic lib:
+"gcc -o <exec_file_name>.out <obj_file_name>.o -L../../../GenericDataStructures -lGenericDataStructures"
+(-L -> The path to the dynamic library, then -l... == the lib name (without the "lib" starting string))
+
+3) To make the PATH know where to look for the dynamic lib (Have to repeat this every time after closing the Shell):
+-> 2 commands:
+"LD_LIBRARY_PATH=$LD_LIBRARY_PATH:." (the . is the current dir, if the lib is at other path - put the path instead of the dot)
+"export LD_LIBRARY_PATH"
+
+(
+In our case [from each test directory]:
+"LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../../../GenericDataStructures/"
+)

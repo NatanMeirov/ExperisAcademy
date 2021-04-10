@@ -1,0 +1,14 @@
+==53800== Memcheck, a memory error detector
+==53800== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==53800== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==53800== Command: ./TestGenericHashMap.out
+==53800== Parent PID: 9154
+==53800== 
+==53800== 
+==53800== HEAP SUMMARY:
+==53800==     in use at exit: 0 bytes in 0 blocks
+==53800==   total heap usage: 516 allocs, 516 frees, 14,368 bytes allocated
+==53800== 
+==53800== All heap blocks were freed -- no leaks are possible
+==53800== 
+==53800== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
