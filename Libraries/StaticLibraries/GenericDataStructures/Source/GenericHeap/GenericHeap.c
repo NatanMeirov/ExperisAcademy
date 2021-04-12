@@ -67,7 +67,11 @@ Heap* HeapBuild(Vector* _vector, LessThanComparator _ptrFuncLessThen)
 
     InitializeNewHeap(newHeap, _vector, _ptrFuncLessThen);
 
-    BuildHeapFromVectorInPlace(newHeap);
+
+    if(newHeap->m_heapSize >= 2) /* Building the Heap is not required with < 2 elements*/
+    {
+        BuildHeapFromVectorInPlace(newHeap);
+    }
 
     return newHeap;
 }
@@ -230,6 +234,11 @@ static void Heapify(Heap* _heap, size_t _currentIndex)
     size_t largestItemIndex;
     void* currentItem;
     void* largestItem;
+
+	if(_heap->m_heapSize < 2) /* Heapify is not needed */
+	{
+		return;
+	}
 
     if(LEFT_SON(_currentIndex) > _heap->m_heapSize - 1)
     {

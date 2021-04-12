@@ -253,6 +253,11 @@ static void Heapify(Heap* _heap, size_t _currentIndex)
     void* currentItem;
     void* largestItem;
 
+    if(_heap->m_heapSize == 0)
+    {
+        return;
+    }
+
     if(LEFT_SON(_currentIndex) > _heap->m_heapSize - 1)
     {
         return; /* Current item will be a leaf - No need to Heapify further */
