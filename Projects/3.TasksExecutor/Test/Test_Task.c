@@ -69,6 +69,9 @@ static void Test_General_Task(void)
         TaskUpdateNextExecutionTime(task2);
     }
 
+    TaskDestroy(&task);
+    TaskDestroy(&task2);
+    free(iapo.arrayToPrint);
     printf("Passed!\n");
 }
 

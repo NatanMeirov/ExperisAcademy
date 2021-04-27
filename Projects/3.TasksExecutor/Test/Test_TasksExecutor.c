@@ -5,8 +5,9 @@
 #include <time.h> /* clockid_t */
 #include "../Include/TasksExecutor.h"
 
-#define LENGTH 10
+#define LENGTH 100
 #define EXECUTION_TIMES 10
+#define EXECUTION_TIMES_TILL_PAUSE 5
 
 typedef struct IntArrayTaskObject
 {
@@ -78,6 +79,7 @@ static int PrintIntArrayTask(void* _object)
 
     putchar('}');
     putchar('\n');
+    putchar('\n');
 
 
     ((IntArrayTaskObject*)_object)->m_currentExecutedTimes++;
@@ -102,7 +104,7 @@ static int SumIntArrayTask(void* _object)
     {
         ((IntArrayTaskObject*)_object)->m_sum += ((IntArrayTaskObject*)_object)->m_array[i];
     }
-    printf("---> Sum of the array: %d\n", ((IntArrayTaskObject*)_object)->m_sum);
+    printf("Sum of the array: %d\n\n", ((IntArrayTaskObject*)_object)->m_sum);
 
     ((IntArrayTaskObject*)_object)->m_currentExecutedTimes++;
 
@@ -119,6 +121,7 @@ static int PrintEvenNumIntArrayTask(void* _object)
 {
     size_t i;
 
+    putchar('\n');
     printf("Printing only Even Numbers:\n");
     putchar('{');
     putchar(' ');
@@ -134,6 +137,7 @@ static int PrintEvenNumIntArrayTask(void* _object)
 
 
     putchar('}');
+    putchar('\n');
     putchar('\n');
 
 
@@ -155,7 +159,7 @@ static int PauseTheExecution(void* _pauseObject)
     if(((PauseObject*)_pauseObject)->m_currentExecutedTimes == ((PauseObject*)_pauseObject)->m_totalTimesToExecuteTillPause)
     {
         tasksToFinishAfterPause = TasksExecutorPause(((PauseObject*)_pauseObject)->m_executorToPause);
-        printf("Tasks still pending after pause: %ld\n", tasksToFinishAfterPause);
+        printf("\nTasks still pending after pause: %ld\n\n", tasksToFinishAfterPause);
 
         return 0; /* Stop */
     }
@@ -177,7 +181,7 @@ static void InitIntArrayTaskObject(IntArrayTaskObject* _obj)
 static void InitPauseObject(PauseObject* _obj)
 {
     _obj->m_currentExecutedTimes = 0;
-    _obj->m_totalTimesToExecuteTillPause = 5;
+    _obj->m_totalTimesToExecuteTillPause = EXECUTION_TIMES_TILL_PAUSE;
     _obj->m_executorToPause = NULL;
 }
 
@@ -204,28 +208,37 @@ static void Test_General_TasksExecutor(void)
         return;
     }
 
+    printf("\nAdding 4 new Tasks to be executed (one of them is Pause Task)...\n\n");
     TasksExecutorAdd(exec, &PrintIntArrayTask, (void*)&obj, 100);
     TasksExecutorAdd(exec, &SumIntArrayTask, (void*)&obj2, 1000);
-    TasksExecutorAdd(exec, &PrintEvenNumIntArrayTask, (void*)&obj3, 10000);
+    TasksExecutorAdd(exec, &PrintEvenNumIntArrayTask, (void*)&obj3, 5000);
     TasksExecutorAdd(exec, &PauseTheExecution, (void*)&pauseObj, 2500);
 
+    printf("\nRunning...\n\n");
     TasksExecutorRun(exec);
 
     /* Pause */
+    printf("\nIn Test_TasksExecutor: Paused...\nAdding another single Pause Task to be executed only once...\n\n");
 
     TasksExecutorAdd(exec, &PauseTheExecution, (void*)&pauseObj, 5000);
 
+    printf("\nRunning again...\n\n");
     TasksExecutorRun(exec);
 
     /* Another pause */
+    printf("\nIn Test_TasksExecutor: Paused...\nAdding 2 Tasks to be executed only once each...\n\n");
 
     TasksExecutorAdd(exec, &SumIntArrayTask, (void*)&obj2, 100); /* should be executed only one single time */
     TasksExecutorAdd(exec, &PrintIntArrayTask, (void*)&obj, 300); /* should be executed only one single time */
 
-    TasksExecutorRun(exec); /* Finish the tasks */
+    printf("\nRunning again...\n\n");
+    TasksExecutorRun(exec); /* Finish the tasks till the last */
 
-    printf("All tasks had finished successfully!\n");
+    printf("\n***All tasks had finished successfully!***\n\n");
 
+    free(obj.m_array);
+    free(obj2.m_array);
+    free(obj3.m_array);
     TasksExecutorDestroy(&exec);
 }
 
