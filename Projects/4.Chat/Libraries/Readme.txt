@@ -1,0 +1,1 @@
+Shared object (dynamic) libraries - are not included in the Git

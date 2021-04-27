@@ -1,0 +1,40 @@
+# makefile for ApplicationProgram.out
+# Authors: Natan Meirov (NatanMeirov@gmail.com), Rinat Mualem, Zahi Greenblum
+
+TARGET= ApplicationProgram.out
+CC= gcc
+CFLAGS= -ansi -pedantic -g3 #-Wall -Werror -Wextra
+OBJS= MessagesProtocolParser.o UserInformation.o UserManager.o serverDRV.o serverApp.o ApplicationProgram.o # add group manager
+HEADERS_PATH= ./Include/
+SOURCES_PATH= ./Source/
+
+$(TARGET): $(OBJS)
+	$(CC) -o $(TARGET) $(OBJS) -L./Libraries/ -lGenericDataStructures -ldoubleLinkedList
+##################################################################################################
+#Note: will using the make file and executing the program, use these commands first (RUN THE COMMANDS FROM THE PLACE THAT THE .out FILES ARE LOCATED!):
+# ->   LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./Libraries/
+# ->   export LD_LIBRARY_PATH
+##################################################################################################
+
+MessagesProtocolParser.o: $(SOURCES_PATH)MessagesProtocolParser.c $(HEADERS_PATH)MessagesProtocolParser.h
+	$(CC) $(CFLAGS) -c $(SOURCES_PATH)MessagesProtocolParser.c
+
+UserInformation.o: $(SOURCES_PATH)UserInformation.c $(HEADERS_PATH)UserInformation.h $(HEADERS_PATH)doubleLinkedList.h $(HEADERS_PATH)ListItr.h $(HEADERS_PATH)generalItr.h
+	$(CC) $(CFLAGS) -c $(SOURCES_PATH)UserInformation.c
+
+UserManager.o: $(SOURCES_PATH)UserManager.c $(HEADERS_PATH)UserManager.h $(HEADERS_PATH)UserInformation.h $(HEADERS_PATH)GenericHashMap.h
+	$(CC) $(CFLAGS) -c $(SOURCES_PATH)UserManager.c
+
+# add group manager .o
+
+serverDRV.o: $(SOURCES_PATH)serverDRV.c $(HEADERS_PATH)serverDRV.h $(HEADERS_PATH)doubleLinkedList.h $(HEADERS_PATH)ListItr.h
+	$(CC) $(CFLAGS) -c $(SOURCES_PATH)serverDRV.c
+
+serverApp.o: $(SOURCES_PATH)serverApp.c $(HEADERS_PATH)serverApp.h $(HEADERS_PATH)serverDRV.h $(HEADERS_PATH)MessagesProtocolParser.h $(HEADERS_PATH)UserManager.h #add group manager
+	$(CC) $(CFLAGS) -c $(SOURCES_PATH)serverApp.c
+
+ApplicationProgram.o: $(SOURCES_PATH)ApplicationProgram.c $(HEADERS_PATH)serverApp.h
+	$(CC) $(CFLAGS) -c $(SOURCES_PATH)ApplicationProgram.c
+
+clean:
+	rm -f $(TARGET) $(OBJS)

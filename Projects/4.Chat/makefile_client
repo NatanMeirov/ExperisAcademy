@@ -1,0 +1,31 @@
+# makefile for ClientProgram.out
+# Authors: Natan Meirov (NatanMeirov@gmail.com), Rinat Mualem, Zahi Greenblum
+
+TARGET= ClientProgram.out
+CC= gcc
+CFLAGS= -ansi -pedantic -g3 #-Wall -Werror -Wextra
+OBJS= UI.o clientNet.o clientApp.o ClientProgram.o MessagesProtocolParser.o
+HEADERS_PATH= ./Include/
+SOURCES_PATH= ./Source/
+
+$(TARGET): $(OBJS)
+	$(CC) -o $(TARGET) $(OBJS)
+
+UI.o: $(HEADERS_PATH)UI.h $(SOURCES_PATH)UI.c
+	$(CC) $(CFLAGS) -c $(SOURCES_PATH)UI.c
+
+clientNet.o: $(SOURCES_PATH)clientNet.c $(HEADERS_PATH)clientNet.h
+	$(CC) $(CFLAGS) -c $(SOURCES_PATH)clientNet.c
+
+clientApp.o: $(SOURCES_PATH)clientApp.c $(HEADERS_PATH)clientApp.h $(HEADERS_PATH)UI.h $(HEADERS_PATH)clientNet.h $(HEADERS_PATH)MessagesProtocolParser.h
+	$(CC) $(CFLAGS) -c $(SOURCES_PATH)clientApp.c
+
+MessagesProtocolParser.o: $(SOURCES_PATH)MessagesProtocolParser.c $(HEADERS_PATH)MessagesProtocolParser.h
+	$(CC) $(CFLAGS) -c $(SOURCES_PATH)MessagesProtocolParser.c
+
+ClientProgram.o: $(SOURCES_PATH)ClientProgram.c $(HEADERS_PATH)clientApp.h
+	$(CC) $(CFLAGS) -c $(SOURCES_PATH)ClientProgram.c
+
+
+clean:
+	rm -f $(TARGET) $(OBJS)

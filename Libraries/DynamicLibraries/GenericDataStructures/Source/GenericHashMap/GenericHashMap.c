@@ -78,7 +78,7 @@ static int DestroyKeyAndValueOfSinglePair(void* _pair, void* _destroyerContext);
 static void DestroySingleKeyValuePair(void* _pair);
 static int IsKeyExists(void* _pair, void* _keyFinderObject);
 static LinkedListIterator GetPlaceOfKeyValuePairInLinkedList(LinkedList* _list, const void* _keyToFind, EqualityFunction _keysEqualityFunction);
-static int ExtractKeyValuePairAndTriggerAction(void* _pair, void* _ForeEachWrapperContext);
+static int ExtractKeyValuePairAndTriggerAction(void* _pair, void* _ForEachWrapperContext);
 
 
 /* ------------------------------------------- Main API Functions ------------------------------------- */
@@ -424,11 +424,11 @@ static LinkedListIterator GetPlaceOfKeyValuePairInLinkedList(LinkedList* _list, 
 }
 
 
-static int ExtractKeyValuePairAndTriggerAction(void* _pair, void* _ForeEachWrapperContext)
+static int ExtractKeyValuePairAndTriggerAction(void* _pair, void* _ForEachWrapperContext)
 {
-    ((ForEachWrapper*)_ForeEachWrapperContext)->m_countOfTriggeredActions++;
+    ((ForEachWrapper*)_ForEachWrapperContext)->m_countOfTriggeredActions++;
 
-    if(((ForEachWrapper*)_ForeEachWrapperContext)->m_userKeyValueActionFunction(((KeyValuePair*)_pair)->m_key, ((KeyValuePair*)_pair)->m_value, ((ForEachWrapper*)_ForeEachWrapperContext)->m_userContext) == 0 /* Should stop the whole iteration */)
+    if(((ForEachWrapper*)_ForEachWrapperContext)->m_userKeyValueActionFunction(((KeyValuePair*)_pair)->m_key, ((KeyValuePair*)_pair)->m_value, ((ForEachWrapper*)_ForEachWrapperContext)->m_userContext) == 0 /* Should stop the whole iteration */)
     {
         return 0;
     }
