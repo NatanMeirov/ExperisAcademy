@@ -17,15 +17,13 @@
 #include "../Include/UserManager.h"
 #include "../Include/UserInformation.h"
 #include "../Include/GenericHashMap.h"
-
-/* DEBUG */
-#include <stdio.h>
+#include "../Include/DictStringKeyUtils.h"
 
 /* Defines: */
 
 #define INITIAL_DICTIONARY_LENGTH 250
-#define EQUAL 1
-#define NOT_EQUAL 0
+#define DISCONNECT 0
+#define CONNECT 1
 
 struct UserManager
 {
@@ -35,12 +33,10 @@ struct UserManager
 
 /* Static Functions Declarations: */
 
-static size_t Hash(const void* _usernameAsKey);
-static int AreEqualStrings(const void* _firstString, const void* _secondString);
 static void DestroySingleUserInformation(void* _userInformation);
 static UserManagerStatus MapHashMapResultToUserManagerStatus(HashMapResult _result);
+static UserManagerStatus MapUserInformationResultToUserManagerStatus(UserInformationResult _result);
 
-static int DEBUG_PrintFunc(const void* _key, void* _value, void* _context);
 
 /* --------------------------------------- Main API Functions ----------------------------------------*/
 
@@ -54,7 +50,7 @@ UserManager* UserManagerCreate()
         return NULL;
     }
 
-    userManager->m_usersDictionary = HashMapCreate(INITIAL_DICTIONARY_LENGTH, &Hash, &AreEqualStrings);
+    userManager->m_usersDictionary = HashMapCreate(INITIAL_DICTIONARY_LENGTH, &StringKeyHash, &AreEqualStringKeys);
     if(!userManager->m_usersDictionary)
     {
         free(userManager);
@@ -78,7 +74,7 @@ void UserManagerDestroy(UserManager** _userManager)
 }
 
 
-UserManagerStatus UserManagerAddUser(UserManager* _userManager, char* _username, char* _password, int _isConnected)
+UserManagerStatus UserManagerAddUser(UserManager* _userManager, const char* _username, const char* _password, int _isConnected)
 {
     HashMapResult status;
     UserInformation* user = NULL;
@@ -92,7 +88,7 @@ UserManagerStatus UserManagerAddUser(UserManager* _userManager, char* _username,
     user = UserInformationCreate(_username, _password, _isConnected);
     if(!user)
     {
-        return USERMANAGER_ALLOCATION_FAILED;
+        return USERMANAGER_ALLOCATION_FAILED; /* Could be an error because of a not valid string length (more then 100) */
     }
 
     ptrToUsernameAsKey = (char*)UserInformationGetUsername(user);
@@ -108,18 +104,18 @@ UserManagerStatus UserManagerAddUser(UserManager* _userManager, char* _username,
 }
 
 
-UserManagerStatus UserManagerCheckIfUserIsExistsAndIfPasswordIsCorrect(UserManager* _userManager, char* _username, char* _password)
+UserManagerStatus UserManagerCheckIfUserIsExistsAndIfPasswordIsCorrect(UserManager* _userManager, const char* _username, const char* _password)
 {
     void* user = NULL;
 
-    if(!_userManager || _username || _password)
+    if(!_userManager || !_username || !_password)
     {
         return USERMANAGER_NOT_INITIALIZED;
     }
 
     if(HashMapFind(_userManager->m_usersDictionary, _username, &user) == HASHMAP_KEY_NOT_FOUND_ERROR)
     {
-        return USERMANAGER_USERNAME_NOT_FOUND;
+        return MapHashMapResultToUserManagerStatus(HASHMAP_KEY_NOT_FOUND_ERROR);
     }
 
     if(strcmp(UserInformationGetPassword((UserInformation*)user), _password) == 0)
@@ -131,7 +127,7 @@ UserManagerStatus UserManagerCheckIfUserIsExistsAndIfPasswordIsCorrect(UserManag
 }
 
 
-int UserManagerCheckIfUserIsConnected(UserManager* _userManager, char* _username)
+int UserManagerCheckIfUserIsConnected(UserManager* _userManager, const char* _username)
 {
     void* user = NULL;
 
@@ -148,31 +144,84 @@ int UserManagerCheckIfUserIsConnected(UserManager* _userManager, char* _username
     return UserInformationGetIsConnected((UserInformation*)user);
 }
 
+
+UserManagerStatus UserManagerSetUserAsConnected(UserManager* _userManager, const char* _username)
+{
+    void* user = NULL;
+
+    if(!_userManager || !_username)
+    {
+        return USERMANAGER_NOT_INITIALIZED;
+    }
+
+    if(HashMapFind(_userManager->m_usersDictionary, _username, &user) == HASHMAP_KEY_NOT_FOUND_ERROR)
+    {
+        return MapHashMapResultToUserManagerStatus(HASHMAP_KEY_NOT_FOUND_ERROR);
+    }
+
+    return MapUserInformationResultToUserManagerStatus(UserInformationSetIsConnected(user, CONNECT));
+}
+
+
+UserManagerStatus UserManagerSetUserAsDisconnected(UserManager* _userManager, const char* _username)
+{
+    void* user = NULL;
+
+    if(!_userManager || !_username)
+    {
+        return USERMANAGER_NOT_INITIALIZED;
+    }
+
+    if(HashMapFind(_userManager->m_usersDictionary, _username, &user) == HASHMAP_KEY_NOT_FOUND_ERROR)
+    {
+        return MapHashMapResultToUserManagerStatus(HASHMAP_KEY_NOT_FOUND_ERROR);
+    }
+
+    return MapUserInformationResultToUserManagerStatus(UserInformationSetIsConnected(user, DISCONNECT));
+}
+
+
+UserManagerStatus UserManagerAddGroupToUser(UserManager* _userManager, const char* _username, const char* _groupName)
+{
+    void* user = NULL;
+    UserInformationResult status;
+
+    if(!_userManager || !_username || !_groupName)
+    {
+        return USERMANAGER_NOT_INITIALIZED;
+    }
+
+    if(HashMapFind(_userManager->m_usersDictionary, _username, &user) == HASHMAP_KEY_NOT_FOUND_ERROR)
+    {
+        return MapHashMapResultToUserManagerStatus(HASHMAP_KEY_NOT_FOUND_ERROR);
+    }
+
+    return MapUserInformationResultToUserManagerStatus(UserInformationAddGroup(user, _groupName));
+}
+
+
+UserManagerStatus UserManagerRemoveGroupFromUser(UserManager* _userManager, const char* _username, const char* _groupName)
+{
+    void* user = NULL;
+    UserInformationResult status;
+
+    if(!_userManager || !_username || !_groupName)
+    {
+        return USERMANAGER_NOT_INITIALIZED;
+    }
+
+    if(HashMapFind(_userManager->m_usersDictionary, _username, &user) == HASHMAP_KEY_NOT_FOUND_ERROR)
+    {
+        return MapHashMapResultToUserManagerStatus(HASHMAP_KEY_NOT_FOUND_ERROR);
+    }
+
+    return MapUserInformationResultToUserManagerStatus(UserInformationRemoveGroup(user, _groupName));
+}
+
 /* ----------------------------------- End of Main API Functions -------------------------------------*/
 
 
 /* Static Functions Implementations: */
-
-
-static size_t Hash(const void* _usernameAsKey)
-{
-    size_t number = 0;
-    char* cursor = (char*)_usernameAsKey;
-
-    while(*cursor != '\0')
-    {
-        number += (int)(*((char*)_usernameAsKey));
-        cursor++;
-    }
-
-    return number;
-}
-
-
-static int AreEqualStrings(const void* _firstString, const void* _secondString)
-{
-    return (strcmp((char*)_firstString, (char*)_secondString) == 0) ? EQUAL : NOT_EQUAL;
-}
 
 
 static void DestroySingleUserInformation(void* _userInformation)
@@ -191,6 +240,10 @@ static UserManagerStatus MapHashMapResultToUserManagerStatus(HashMapResult _resu
     {
         return USERMANAGER_ALLOCATION_FAILED;
     }
+    else if(_result == HASHMAP_KEY_NOT_FOUND_ERROR)
+    {
+        return USERMANAGER_USERNAME_NOT_FOUND;
+    }
 
     /* else: _result == HASHMAP_SUCCESS */
 
@@ -198,14 +251,22 @@ static UserManagerStatus MapHashMapResultToUserManagerStatus(HashMapResult _resu
 }
 
 
-
-/* Remove: */
-
-static int DEBUG_PrintFunc(const void* _key, void* _value, void* _context)
+static UserManagerStatus MapUserInformationResultToUserManagerStatus(UserInformationResult _result)
 {
-    printf("UsernameAsKey: %s\n", (char*)_key);
-    printf("User Info: %s -- %s -- Connected? %d\n\n", UserInformationGetUsername((UserInformation*)_value), UserInformationGetPassword((UserInformation*)_value), UserInformationGetIsConnected((UserInformation*)_value));
+    if(_result == USERINFORMATION_ALLOCATION_FAILED)
+    {
+        return USERMANAGER_ALLOCATION_FAILED;
+    }
+    else if(_result == USERINFORMATION_GROUP_NOT_FOUND)
+    {
+        return USERMANAGER_GROUP_OF_USER_NOT_FOUND;
+    }
+    else if(_result == USERINFORMATION_GROUP_ALREADY_EXISTS)
+    {
+        return USERMANAGER_GROUP_OF_USER_ALREADY_EXISTS;
+    }
 
-    return 1;
+    /* else: _result == USERINFORMATION_SUCCESS */
+
+    return USERMANAGER_SUCCESS;
 }
-

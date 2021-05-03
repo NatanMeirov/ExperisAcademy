@@ -21,6 +21,7 @@
 
 /* Defines: */
 
+#define BIG_BUFFER_LENGTH 3800
 #define CHARACTERS_LIMIT 256
 #define IP_LENGTH 16
 
@@ -53,7 +54,9 @@ typedef enum ResponseResult
     RESPONSE_USERNAME_NOT_EXISTS, /* Login */
     RESPONSE_WRONG_PASSWORD, /* Login */
     RESPONSE_GROUP_NAME_ALREADY_EXISTS, /* Create Group */
-    RESPONSE_GROUP_NAME_NOT_EXISTS /* Join Group, Leave Group */
+    RESPONSE_USER_ALREADY_JOINED_GROUP, /* Join Group */
+    RESPONSE_GROUP_NAME_NOT_EXISTS, /* Join Group (there is not a group with this name), Leave Group (the user is not in this group) */
+    RESPONSE_ALL_AVAILABLE_GROUPS_ARE_IN_USE
 } ResponseResult;
 
 /* Sign Up: */
@@ -67,7 +70,7 @@ typedef struct SignUpRequest /* SIGN_UP_REQUEST tag */
 typedef struct SignUpResponse /* SIGN_UP_RESPONSE tag */
 {
     ResponseResult m_responseResult;
-    char m_responseMessage[CHARACTERS_LIMIT];
+    char m_responseMessage[BIG_BUFFER_LENGTH];
 } SignUpResponse;
 
 /* Log In: */
@@ -81,7 +84,7 @@ typedef struct LoginRequest /* LOGIN_REQUEST tag */
 typedef struct LoginResponse /* LOGIN_RESPONSE tag */
 {
     ResponseResult m_responseResult;
-    char m_responseMessage[CHARACTERS_LIMIT];
+    char m_responseMessage[BIG_BUFFER_LENGTH];
 } LoginResponse;
 
 /* Log Out: */
@@ -94,7 +97,7 @@ typedef struct LogoutRequest /* LOGOUT_REQUEST tag */
 typedef struct LogoutResponse /* LOGOUT_RESPONSE tag */
 {
     ResponseResult m_responseResult;
-    char m_responseMessage[CHARACTERS_LIMIT];
+    char m_responseMessage[BIG_BUFFER_LENGTH];
 } LogoutResponse;
 
 /* Create Group: */
@@ -108,8 +111,9 @@ typedef struct CreateGroupRequest /* CREATE_GROUP_REQUEST tag */
 typedef struct CreateGroupResponse /* CREATE_GROUP_RESPONSE tag */
 {
     ResponseResult m_responseResult;
-    char m_responseMessage[CHARACTERS_LIMIT];
+    char m_responseMessage[BIG_BUFFER_LENGTH];
     char m_multicastIPAddress[IP_LENGTH];
+    int m_port;
 } CreateGroupResponse;
 
 /* Join Group: */
@@ -123,8 +127,9 @@ typedef struct JoinGroupRequest /* JOIN_GROUP_REQUEST tag */
 typedef struct JoinGroupResponse /* JOIN_GROUP_RESPONSE tag */
 {
     ResponseResult m_responseResult;
-    char m_responseMessage[CHARACTERS_LIMIT];
+    char m_responseMessage[BIG_BUFFER_LENGTH]; /* To support showing the user all available groups to join */
     char m_multicastIPAddress[IP_LENGTH];
+    int m_port;
 } JoinGroupResponse;
 
 /* Leave Group: */
@@ -138,7 +143,7 @@ typedef struct LeaveGroupRequest /* LEAVE_GROUP_REQUEST tag */
 typedef struct LeaveGroupResponse /* LEAVE_GROUP_RESPONSE tag */
 {
     ResponseResult m_responseResult;
-    char m_responseMessage[CHARACTERS_LIMIT];
+    char m_responseMessage[BIG_BUFFER_LENGTH];
 } LeaveGroupResponse;
 
 /* ------------------------------------- Main API Functions -------------------------------------- */

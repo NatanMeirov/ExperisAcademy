@@ -4,7 +4,7 @@
 TARGET= ApplicationProgram.out
 CC= gcc
 CFLAGS= -ansi -pedantic -g3 #-Wall -Werror -Wextra
-OBJS= MessagesProtocolParser.o UserInformation.o UserManager.o serverDRV.o serverApp.o ApplicationProgram.o # add group manager
+OBJS= MessagesProtocolParser.o UserInformation.o DictStringKeyUtils.o UserManager.o serverDRV.o serverApp.o ApplicationProgram.o ChatGroup.o GroupManager.o
 HEADERS_PATH= ./Include/
 SOURCES_PATH= ./Source/
 
@@ -19,18 +19,25 @@ $(TARGET): $(OBJS)
 MessagesProtocolParser.o: $(SOURCES_PATH)MessagesProtocolParser.c $(HEADERS_PATH)MessagesProtocolParser.h
 	$(CC) $(CFLAGS) -c $(SOURCES_PATH)MessagesProtocolParser.c
 
-UserInformation.o: $(SOURCES_PATH)UserInformation.c $(HEADERS_PATH)UserInformation.h $(HEADERS_PATH)doubleLinkedList.h $(HEADERS_PATH)ListItr.h $(HEADERS_PATH)generalItr.h
+UserInformation.o: $(SOURCES_PATH)UserInformation.c $(HEADERS_PATH)UserInformation.h $(HEADERS_PATH)GenericLinkedList.h $(HEADERS_PATH)LinkedListIterator.h $(HEADERS_PATH)LinkedListIteratorFunctions.h
 	$(CC) $(CFLAGS) -c $(SOURCES_PATH)UserInformation.c
 
-UserManager.o: $(SOURCES_PATH)UserManager.c $(HEADERS_PATH)UserManager.h $(HEADERS_PATH)UserInformation.h $(HEADERS_PATH)GenericHashMap.h
+DictStringKeyUtils.o: $(SOURCES_PATH)DictStringKeyUtils.c $(HEADERS_PATH)DictStringKeyUtils.h
+	$(CC) $(CFLAGS) -c $(SOURCES_PATH)DictStringKeyUtils.c
+
+UserManager.o: $(SOURCES_PATH)UserManager.c $(HEADERS_PATH)UserManager.h $(HEADERS_PATH)UserInformation.h $(HEADERS_PATH)GenericHashMap.h $(HEADERS_PATH)DictStringKeyUtils.h
 	$(CC) $(CFLAGS) -c $(SOURCES_PATH)UserManager.c
 
-# add group manager .o
+GroupManager.o: $(SOURCES_PATH)GroupManager.c $(HEADERS_PATH)GroupManager.h $(HEADERS_PATH)ChatGroup.h $(HEADERS_PATH)GenericHashMap.h $(HEADERS_PATH)GenericQueue.h $(HEADERS_PATH)DictStringKeyUtils.h
+	$(CC) $(CFLAGS) -c $(SOURCES_PATH)GroupManager.c
+
+ChatGroup.o: $(SOURCES_PATH)ChatGroup.c $(HEADERS_PATH)ChatGroup.h
+	$(CC) $(CFLAGS) -c $(SOURCES_PATH)ChatGroup.c
 
 serverDRV.o: $(SOURCES_PATH)serverDRV.c $(HEADERS_PATH)serverDRV.h $(HEADERS_PATH)doubleLinkedList.h $(HEADERS_PATH)ListItr.h
 	$(CC) $(CFLAGS) -c $(SOURCES_PATH)serverDRV.c
 
-serverApp.o: $(SOURCES_PATH)serverApp.c $(HEADERS_PATH)serverApp.h $(HEADERS_PATH)serverDRV.h $(HEADERS_PATH)MessagesProtocolParser.h $(HEADERS_PATH)UserManager.h #add group manager
+serverApp.o: $(SOURCES_PATH)serverApp.c $(HEADERS_PATH)serverApp.h $(HEADERS_PATH)serverDRV.h $(HEADERS_PATH)MessagesProtocolParser.h $(HEADERS_PATH)UserManager.h $(HEADERS_PATH)GroupManager.h
 	$(CC) $(CFLAGS) -c $(SOURCES_PATH)serverApp.c
 
 ApplicationProgram.o: $(SOURCES_PATH)ApplicationProgram.c $(HEADERS_PATH)serverApp.h

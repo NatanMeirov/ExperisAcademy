@@ -32,6 +32,7 @@ static void PrintBuffer(Byte* _buffer, size_t _bytesToPrint);
 /* Tests: */
 static void Test_SignUpAndLoginAndAllGroupRequests_PackandUnPack(void);
 static void Test_Response_PackAndUnPack(void);
+static void Test_GroupResponseWithIP_PackAndUnPack(void);
 
 
 
@@ -40,6 +41,7 @@ int main(void)
 {
     Test_SignUpAndLoginAndAllGroupRequests_PackandUnPack();
     Test_Response_PackAndUnPack();
+    Test_GroupResponseWithIP_PackAndUnPack();
 
     return 0;
 }
@@ -126,4 +128,38 @@ static void Test_Response_PackAndUnPack(void)
     UnPackMessageByTag(&unpackResponseObj, buffer, GetMessageTag(buffer));
     printf("[RESPONSE RESULT STATUS] Check if: 0 == %d\n", unpackResponseObj.m_responseResult);
     printf("Check if: 200 OK == %s\n", unpackResponseObj.m_responseMessage);
+}
+
+
+static void Test_GroupResponseWithIP_PackAndUnPack(void)
+{
+    CreateGroupResponse packGroupResponseObj, unpackGroupResponseObj;
+    size_t sizeOfPackage;
+    Byte buffer[BUFFER_LENGTH];
+
+    packGroupResponseObj.m_responseResult = RESPONSE_OK;
+    strcpy(packGroupResponseObj.m_responseMessage, "200:OK");
+    strcpy(packGroupResponseObj.m_multicastIPAddress, "200.11.0.200");
+
+    /* Packing: */
+    printf("\nPacking:\n");
+
+    sizeOfPackage = PackMessageByTag((void*)&packGroupResponseObj, buffer, CREATE_GROUP_RESPONSE);
+    printf("[PACKAGE SIZE:] Check if: 26 == %ld\n", sizeOfPackage);
+    printf("[TAG:] Check if: 8 == %d\n", GetMessageTag(buffer));
+    printf("[HEADER LENGTH:]Check if: %ld == 24\n", (size_t)buffer[1]); /* check LENGTH header (!= total size == LENGTH + 2)*/
+    printf("Check if: 1 == %d\n", IsCorrectMessageSize(buffer, 26));
+
+    printf("In the buffer: ");
+    PrintBuffer(buffer, sizeOfPackage);
+
+    /* UnPacking: */
+    printf("\nUnPacking:\n");
+
+    printf("Check if: 8 == %d\n", GetMessageTag(buffer));
+    printf("Check if: 1 == %d\n", IsCorrectMessageSize(buffer, 26));
+    UnPackMessageByTag(&unpackGroupResponseObj, buffer, GetMessageTag(buffer));
+    printf("[RESPONSE RESULT STATUS] Check if: 0 == %d\n", unpackGroupResponseObj.m_responseResult);
+    printf("Check if: 200:OK == %s\n", unpackGroupResponseObj.m_responseMessage);
+    printf("Check if: 200.11.0.200 == %s\n", unpackGroupResponseObj.m_multicastIPAddress);
 }

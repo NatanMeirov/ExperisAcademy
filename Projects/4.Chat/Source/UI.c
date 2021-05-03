@@ -1,22 +1,32 @@
 #include <stdio.h> /* printf, scanf */
 #include "../Include/UI.h"
+#include <string.h>
 
-void ShowMenu(char* _menu)
+#define LINE_LENGTH 200
+#define SIZE_FOR_ONE_CHAR_BUFFER_AND_TERMINATE 2
+
+void UIShowMenu(char* _menu)
 {
     printf("%s", _menu);
 }
 
-void PrintMessage(char* _message)
+void UIPrintMessage(char* _message)
 {
     printf("%s", _message);
 }
 
-void GetChoice(int *choice)
+void UIGetChoice(int *_choice)
 {
-    scanf("%d", choice);
+    char buffer[LINE_LENGTH];
+    fgets(buffer, LINE_LENGTH, stdin);
+	sscanf(buffer, "%d", _choice);
 }
 
-void GetDetail(char *_details)
+int UIGetDetail(char *_details, size_t _buffSize)
 {
-    scanf("%s", _details);
+    char buffer[LINE_LENGTH];
+    fgets(buffer, LINE_LENGTH, stdin);
+	sscanf(buffer, "%s", _details);
+
+    return 1;
 }

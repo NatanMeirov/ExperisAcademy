@@ -14,6 +14,7 @@
 /* Includes: */
 
 #include <stddef.h> /* size_t */
+#include <stdint.h> /* uint16_t */
 #include <string.h> /* memcpy, strlen */
 #include "../Include/MessagesProtocolParser.h"
 
@@ -34,15 +35,16 @@ typedef struct TwoStringsRequest
 typedef struct Response
 {
     ResponseResult m_responseResult;
-    char m_responseMessage[CHARACTERS_LIMIT];
+    char m_responseMessage[BIG_BUFFER_LENGTH];
 } Response;
 
 /* An abstract Response class to be used as a base join and create group response classes */
 typedef struct CreateAndJoinGroupResponse
 {
     ResponseResult m_responseResult;
-    char m_responseMessage[CHARACTERS_LIMIT];
+    char m_responseMessage[BIG_BUFFER_LENGTH];
     char m_multicastIPAddress[IP_LENGTH];
+    int m_port;
 } CreateAndJoinGroupResponse;
 
 /* Static Functions Declarations: */
@@ -52,14 +54,14 @@ typedef struct CreateAndJoinGroupResponse
 static Byte* CopyBytesAndSetCursorOnNextLocation(Byte* _destination, Byte* _source, size_t _bytesToCopy, CursorIndicator _cursorIndicator);
 
 static Byte* PackTwoStringsRequestMessage(TwoStringsRequest* _twoStringsRequest, Byte* _buffer);
-/*static Byte* PackLogoutRequestMessage(LogoutRequest* _logoutRequest, Byte* _buffer);*/
+static Byte* PackLogoutRequestMessage(LogoutRequest* _logoutRequest, Byte* _buffer);
 static Byte* PackResponseMessage(Response* _response, Byte* _buffer);
-static Byte* PackIPAddress(char *_ipAddress, Byte *_buffer, size_t _bytesToCopy); /* refer to some Responses objects */
+static Byte* PackIPAddress(char* _ipAddress, Byte* _buffer, size_t _bytesToCopy); /* refer to some Responses objects */
 
 static Byte* UnPackTwoStringsRequestMessage(TwoStringsRequest* _twoStringsRequest, Byte* _buffer);
-/*static Byte* UnPackLogoutRequestMessage(LogoutRequest* _logoutRequest, Byte* _buffer);*/
+static Byte* UnPackLogoutRequestMessage(LogoutRequest* _logoutRequest, Byte* _buffer);
 static Byte* UnPackResponseMessage(Response* _response, Byte* _buffer);
-static Byte* UnPackIPAddress(char *_ipAddress, Byte *_buffer, size_t _bytesToCopy); /* refer to some Response objects */
+static Byte* UnPackIPAddress(char* _ipAddress, Byte* _buffer, size_t _bytesToCopy); /* refer to some Response objects */
 
 
 /* ------------------------------------- Main API Functions -------------------------------------- */
@@ -83,11 +85,11 @@ size_t PackMessageByTag(void* _messageObject, Byte* _buffer, ProtocolParsingTag 
     case LEAVE_GROUP_REQUEST:
         PackTwoStringsRequestMessage((TwoStringsRequest*)_messageObject, _buffer);
         break;
-    /*
+
     case LOGOUT_REQUEST:
         PackLogoutRequestMessage((LogoutRequest*)_messageObject, _buffer);
         break;
-    */
+
     case SIGN_UP_RESPONSE:
     case LOGIN_RESPONSE:
     case LOGOUT_RESPONSE:
@@ -126,11 +128,9 @@ int UnPackMessageByTag(void* _messageObject, Byte* _buffer, ProtocolParsingTag _
         UnPackTwoStringsRequestMessage((TwoStringsRequest*)_messageObject, _buffer);
         break;
 
-    /*
     case LOGOUT_REQUEST:
         UnPackLogoutRequestMessage((LogoutRequest*)_messageObject, _buffer);
         break;
-    */
 
     case SIGN_UP_RESPONSE:
     case LOGIN_RESPONSE:
@@ -204,9 +204,25 @@ static Byte* PackTwoStringsRequestMessage(TwoStringsRequest* _twoStringsRequest,
     /* Second string packing */
     *cursor = (Byte)(secondStringLength); /* metadata of second string length */
     cursor++;
-    cursor = CopyBytesAndSetCursorOnNextLocation(cursor, (Byte*)_twoStringsRequest->m_secondString, secondStringLength, DESTINATION);
 
-    return cursor;
+    return CopyBytesAndSetCursorOnNextLocation(cursor, (Byte*)_twoStringsRequest->m_secondString, secondStringLength, DESTINATION);
+}
+
+
+static Byte* PackLogoutRequestMessage(LogoutRequest* _logoutRequest, Byte* _buffer)
+{
+    Byte* cursor = _buffer + 1;
+    size_t sizeOfUsername = strlen(_logoutRequest->m_usernameToLogout) + 1; /* +1 for '\0' */
+
+    /* Total LENGTH */
+    *cursor = (Byte)(sizeOfUsername + 1); /* +1 for metadata */
+    cursor++;
+
+    /* Username packing */
+    *cursor = (Byte)(sizeOfUsername);
+    cursor++;
+
+    return CopyBytesAndSetCursorOnNextLocation(cursor, (Byte*)_logoutRequest->m_usernameToLogout, sizeOfUsername, DESTINATION);
 }
 
 
@@ -216,7 +232,7 @@ static Byte* PackResponseMessage(Response* _response, Byte* _buffer)
     size_t optionalIpAddressLength, responseResultLength = 1, responseMessageLength = strlen(_response->m_responseMessage) + 1; /* + '\0' */
 
     /* Total LENGTH: */
-    *cursor = (Byte)(responseResultLength + 1 /* metadata */ + responseMessageLength + 1 /* metadata */);
+    *cursor = (Byte)(responseResultLength + 1 /* metadata */ + responseMessageLength + 2 /* metadata - 2 bytes for big length response message */);
     cursor++;
 
     /* Response code packing */
@@ -226,30 +242,35 @@ static Byte* PackResponseMessage(Response* _response, Byte* _buffer)
     cursor++;
 
     /* Response message packing */
-    *cursor = (Byte)responseMessageLength;
-    cursor++;
+    *(uint16_t*)cursor = (uint16_t)responseMessageLength;
+    cursor += 2;
     cursor = CopyBytesAndSetCursorOnNextLocation(cursor, (Byte*)_response->m_responseMessage, responseMessageLength, DESTINATION);
 
     /* Check the tag to know if add the ip address length to the total LENGTH */
     if(*_buffer == CREATE_GROUP_RESPONSE || *_buffer == JOIN_GROUP_RESPONSE)
     {
-        /* Adding the size of the IpAddress + 2 for: '\0' and for inner metadata header - to the total LENGTH header */
+        /* Adding the size of the IpAddress + 2 for: '\0' and for inner metadata header, and + 2 bytes for the port number - to the total LENGTH header */
         optionalIpAddressLength = strlen(((CreateAndJoinGroupResponse*)_response)->m_multicastIPAddress) + 1;
-        *(_buffer + 1) += (Byte)(optionalIpAddressLength + 1);
+        *(_buffer + 1) += (Byte)(optionalIpAddressLength + 1 /* metadata */ + 2 /* port number bytes */);
 
         /* IP Address packing */
         /* Save the inner metadata about the IP Address: */
         *cursor = (Byte)(optionalIpAddressLength);
         cursor++;
 
-        return PackIPAddress(((CreateAndJoinGroupResponse*)_response)->m_multicastIPAddress, cursor, optionalIpAddressLength);
+        cursor = PackIPAddress(((CreateAndJoinGroupResponse*)_response)->m_multicastIPAddress, cursor, optionalIpAddressLength);
+
+        /* Port packing */
+        *(uint16_t*)cursor = ((CreateAndJoinGroupResponse*)_response)->m_port;
+
+        return cursor + 2;
     }
 
     return cursor;
 }
 
 
-static Byte* PackIPAddress(char *_ipAddress, Byte *_buffer, size_t _bytesToCopy)
+static Byte* PackIPAddress(char* _ipAddress, Byte* _buffer, size_t _bytesToCopy)
 {
     return CopyBytesAndSetCursorOnNextLocation(_buffer, (Byte*)_ipAddress, _bytesToCopy, DESTINATION);
 }
@@ -270,9 +291,21 @@ static Byte* UnPackTwoStringsRequestMessage(TwoStringsRequest* _twoStringsReques
     /* Second string unpacking */
     sizeOfSecondString = (size_t)*cursor;
     cursor++;
-    cursor = CopyBytesAndSetCursorOnNextLocation((Byte*)_twoStringsRequest->m_secondString, cursor, sizeOfSecondString, SOURCE);
 
-    return cursor;
+    return CopyBytesAndSetCursorOnNextLocation((Byte*)_twoStringsRequest->m_secondString, cursor, sizeOfSecondString, SOURCE);
+}
+
+
+static Byte* UnPackLogoutRequestMessage(LogoutRequest* _logoutRequest, Byte* _buffer)
+{
+    Byte* cursor = _buffer + 2;
+    size_t sizeOfUserName;
+
+    /* Username unpacking */
+    sizeOfUserName = (size_t)(*cursor);
+    cursor++;
+
+    return CopyBytesAndSetCursorOnNextLocation((Byte*)_logoutRequest->m_usernameToLogout, cursor, sizeOfUserName, SOURCE);
 }
 
 
@@ -287,8 +320,8 @@ static Byte* UnPackResponseMessage(Response* _response, Byte* _buffer)
     cursor++;
 
     /* Response message unpacking */
-    sizeOfResponseMessage = (size_t)(*cursor);
-    cursor++;
+    sizeOfResponseMessage = (size_t)(*(uint16_t*)cursor);
+    cursor += 2;
     cursor = CopyBytesAndSetCursorOnNextLocation((Byte*)_response->m_responseMessage, cursor, sizeOfResponseMessage, SOURCE);
 
     /* Check the tag to know if add the ip address length to the total LENGTH */
@@ -298,14 +331,19 @@ static Byte* UnPackResponseMessage(Response* _response, Byte* _buffer)
         optionalIpAddressLength = (size_t)(*cursor);
         cursor++;
 
-        return UnPackIPAddress(((CreateAndJoinGroupResponse*)_response)->m_multicastIPAddress, cursor, optionalIpAddressLength);
+        cursor = UnPackIPAddress(((CreateAndJoinGroupResponse*)_response)->m_multicastIPAddress, cursor, optionalIpAddressLength);
+
+        /* Port unpacking */
+        ((CreateAndJoinGroupResponse*)_response)->m_port = (int)(*(uint16_t*)cursor);
+
+        return cursor + 2;
     }
 
     return cursor;
 }
 
 
-static Byte* UnPackIPAddress(char *_ipAddress, Byte *_buffer, size_t _bytesToCopy)
+static Byte* UnPackIPAddress(char* _ipAddress, Byte* _buffer, size_t _bytesToCopy)
 {
     return CopyBytesAndSetCursorOnNextLocation((Byte*)_ipAddress, _buffer, _bytesToCopy, SOURCE);
 }

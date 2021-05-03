@@ -1,23 +1,27 @@
+/* Zahi (& Natan) */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> /* strlen, strcpy */
-#include "../Include/doubleLinkedList.h"
 #include "../Include/UserInformation.h"
-
+#include "../Include/GenericLinkedList.h"
+#include "../Include/LinkedListIterator.h"
+#include "../Include/LinkedListIteratorFunctions.h"
 
 struct UserInformation
 {
     char m_username[MAX_LEN];
     char m_password[MAX_LEN];
     int m_isConnected;
-    List* m_joinedGroups;
+    LinkedList* m_joinedGroups;
 };
 
-
 static void DestroySingleGroupName(void* _groupName);
+static int FindMatchedGroupNames(void* _elementToCheck,void* _groupName);
 
 
-UserInformation* UserInformationCreate(char* _username, char* _password, int _isConnected)
+/* API: */
+
+UserInformation* UserInformationCreate(const char* _username, const char* _password, int _isConnected)
 {
     UserInformation* userInfo = NULL;
 
@@ -41,7 +45,7 @@ UserInformation* UserInformationCreate(char* _username, char* _password, int _is
     strcpy(userInfo->m_username, _username);
     strcpy(userInfo->m_password, _password);
 
-    userInfo->m_joinedGroups = ListCreate();
+    userInfo->m_joinedGroups = LinkedListCreate();
     if(!userInfo->m_joinedGroups)
     {
         free(userInfo);
@@ -57,7 +61,7 @@ void UserInformationDestroy(UserInformation** _user)
 {
     if (_user != NULL && *_user != NULL)
     {
-        ListDestroy(&(*_user)->m_joinedGroups, &DestroySingleGroupName);
+        LinkedListDestroy(&(*_user)->m_joinedGroups, &DestroySingleGroupName);
 
         free(*_user);
         *_user = NULL;
@@ -98,58 +102,93 @@ int UserInformationGetIsConnected(UserInformation* _user)
 }
 
 
-int UserInformationSetIsConnected(UserInformation* _user, int _isConnected)
+UserInformationResult UserInformationSetIsConnected(UserInformation* _user, int _isConnected)
 {
     if (_user == NULL)
     {
-        return 0;
+        return USERINFORMATION_NOT_INITIALIZED;
     }
 
     _user->m_isConnected = _isConnected;
 
-    return 1;
+    return USERINFORMATION_SUCCESS;
 }
 
 
-int UserInformationAddGroup(UserInformation* _user, char* _groupName)
+UserInformationResult UserInformationAddGroup(UserInformation* _user, const char* _groupName)
 {
     char* group = NULL;
-    int result;
+    LinkedListResult result;
+    LinkedListIterator iterator = NULL;
+    LinkedListIterator endIterator = NULL;
 
     if (_user == NULL || _groupName == NULL)
     {
-        return 0;
+        return USERINFORMATION_NOT_INITIALIZED;
+    }
+
+    endIterator = LinkedListIteratorEnd(_user->m_joinedGroups);
+
+    if(LinkedListIteratorFindFirst(LinkedListIteratorBegin(_user->m_joinedGroups), endIterator, &FindMatchedGroupNames, (void*)_groupName) != endIterator) /* Found the same groupName in the LinkedList of groups */
+    {
+        return USERINFORMATION_GROUP_ALREADY_EXISTS;
     }
 
     group = (char*)malloc(strlen(_groupName) + 1);
     if (group == NULL)
     {
-        return 0;
+        return USERINFORMATION_ALLOCATION_FAILED;
     }
 
     strcpy(group, _groupName);
 
-    result = ListPushTail(_user->m_joinedGroups , group);
+    result = LinkedListInsertTail(_user->m_joinedGroups, group);
 
-    if (result != LIST_SUCCESS)
+    if(result != LINKEDLIST_SUCCESS)
     {
         free(group);
 
-        return 0;
+        return USERINFORMATION_ALLOCATION_FAILED;
     }
 
-    return 1;
+    return USERINFORMATION_SUCCESS;
 }
 
 
-/*int UserInformationRemoveGroup(UserInformation* _user, char* _groupName)
+UserInformationResult UserInformationRemoveGroup(UserInformation* _user, const char* _groupName)
 {
+    char* groupPtr = NULL;
+    LinkedListIterator* findGroupNameIterator = NULL;
+    LinkedListIterator* endIterator = NULL;
+
+
     if (_user == NULL || _groupName == NULL)
     {
-        return 0;
-    } 
-} */
+        return USERINFORMATION_NOT_INITIALIZED;
+    }
 
+    endIterator = LinkedListIteratorEnd(_user->m_joinedGroups);
+
+    findGroupNameIterator = LinkedListIteratorFindFirst(LinkedListIteratorBegin(_user->m_joinedGroups), endIterator, &FindMatchedGroupNames, (void*)_groupName);
+
+    if(findGroupNameIterator == endIterator)
+    {
+        return USERINFORMATION_GROUP_NOT_FOUND;
+    }
+
+    groupPtr = LinkedListIteratorRemove(findGroupNameIterator); /* Gets the allocated groupname string */
+    free(groupPtr);
+
+    return USERINFORMATION_SUCCESS;
+}
+
+
+/* Static */
+
+static int FindMatchedGroupNames(void* _elementToCheck, void* _groupName)
+{
+    return (strcmp((char*)_elementToCheck ,(char*)_groupName) == 0) ? 1 : 0;
+}
 
 static void DestroySingleGroupName(void* _groupName)
 {

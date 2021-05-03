@@ -1,3 +1,10 @@
+/**
+ * @file serverDRV.h
+ * @author Rinat Mualem
+ * @brief Server Network in TCP protocol
+ * @version 1.0
+ * 
+ */
 #ifndef __SERVERDRV_H__
 #define __SERVERDRV_H__
 
@@ -32,7 +39,7 @@ typedef void (*NewClient)(Server* _server, int _clientSocket, void* _appContext)
 /* you need to copy the buffer*/
 typedef void (*GotMessage)(Server* _server, void* _message, int _SizeMessage, int _clientSock, void* _appContext);
 typedef void (*CloseClient)(Server* _server, int _clientSocket, void* _appContext); 
-/*if return value 0 server stop
+/*if return value 0 server will stop
 	if is 1 continu*/
 typedef int (*Fail)(ServerResult _error, void* _appContext);
 
@@ -59,6 +66,9 @@ typedef struct AppFunction
 Server* ServerCreate(AppFunction* _appFunction, size_t _queueSize, size_t _serverPort, size_t _maxNumFD, void *_appContext);
 
 
+
+
+
 void ServerRun(Server* _server);
 
 
@@ -71,5 +81,4 @@ ServerResult ServerSendMessage(Server* _server, size_t _clientSocket, void* _mes
 
 
 void ServerDestroy(Server** _server);
-
 #endif /*#ifndef __SERVERDRV_H__*/
