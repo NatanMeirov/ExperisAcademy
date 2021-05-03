@@ -42,19 +42,13 @@ static void DeleteLastItemFromEndOfVector(Vector* a_vector, void** _itemToDelete
 /* -------------------------------------- Main API Functions ------------------------------------ */
 
 Vector::Vector(size_t a_initialCapacity, size_t a_extensionBlockSize, void (*a_elementDestroyer)(void* a_element))
-:
-m_vectorItems(NULL),
-m_originalCapacity(a_initialCapacity),
-m_vectorCapacity(a_initialCapacity),
-m_extensionBlockSize(a_extensionBlockSize),
-m_sizeOfVector(0),
-m_elementDestroyer(a_elementDestroyer) {
-    if(!a_initialCapacity && !a_extensionBlockSize) {
-        exit(1);
-    }
-
-    this->m_vectorItems = (void**)malloc(a_initialCapacity * sizeof(void*));
-    if(!this->m_vectorItems) {
+: m_vectorItems((void**)malloc(a_initialCapacity * sizeof(void*)))
+, m_originalCapacity(a_initialCapacity)
+, m_vectorCapacity(a_initialCapacity)
+, m_extensionBlockSize(a_extensionBlockSize)
+, m_sizeOfVector(0)
+,m_elementDestroyer(a_elementDestroyer) {
+    if((!a_initialCapacity && !a_extensionBlockSize) || !this->m_vectorItems) {
         exit(1);
     }
 }
