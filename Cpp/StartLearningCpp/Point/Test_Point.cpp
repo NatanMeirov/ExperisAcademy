@@ -1,5 +1,5 @@
 #include <cmath>
-#include <stdio.h> // printf
+#include <iostream> // std::cout, std::endl
 #include "Point.hpp"
 
 
@@ -7,29 +7,29 @@ int main() {
     Point p1(1, 1);
     Point p2(2, 2);
 
-    double checkDistanceFromOrigin = p1.DistanceToOrigin();
+    double checkDistanceFromOrigin = p1.DistanceFromOrigin();
     if(sqrt(2) == checkDistanceFromOrigin) {
-        printf("Passed!\n");
+        std:: cout << "Passed!" << std::endl;
     }
     else {
-        printf("Failed...\n");
+        std:: cout << "Failed..." << std::endl;
     }
 
-    double checkDistanceToOtherPoint = p1.DistanceTo(&p2);
+    double checkDistanceToOtherPoint = p1.DistanceTo(p2);
     if(sqrt(2) == checkDistanceToOtherPoint) {
-        printf("Passed!\n");
+        std:: cout << "Passed!" << std::endl;
     }
     else {
-        printf("Failed...\n");
+        std:: cout << "Failed..." << std::endl;
     }
 
-    Point p3 = p1.Add(&p2);
+    Point p3 = p1 + p2;
     p3.Print();
-    printf("Should be: (3.0, 3.0)\n");
+    std::cout << "\nShould be: (3, 3)" << std::endl;
 
-    Point p4 = p1.Substact(&p2);
+    Point p4 = p1 - p2;
     p4.Print();
-    printf("Should be: (-1.0, -1.0)\n");
+    std::cout << "\nShould be: (-1, -1)" << std::endl;
 
     return 0;
 }
