@@ -15,24 +15,46 @@ static size_t SafeStrlenWrapper(const char* a_str) {
 }
 
 
+static char* CreateAndDuplicateString(const char* a_sourceString, const size_t a_sourceStringLength) {
+    char* str = new char[a_sourceStringLength + 1]; // +1 for '\0'
+    memcpy(str, a_sourceString, a_sourceStringLength + 1); // +1 to copy '\0' as well
+
+    return str;
+}
+
+
+static char* InitializeNewEmptyString() {
+    char* str = new char[1];
+    str[0] = '\0';
+
+    return str;
+}
+
+
+static char* CreateStringAndSetSingleCharAllOverIt(const char a_characterToSet, const size_t a_lengthOfNewString) {
+    char* str = new char[a_lengthOfNewString + 1]; // +1 for '\0'
+    memset(str, a_characterToSet, a_lengthOfNewString);
+    str[a_lengthOfNewString] = '\0';
+
+    return str;
+}
+
+
 String::String()
 : m_strLength(0)
-, m_str(new char[1]) {
-    this->m_str[0] = '\0';
+, m_str(InitializeNewEmptyString()) {
 }
 
 
 String::String(const char* a_str)
 : m_strLength(SafeStrlenWrapper(a_str))
-, m_str(new char[this->m_strLength + 1]) /* +1 for '\0' */ {
-    memcpy(this->m_str, a_str, this->m_strLength + 1);
+, m_str(CreateAndDuplicateString(a_str, this->m_strLength)) {
 }
 
 
 String::String(const String& a_other)
 : m_strLength(a_other.m_strLength)
-, m_str(new char[this->m_strLength + 1]) /* +1 for '\0' */ {
-    memcpy(this->m_str, a_other.m_str, this->m_strLength + 1);
+, m_str(CreateAndDuplicateString(a_other.m_str, this->m_strLength)) /* +1 for '\0' */ {
 }
 
 
@@ -213,9 +235,7 @@ String String::operator>>(const size_t a_numOfShifts) const {
 
 
 String String::operator+() const {
-    char* newStr = new char[this->m_strLength + 1];
-    memset(newStr, '+', this->m_strLength);
-    newStr[this->m_strLength] = '\0';
+    char* newStr = CreateStringAndSetSingleCharAllOverIt('+', this->m_strLength);
 
     String strToReturn(newStr);
     delete[] newStr;
@@ -225,9 +245,7 @@ String String::operator+() const {
 
 
 String String::operator-() const {
-    char* newStr = new char[this->m_strLength + 1];
-    memset(newStr, '-', this->m_strLength);
-    newStr[this->m_strLength] = '\0';
+    char* newStr = CreateStringAndSetSingleCharAllOverIt('-', this->m_strLength);
 
     String strToReturn(newStr);
     delete[] newStr;

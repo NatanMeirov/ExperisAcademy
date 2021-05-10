@@ -27,15 +27,16 @@ public:
     bool operator<=(const String& a_other) const;
     bool operator>=(const String& a_other) const;
     String operator+(const String& a_str) const;
+    String operator-(const String& a_other) const; // Removes the first occurrence of a_other String from the "self" String
+    String operator<<(const size_t a_numOfShifts) const; // Removes the number of shift value from the String (from left String's side)
+    String operator>>(const size_t a_numOfShifts) const; // Removes the number of shift value from the String (from right String's side)
     char& operator[](int a_index) const;
 
     // Additional Weird Operators:
 
-    String operator-(const String& a_other) const;
+
     String& operator++();
     String operator++(int);
-    String operator<<(const size_t a_numOfShifts) const;
-    String operator>>(const size_t a_numOfShifts) const;
     String operator-() const;
     String operator+() const;
     String operator!() const;
