@@ -157,6 +157,15 @@ char& String::operator[](int a_index) const {
 }
 
 
+char& String::operator[](int a_index) {
+    if(a_index > this->m_strLength - 1 || a_index < 0) {
+        throw std::out_of_range("Index Out Of Bounds Error");
+    }
+
+    return this->m_str[a_index];
+}
+
+
 // Weird operators:
 
 String String::operator-(const String& a_other) const {

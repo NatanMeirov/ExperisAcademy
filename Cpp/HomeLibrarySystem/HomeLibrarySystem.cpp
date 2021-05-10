@@ -232,7 +232,7 @@ void HomeLibrarySystemManager::AddNewBookToLibrary() {
     Book newBook(bookName, authorName, releasedYear, receivedYear);
     this->m_booksCollection.PushTail(newBook);
 
-    ui.ShowMessage("Successfully added a new book!", true);
+    ui.ShowMessage("Successfully added a new Book!", true);
 }
 
 
@@ -259,6 +259,8 @@ void HomeLibrarySystemManager::AddNewMovieToLibrary() {
 
     Movie newMovie(movieName, directorName, movieGenre, releasedYear, receivedYear);
     this->m_moviesCollection.PushTail(newMovie);
+
+    ui.ShowMessage("Successfully added a new Movie!", true);
 }
 
 

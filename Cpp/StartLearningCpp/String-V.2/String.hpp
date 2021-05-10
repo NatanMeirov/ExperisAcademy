@@ -31,6 +31,7 @@ public:
     String operator<<(const size_t a_numOfShifts) const; // Removes the number of shift value from the String (from left String's side)
     String operator>>(const size_t a_numOfShifts) const; // Removes the number of shift value from the String (from right String's side)
     char& operator[](int a_index) const;
+    char& operator[](int a_index);
 
     // Additional Weird Operators:
 
