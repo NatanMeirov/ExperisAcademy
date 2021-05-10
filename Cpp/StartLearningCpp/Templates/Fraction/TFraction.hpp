@@ -9,13 +9,15 @@ template <typename T>
 class Fraction {
 public:
 
-    friend std::ostream& operator<<(std::ostream& a_os, const Fraction<T>& a_fraction);
-    friend Fraction<T> operator*(const int& a_number, const Fraction<T>& a_fraction);
-    friend Fraction<T> operator*(const double& a_number, const Fraction<T>& a_fraction);
-    friend Fraction<T> operator+(const int& a_number, const Fraction<T>& a_fraction);
-    friend Fraction<T> operator+(const double& a_number, const Fraction<T>& a_fraction);
-    friend Fraction<T> operator-(const int& a_number, const Fraction<T>& a_fraction);
-    friend Fraction<T> operator-(const double& a_number, const Fraction<T>& a_fraction);
+    template <typename K> friend std::ostream& operator<<(std::ostream& a_os, const Fraction<K>& a_fraction); // Prints the number in floating point "style"
+    template <typename K> friend Fraction<K> operator*(const int& a_number, const Fraction<K>& a_fraction);
+    template <typename K> friend Fraction<K> operator*(const double& a_number, const Fraction<K>& a_fraction);
+    template <typename K> friend Fraction<K> operator+(const int& a_number, const Fraction<K>& a_fraction);
+    template <typename K> friend Fraction<K> operator+(const double& a_number, const Fraction<K>& a_fraction);
+    template <typename K> friend Fraction<K> operator-(const int& a_number, const Fraction<K>& a_fraction);
+    template <typename K> friend Fraction<K> operator-(const double& a_number, const Fraction<K>& a_fraction);
+    template <typename K> friend Fraction<K> operator/(const int& a_number, const Fraction<K>& a_fraction);
+    template <typename K> friend Fraction<K> operator/(const double& a_floationNumber, const Fraction<K>& a_fraction);
 
 
     // Preventing default c'tor (no sense)
@@ -25,7 +27,7 @@ public:
     ~Fraction();
 
 
-    void Print() const;
+    void Print() const; // Prints the number in fraction "style" (example: "x/y")
 
 
     // Operator Overloading
@@ -41,6 +43,8 @@ public:
     Fraction<T> operator*(const int& a_number) const;
     Fraction<T> operator*(const double& a_floationNumber) const;
     Fraction<T> operator/(const Fraction<T>& a_other) const;
+    Fraction<T> operator/(const int& a_number) const;
+    Fraction<T> operator/(const double& a_floationNumber) const;
     Fraction<T> operator-() const;
     operator double(); // Casting to double
 

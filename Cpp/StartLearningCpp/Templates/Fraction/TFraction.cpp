@@ -23,10 +23,10 @@ T GCD(T a_firstNumber, T a_secondNumber) {
 
 
 // Specialization for <int> type
-template<>
-int GCD<int>(int a_firstNumber, int a_secondNumber) {
-    return (a_secondNumber == 0) ? a_firstNumber : GCD<int>(a_secondNumber, (a_firstNumber % a_secondNumber));
-}
+// template<>
+// int GCD<int>(int a_firstNumber, int a_secondNumber) {
+//     return (a_secondNumber == 0) ? a_firstNumber : GCD<int>(a_secondNumber, (a_firstNumber % a_secondNumber));
+// }
 
 
 template <typename T>
@@ -53,47 +53,59 @@ T FindCommonDenominatorBase(T a_firstNumber, T a_secondNumber) {
 
 // Friend Function
 
-template <typename T>
-std::ostream& operator<<(std::ostream& a_os, const Fraction<T>& a_fraction) {
-    a_os << (a_fraction.m_numerator / a_fraction.m_denominator);
+template <typename K>
+std::ostream& operator<<(std::ostream& a_os, const Fraction<K>& a_fraction) {
+    a_os << ((double)a_fraction.m_numerator / (double)a_fraction.m_denominator);
 
     return a_os;
 }
 
 
-template <typename T>
-Fraction<T> operator*(const int& a_number, const Fraction<T>& a_fraction) {
+template <typename K>
+Fraction<K> operator*(const int& a_number, const Fraction<K>& a_fraction) {
     return a_fraction * a_number;
 }
 
 
-template <typename T>
-Fraction<T> operator*(const double& a_floationNumber, const Fraction<T>& a_fraction) {
+template <typename K>
+Fraction<K> operator*(const double& a_floationNumber, const Fraction<K>& a_fraction) {
     return a_fraction * a_floationNumber;
 }
 
 
-template <typename T>
-Fraction<T> operator+(const int& a_number, const Fraction<T>& a_fraction) {
+template <typename K>
+Fraction<K> operator+(const int& a_number, const Fraction<K>& a_fraction) {
     return a_fraction + a_number;
 }
 
 
-template <typename T>
-Fraction<T> operator+(const double& a_floationNumber, const Fraction<T>& a_fraction) {
+template <typename K>
+Fraction<K> operator+(const double& a_floationNumber, const Fraction<K>& a_fraction) {
     return a_fraction + a_floationNumber;
 }
 
 
-template <typename T>
-Fraction<T> operator-(const int& a_number, const Fraction<T>& a_fraction) {
+template <typename K>
+Fraction<K> operator-(const int& a_number, const Fraction<K>& a_fraction) {
     return (-a_fraction) + a_number;
 }
 
 
-template <typename T>
-Fraction<T> operator-(const double& a_floationNumber, const Fraction<T>& a_fraction) {
+template <typename K>
+Fraction<K> operator-(const double& a_floationNumber, const Fraction<K>& a_fraction) {
     return (-a_fraction) + a_floationNumber;
+}
+
+
+template <typename K>
+Fraction<K> operator/(const int& a_number, const Fraction<K>& a_fraction) {
+    return Fraction<K>(a_number, 1) / a_fraction;
+}
+
+
+template <typename K>
+Fraction<K> operator/(const double& a_floationNumber, const Fraction<K>& a_fraction) {
+    return Fraction<K>(a_floationNumber, 1.0) / a_fraction;
 }
 
 
@@ -117,6 +129,8 @@ template <typename T>
 Fraction<T>& Fraction<T>::operator=(const Fraction<T>& a_other){
     this->m_numerator = a_other.m_numerator;
     this->m_denominator = a_other.m_denominator;
+
+    return *this;
 }
 
 
@@ -127,20 +141,29 @@ Fraction<T>::~Fraction() {
 
 template <typename T>
 void Fraction<T>::Print() const {
-    std::cout << *this;
+    std::cout << this->m_numerator << "/" << this->m_denominator;
 }
 
 
 template <typename T>
 Fraction<T> Fraction<T>::operator+(const Fraction<T>& a_other) const {
     T commonDivisor = FindCommonDenominatorBase(this->m_denominator, a_other.m_denominator);
-    // TODO
+
+    T thisFractionMultiplyValue = commonDivisor / this->m_denominator;
+    T otherFractionMultiplyValue = commonDivisor / a_other.m_denominator;
+
+    // Fraction<T> newLeftFraction((this->m_numerator * thisFractionMultiplyValue), commonDivisor);
+    // Fraction<T> newRightFraction((a_other.m_numerator * otherFractionMultiplyValue), commonDivisor);
+
+    T totalNewNumeratorValue = (this->m_numerator * thisFractionMultiplyValue) + (a_other.m_numerator * otherFractionMultiplyValue);
+
+    return Fraction<T>(totalNewNumeratorValue, commonDivisor);
 }
 
 
 template <typename T>
 Fraction<T> Fraction<T>::operator-(const Fraction<T>& a_other) const {
-    // TODO
+    return (-a_other) + *this;
 }
 
 
@@ -152,7 +175,7 @@ Fraction<T> Fraction<T>::operator+(const int& a_number) const {
 
 template <typename T>
 Fraction<T> Fraction<T>::operator+(const double& a_floationNumber) const {
-    return *this + Fraction<T>(a_floationNumber, 1);
+    return *this + Fraction<T>(a_floationNumber, 1.0);
 }
 
 
@@ -164,19 +187,19 @@ Fraction<T> Fraction<T>::operator-(const int& a_number) const {
 
 template <typename T>
 Fraction<T> Fraction<T>::operator-(const double& a_floationNumber) const {
-    return *this + Fraction<T>(a_floationNumber, 1);
+    return *this - Fraction<T>(a_floationNumber, 1.0);
 }
 
 
 template <typename T>
 Fraction<T>& Fraction<T>::operator+=(const Fraction<T>& a_other) {
-    return *this = this + a_other;
+    return *this = *this + a_other;
 }
 
 
 template <typename T>
 Fraction<T>& Fraction<T>::operator-=(const Fraction<T>& a_other) {
-    return *this = this - a_other;
+    return *this = *this - a_other;
 }
 
 
@@ -206,6 +229,18 @@ Fraction<T> Fraction<T>::operator*(const double& a_floationNumber) const {
 template <typename T>
 Fraction<T> Fraction<T>::operator/(const Fraction<T>& a_other) const {
     return Fraction<T>((this->m_numerator * a_other.m_denominator), (this->m_denominator * a_other.m_numerator));
+}
+
+
+template <typename T>
+Fraction<T> Fraction<T>::operator/(const int& a_number) const {
+    return *this / Fraction<T>(a_number, 1);
+}
+
+
+template <typename T>
+Fraction<T> Fraction<T>::operator/(const double& a_floationNumber) const {
+    return *this / Fraction<T>(a_floationNumber, 1.0);
 }
 
 
