@@ -60,6 +60,8 @@ GroupManager* GroupManagerCreate()
     groupManager->m_activeGroupsDictionary = HashMapCreate(DICTIONARY_INITIAL_CAPACITY, &StringKeyHash, &AreEqualStringKeys);
     if(!groupManager->m_activeGroupsDictionary)
     {
+    	free(groupManager);
+
         return NULL;
     }
 
@@ -68,6 +70,8 @@ GroupManager* GroupManagerCreate()
     {
         HashMapDestroy(&groupManager->m_activeGroupsDictionary, NULL, NULL);
 
+        free(groupManager);
+
         return NULL;
     }
 
@@ -75,6 +79,8 @@ GroupManager* GroupManagerCreate()
     {
         HashMapDestroy(&groupManager->m_activeGroupsDictionary, NULL, NULL);
         QueueDestroy(&groupManager->m_multicastAddressesPool, &DestroySingleMulticastIpAddress);
+
+        free(groupManager);
 
         return NULL;
     }
