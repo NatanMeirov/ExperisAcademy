@@ -12,6 +12,7 @@
 
 
 #define BUF_SIZE 1024
+#define BASE_COUNTED_YEAR_TIME 1900
 
 
 static void InitializeHomeLibrarySystemMenu(char* a_menu) {
@@ -73,12 +74,23 @@ static long GetMovieGenre() {
 
 
 static void PrintSingleBook(const Book& a_book) {
+    ScreenUIManager ui;
+    ui.ShowMessage("*) Book: ", false);
+    ui.ShowMessage(a_book.GetBookName(), false);
+    ui.ShowMessage(", By: ", false);
+    ui.ShowMessage(a_book.GetAuthor(), false);
+    ui.ShowMessage(".", true);
 
 }
 
 
 static void PrintSingleMovie(const Movie& a_movie) {
-    
+    ScreenUIManager ui;
+    ui.ShowMessage("*) Movie: ", false);
+    ui.ShowMessage(a_movie.GetMovieName(), false);
+    ui.ShowMessage(", By: ", false);
+    ui.ShowMessage(a_movie.GetDirector(), false);
+    ui.ShowMessage(".", true);
 }
 
 
@@ -268,11 +280,18 @@ void HomeLibrarySystemManager::FetchBooksReleasedXYearsFromNow(const size_t a_ye
     time_t t = time(NULL);
     struct tm* timeInfo= localtime(&t);
 
-    if(timeInfo->tm_year - a_yearsFromNow < Book::BOOK_MIN_RELEASED_YEAR) {
+    size_t startSearchingYear = timeInfo->tm_year  + BASE_COUNTED_YEAR_TIME - a_yearsFromNow;
+
+    if(startSearchingYear < Book::BOOK_MIN_RELEASED_YEAR) {
         throw std::invalid_argument("Wrong Input Error - Year must be valid");
     }
 
-    // TODO
+    for(size_t i = 1; i <= this->m_booksCollection.Size(); ++i) {
+        Book currentBook = this->m_booksCollection.GetBookAt(i);
+        if(startSearchingYear <= currentBook.GetReleasedYear()) {
+            PrintSingleBook(currentBook);
+        }
+    }
 }
 
 
@@ -280,11 +299,18 @@ void HomeLibrarySystemManager::FetchMoviesReleasedXYearsFromNow(const size_t a_y
     time_t t = time(NULL);
     struct tm* timeInfo= localtime(&t);
 
-    if(timeInfo->tm_year - a_yearsFromNow < Book::BOOK_MIN_RELEASED_YEAR) {
+    size_t startSearchingYear = timeInfo->tm_year  + BASE_COUNTED_YEAR_TIME - a_yearsFromNow;
+
+    if(timeInfo->tm_year + BASE_COUNTED_YEAR_TIME - a_yearsFromNow < Movie::MOVIE_MIN_RELEASED_YEAR) {
         throw std::invalid_argument("Wrong Input Error - Year must be valid");
     }
 
-    // TODO
+        for(size_t i = 1; i <= this->m_booksCollection.Size(); ++i) {
+        Movie currentMovie = this->m_moviesCollection.GetMovieAt(i);
+        if(startSearchingYear <= currentMovie.GetReleasedYear()) {
+            PrintSingleMovie(currentMovie);
+        }
+    }
 }
 
 
@@ -292,11 +318,18 @@ void HomeLibrarySystemManager::FetchBooksReceivedXYearsFromNow(const size_t a_ye
     time_t t = time(NULL);
     struct tm* timeInfo= localtime(&t);
 
-    if(timeInfo->tm_year - a_yearsFromNow < Book::BOOK_MIN_RELEASED_YEAR) {
+    size_t startSearchingYear = timeInfo->tm_year  + BASE_COUNTED_YEAR_TIME - a_yearsFromNow;
+
+    if(timeInfo->tm_year + BASE_COUNTED_YEAR_TIME - a_yearsFromNow < Book::BOOK_MIN_RELEASED_YEAR) {
         throw std::invalid_argument("Wrong Input Error - Year must be valid");
     }
 
-    // TODO
+        for(size_t i = 1; i <= this->m_booksCollection.Size(); ++i) {
+        Book currentBook = this->m_booksCollection.GetBookAt(i);
+        if(startSearchingYear <= currentBook.GetReceivedYear()) {
+            PrintSingleBook(currentBook);
+        }
+    }
 }
 
 
@@ -304,19 +337,40 @@ void HomeLibrarySystemManager::FetchMoviesReceivedXYearsFromNow(const size_t a_y
     time_t t = time(NULL);
     struct tm* timeInfo= localtime(&t);
 
-    if(timeInfo->tm_year - a_yearsFromNow < Book::BOOK_MIN_RELEASED_YEAR) {
+    if(timeInfo->tm_year + BASE_COUNTED_YEAR_TIME - a_yearsFromNow < Movie::MOVIE_MIN_RELEASED_YEAR) {
         throw std::invalid_argument("Wrong Input Error - Year must be valid");
     }
 
-    // TODO
+    size_t startSearchingYear = timeInfo->tm_year  + BASE_COUNTED_YEAR_TIME - a_yearsFromNow;
+
+    if(timeInfo->tm_year + BASE_COUNTED_YEAR_TIME - a_yearsFromNow < Movie::MOVIE_MIN_RELEASED_YEAR) {
+        throw std::invalid_argument("Wrong Input Error - Year must be valid");
+    }
+
+        for(size_t i = 1; i <= this->m_moviesCollection.Size(); ++i) {
+        Movie currentMovie = this->m_moviesCollection.GetMovieAt(i);
+        if(startSearchingYear <= currentMovie.GetReceivedYear()) {
+            PrintSingleMovie(currentMovie);
+        }
+    }
 }
 
 
 void HomeLibrarySystemManager::FindBooksByMatchingCharactersInName(const char* a_matchingCharacters) const {
-    // TODO
+    for(size_t i = 1; i <= this->m_booksCollection.Size(); ++i) {
+        Book currentBook = this->m_booksCollection.GetBookAt(i);
+        if(strstr(currentBook.GetBookName(), a_matchingCharacters)) { // Found the substring in the name
+            PrintSingleBook(currentBook);
+        }
+    }
 }
 
 
 void HomeLibrarySystemManager::FindMoviesByMatchingCharactersInName(const char* a_matchingCharacters) const {
-    // TODO
+    for(size_t i = 1; i <= this->m_booksCollection.Size(); ++i) {
+        Movie currentMovie = this->m_moviesCollection.GetMovieAt(i);
+        if(strstr(currentMovie.GetMovieName(), a_matchingCharacters)) { // Found the substring in the name
+            PrintSingleMovie(currentMovie);
+        }
+    }
 }
