@@ -1,4 +1,5 @@
-#include "TFraction.cpp" // <--- ? Linking the template's implementation that way... (Other option: implement the WHOLE template in the .hpp file(?)...)
+#include "TFraction.hpp"
+#include "TFraction_Inline.hpp"
 #include <iostream> // std::cout, std::endl
 
 
@@ -26,7 +27,7 @@ int main() {
     f3 + f4;
     f3 - f4;
 
-    // TODO: still not working
+    // TODO: still not supporting - problem with the casting from Fraction<int> to double (BUG)
     // Fraction<Fraction<int> > f5(f1, f2);
     // std::cout << f5 << std::endl;
 }
