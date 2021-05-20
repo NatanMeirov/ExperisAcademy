@@ -11,7 +11,10 @@
 class HomeLibrarySystemManager {
 public:
     // A callback action function to be triggered on the given CollactableItem instance
-    typedef void (*ActionCallbackFunction)(const CollectableItem& a_item, void* a_contextOfAction); // Action examples in this app: Print the items, Change the data of the items (collected [received] year)
+    typedef void (*ActionCallbackFunction)(CollectableItem& a_item, void* a_contextOfAction); // Action examples in this app: Print the items, Change the data of the items (collected [received] year)
+
+    enum YearSpecifier {PUBLISH_YEAR, COLLECTED_YEAR};
+    static const int BASE_COUNTED_YEAR_TIME = 1900;
 
     HomeLibrarySystemManager();
     HomeLibrarySystemManager(const HomeLibrarySystemManager& a_other);

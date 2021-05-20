@@ -3,8 +3,8 @@
 
 TARGET= HomeLibrarySystem.out
 CC= g++
-CFLAGS= -ansi -pedantic -g3 -std=c++11 -Wall -Wextra # -Werror
-OBJS= CollectableItem.o ArtWork.o Book.o Movie.o ScreenUIManager.o HomeLibrarySystemUIHandler.o HomeLibrarySystemManager.o FindItemCriteria.o MatchingSubStringInNameCriteria.o PublishYearInCorrectRangeCriteria.o CollectedYearInCorrectRangeCriteria.o HomeLibrarySystemMain.o
+CFLAGS= -ansi -pedantic -g3 --std=c++11 -Wall -Wextra # -Werror
+OBJS= CollectableItem.o ArtWork.o Book.o Movie.o ScreenUIManager.o HomeLibrarySystemUIHandler.o HomeLibrarySystemManager.o MatchingSubStringInNameCriteria.o PublishYearInCorrectRangeCriteria.o CollectedYearInCorrectRangeCriteria.o HomeLibrarySystemMain.o
 HEADERS_PATH= ./Include/
 SOURCES_PATH= ./Source/
 
@@ -39,9 +39,6 @@ PublishYearInCorrectRangeCriteria.o: $(SOURCES_PATH)PublishYearInCorrectRangeCri
 CollectedYearInCorrectRangeCriteria.o: $(SOURCES_PATH)CollectedYearInCorrectRangeCriteria.cpp $(HEADERS_PATH)CollectedYearInCorrectRangeCriteria.hpp $(HEADERS_PATH)CollectableItem.hpp $(HEADERS_PATH)FindItemCriteria.hpp
 	$(CC) $(CFLAGS) -c $(SOURCES_PATH)CollectedYearInCorrectRangeCriteria.cpp
 
-FindItemCriteria.o: $(SOURCES_PATH)FindItemCriteria.cpp $(HEADERS_PATH)FindItemCriteria.hpp $(HEADERS_PATH)CollectableItem.hpp
-	$(CC) $(CFLAGS) -c $(SOURCES_PATH)FindItemCriteria.cpp
-
 HomeLibrarySystemManager.o: $(SOURCES_PATH)HomeLibrarySystemManager.cpp $(HEADERS_PATH)HomeLibrarySystemManager.hpp $(HEADERS_PATH)HomeLibrarySystemUIHandler.hpp $(HEADERS_PATH)CollectableItem.hpp $(HEADERS_PATH)Book.hpp $(HEADERS_PATH)Movie.hpp $(HEADERS_PATH)FindItemCriteria.hpp $(HEADERS_PATH)MatchingSubStringInNameCriteria.hpp $(HEADERS_PATH)PublishYearInCorrectRangeCriteria.hpp $(HEADERS_PATH)CollectedYearInCorrectRangeCriteria.hpp $(HEADERS_PATH)TLibraryIterator_Inline.hpp
 	$(CC) $(CFLAGS) -c $(SOURCES_PATH)HomeLibrarySystemManager.cpp
 
@@ -53,3 +50,6 @@ clean:
 
 clean_objs:
 	rm -f $(OBJS)
+
+valgrind:
+	valgrind --log-file=HomeLibrarySystem_ValgrindLog.log --leak-check=full --track-origins=yes -s ./$(TARGET)

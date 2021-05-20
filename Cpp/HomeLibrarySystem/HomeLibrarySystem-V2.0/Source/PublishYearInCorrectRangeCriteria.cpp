@@ -8,7 +8,7 @@ PublishYearInCorrectRangeCriteria::PublishYearInCorrectRangeCriteria(const unsig
 }
 
 
-bool PublishYearInCorrectRangeCriteria::IsPassingCriteria(const CollectableItem& a_item) {
+bool PublishYearInCorrectRangeCriteria::IsPassingCriteria(const CollectableItem& a_item) const {
     // Must be casted first to an ArtWork - to get to its publish year
     return static_cast<const ArtWork&>(a_item).GetPublishYear() >= this->m_minimumPublishYear;
 }

@@ -8,6 +8,7 @@
 // A polymorphic base for all collectable items
 class CollectableItem {
 public:
+    static const int MIN_COLLECTED_YEAR = 1900;
 
     CollectableItem(const std::string& a_collectableItemType);
     CollectableItem(const std::string& a_collectableItemType, const unsigned int& a_timeAddedToCollection);

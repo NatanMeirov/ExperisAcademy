@@ -9,7 +9,7 @@ MatchingSubStringInNameCriteria::MatchingSubStringInNameCriteria(const std::stri
 }
 
 
-bool MatchingSubStringInNameCriteria::IsPassingCriteria(const CollectableItem &a_item) {
+bool MatchingSubStringInNameCriteria::IsPassingCriteria(const CollectableItem &a_item) const {
     // Must be casted first to an ArtWork - to get to its name
     return static_cast<const ArtWork&>(a_item).GetArtWorkName().find(this->m_subString) != std::string::npos;
 }

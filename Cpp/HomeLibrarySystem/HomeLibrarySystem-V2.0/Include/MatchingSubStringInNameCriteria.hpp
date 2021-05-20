@@ -11,7 +11,7 @@
 struct MatchingSubStringInNameCriteria : public FindItemCriteria {
     MatchingSubStringInNameCriteria(const std::string& a_subStringToSearch);
 
-    virtual bool IsPassingCriteria(const CollectableItem &a_item) override;
+    virtual bool IsPassingCriteria(const CollectableItem &a_item) const override;
 
     // Members
     std::string m_subString;

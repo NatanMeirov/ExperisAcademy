@@ -17,6 +17,7 @@ void HomeLibrarySystemUIHandler::ShowHomeLibrarySystemByeByeMessage() const {
 void HomeLibrarySystemUIHandler::ShowHomeLibraryErrorMessage(const char* a_errorMsg) const {
     this->ShowMessage("An error has occurred, please try again (optional error: invalid input)...", true);
     if(a_errorMsg) {
+        this->ShowMessage("[!] Error: ", false);
         this->ShowMessage(a_errorMsg, true);
     }
 }
@@ -135,7 +136,7 @@ long HomeLibrarySystemUIHandler::GetSpecificNumberInputFromUser(const char* a_sp
         try {
             this->ShowMessage("Please enter ", false);
             this->ShowMessage(a_specificInputRequestTitle, false);
-            this->ShowMessage(" :", false);
+            this->ShowMessage(": ", false);
             this->GetInputAsNumber(userChoice);
             isCorrectInput = true; // Get here if input is correct
         }

@@ -8,7 +8,7 @@
 
 class ArtWork : public CollectableItem {
 public:
-    static const int ARTWORK_MIN_PUBLISHED_YEAR = 1900;
+    static const int MIN_PUBLISH_YEAR = 1900;
 
     ArtWork(const std::string& a_artWorkName, const std::string& a_publisherName, const unsigned int& a_publishYear, const std::string& a_artWorkType);
     ArtWork(const ArtWork& a_other);

@@ -7,7 +7,7 @@ CollectedYearInCorrectRangeCriteria::CollectedYearInCorrectRangeCriteria(const u
 }
 
 
-bool CollectedYearInCorrectRangeCriteria::IsPassingCriteria(const CollectableItem& a_item) {
+bool CollectedYearInCorrectRangeCriteria::IsPassingCriteria(const CollectableItem& a_item) const {
     // Must be casted first to an ArtWork - to get to its publish year
     return a_item.GetTimeAddedToCollection() >= this->m_minimumCollectedYear;
 }

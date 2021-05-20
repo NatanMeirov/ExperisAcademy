@@ -10,7 +10,7 @@
 struct PublishYearInCorrectRangeCriteria : public FindItemCriteria {
     PublishYearInCorrectRangeCriteria(const unsigned int& a_minimumPublishYear);
 
-    virtual bool IsPassingCriteria(const CollectableItem& a_item) override;
+    virtual bool IsPassingCriteria(const CollectableItem& a_item) const override;
 
     // Members
     unsigned int m_minimumPublishYear;

@@ -7,7 +7,7 @@
 
 // A base class for find criteria of each CollectableItem, default definition of the boolean function - returns true
 struct FindItemCriteria {
-    virtual bool IsPassingCriteria(const CollectableItem& a_item);
+    virtual bool IsPassingCriteria(const CollectableItem& a_item) const = 0;
 };
 
 
