@@ -12,7 +12,7 @@ namespace PaintDrawer {
 class Shape : public IDrawable, public ICloneable {
 public:
     virtual ~Shape() = default; // A MUST to destroy every Derived Class objects
-    virtual void Move(const int a_xOffset, const int a_yOffset) = 0;
+    virtual void MoveBy(const int a_xOffset, const int a_yOffset) = 0;
     bool IsFlippedHorizontally() const;
     bool IsFlippedVertically() const;
     void FlipHorizontally();
@@ -20,6 +20,8 @@ public:
 
 protected:
     Shape();
+
+private:
     bool m_isFlippedHorizontally;
     bool m_isFlippedVertically;
 };

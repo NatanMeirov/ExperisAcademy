@@ -57,7 +57,7 @@ private:
 void DrawLine(Canvas &a_canvas, char a_brush, int a_startX, int a_startY, int a_endX, int a_endY);
 void DrawLine(Canvas &a_canvas, char a_brush, const Point &a_start, const Point &a_end);
 void DrawCircle(Canvas &a_canvas, char a_brush, int a_centerX, int a_centerY, double a_radius);
-void DrawCircle(Canvas &a_canvas, char a_brush, const Point &a_center, size_t a_radius);
+void DrawCircle(Canvas &a_canvas, char a_brush, const Point &a_center, double a_radius);
 
 } // ascii
 

@@ -43,7 +43,7 @@ Canvas::Canvas(size_t a_width, size_t a_height)
 
 void Canvas::Clear() {
     for (int y = 0 ; y < m_height ; ++y) {
-        std::fill(m_buffer.begin() + (y * SingleLineSize()), m_buffer.end() + (y * SingleLineSize()) + m_width, ' ');
+        std::fill(m_buffer.begin() + (y * SingleLineSize()), m_buffer.begin() + (y * SingleLineSize()) + m_width, ' ');
     }
 }
 
@@ -181,7 +181,7 @@ void DrawLine(Canvas &a_canvas, char a_brush, const Point &a_start, const Point 
     DrawLine(a_canvas, a_brush, a_start.GetX(), a_start.GetY(), a_end.GetX(), a_end.GetY());
 }
 
-void DrawCircle(Canvas &a_canvas, char a_brush, const Point &a_center, size_t a_radius) {
+void DrawCircle(Canvas &a_canvas, char a_brush, const Point &a_center, double a_radius) {
     DrawCircle(a_canvas, a_brush, a_center.GetX(), a_center.GetY(), a_radius);
 }
 

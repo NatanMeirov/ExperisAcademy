@@ -9,6 +9,7 @@
 namespace PaintDrawer {
 
 class Point {
+public:
     Point(int a_x, int a_y);
     Point(const Point &a_other) = default;
     Point& operator=(const Point &a_other) = default;
