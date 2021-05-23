@@ -18,7 +18,7 @@ public:
     void GetInputAsNumber(long& a_number) const; // Validate that the input is a number (throws std::invalid_argument exception)
     void GetInputAsFloatingNumber(double& a_floatingNumber) const; // Validate that the input is a number (throws std::invalid_argument exception)
 
-private:
+protected:
 
     // Defines
     static const size_t MAX_BUFFER_LENGTH = 4096;
