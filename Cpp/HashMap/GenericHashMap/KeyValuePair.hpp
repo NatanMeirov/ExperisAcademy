@@ -7,7 +7,7 @@ namespace HashMap {
 template <typename K, typename V>
 class KeyValuePair {
 public:
-    KeyValuePair(const K& a_key, const V& a_value);
+    explicit KeyValuePair(const K& a_key, const V& a_value);
     KeyValuePair(const KeyValuePair<K,V>& a_other) = default;
     KeyValuePair<K,V>& operator=(const KeyValuePair<K,V>& a_other) = default;
     ~KeyValuePair() = default;

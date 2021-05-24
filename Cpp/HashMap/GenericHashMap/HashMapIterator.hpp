@@ -2,37 +2,34 @@
 #define __HASHMAP_HASHMAPITERATOR_HPP__
 
 
-#include <vector>
-#include <list>
-#include "KeyValuePair_Inline.hpp"
+#include <iterator>
+#include "HashMapTypes.hpp"
 
 
 namespace HashMap {
 
 template <typename K, typename V>
-class HashMapIterator {
+class HashMapIterator /*: public std::forward_iterator_tag<HashMapIterator<K,V>, >*/ {
 public:
-    HashMapIterator(typename std::vector<std::list<KeyValuePair<K,V>>>::iterator a_vectorBeginIterator, typename std::vector<std::list<KeyValuePair<K,V>>>::iterator a_vectorEndIterator);
-    HashMapIterator(typename std::vector<std::list<KeyValuePair<K,V>>>::iterator a_vectorCurrentIterator, typename std::vector<std::list<KeyValuePair<K,V>>>::iterator a_vectorEndIterator, typename std::list<KeyValuePair<K,V>>::iterator a_listCurrentIterator);
-    HashMapIterator(const HashMapIterator<K,V>& a_other) = default;
-    HashMapIterator<K,V>& operator=(const HashMapIterator<K,V>& a_other) = default;
+    explicit HashMapIterator(typename HashMap::Types<K,V>::OuterContainer::iterator a_outerContainerBeginIterator, typename HashMap::Types<K,V>::OuterContainer::iterator a_outerContainerEndIterator);
+    explicit HashMapIterator(typename HashMap::Types<K,V>::OuterContainer::iterator a_outerContainerCurrentIterator, typename HashMap::Types<K,V>::OuterContainer::iterator a_outerContainerEndIterator, typename HashMap::Types<K,V>::InnerContainer::iterator a_innerContainerCurrentIterator);
+    HashMapIterator(const HashMapIterator<K,V>& a_other);
+    HashMapIterator<K,V>& operator=(const HashMapIterator<K,V>& a_other);
     ~HashMapIterator() = default;
 
     HashMapIterator<K,V>& operator++();
-    // HashMapIterator<K,V>& operator--(); // TODO
     V& operator*();
     V operator*() const;
     bool operator!=(const HashMapIterator<K,V>& a_other);
-    // bool operator==(const HashMapIterator<K,V>& a_other); // TODO
+    bool operator==(const HashMapIterator<K,V>& a_other);
 
 private:
-    void PlaceIteratorOnNextValidLocation(bool a_isInitializationPart = false);
-    // void PlaceIteratorOnPreviousValidLocation(); // TODO
+    void PlaceIteratorOnNextValidLocation();
 
-    typename std::vector<std::list<KeyValuePair<K,V>>>::iterator m_vectorCurrentIterator;
-    typename std::vector<std::list<KeyValuePair<K,V>>>::iterator m_vectorEndIterator;
-    typename std::list<KeyValuePair<K,V>>::iterator m_listCurrentIterator;
-    typename std::list<KeyValuePair<K,V>>::iterator m_listEndIterator;
+    typename HashMap::Types<K,V>::OuterContainer::iterator m_outerContainerCurrentIterator;
+    typename HashMap::Types<K,V>::OuterContainer::iterator m_outerContainerEndIterator;
+    typename HashMap::Types<K,V>::InnerContainer::iterator m_innerContainerCurrentIterator;
+    typename HashMap::Types<K,V>::InnerContainer::iterator m_innerContainerEndIterator;
 };
 
 } // HashMap

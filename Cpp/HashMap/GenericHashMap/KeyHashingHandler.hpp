@@ -8,8 +8,9 @@
 namespace HashMap {
 
 template <typename K>
-class KeyHashingHandler{
-    virtual ~KeyHashingHandler();
+class KeyHashingHandler {
+public:
+    virtual ~KeyHashingHandler() = default;
     virtual size_t Hash(K a_key) const = 0;
 };
 

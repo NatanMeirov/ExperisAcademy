@@ -3,11 +3,9 @@
 
 
 #include <cstddef> // size_t
-#include <vector>
-#include <list>
-#include "KeyValuePair.hpp"
-#include "KeyHashingHandler.hpp"
+#include "HashMapTypes.hpp"
 #include "HashMapIterator.hpp"
+#include "KeyHashingHandler.hpp"
 
 
 namespace HashMap {
@@ -20,24 +18,24 @@ class HashMap {
 public:
     typedef HashMapIterator<K,V> Iterator;
 
-    HashMap(const size_t a_initialSize, const KeyHashingHandler<K>* a_hashHandler); // InitialSize MUST be >= 1, throws std::invalid_argument
+    HashMap(const size_t a_initialSize, KeyHashingHandler<K>* a_hashHandler); // InitialSize MUST be >= 1 and hashHandler != nullptr, throws std::invalid_argument
     HashMap(const HashMap<K,V>& a_map) = default; //! Warning - a shallow copy would occur to the pointer of KeyHashingHandler on copy
     HashMap<K,V>& operator=(const HashMap<K,V>& a_map) = default; //! Same as above
     ~HashMap() = default;
 
     // V& operator[](const K& a_key); TODO
     // V operator[](const K& a_key) const; TODO
-    void Insert(const K& a_key, const V& a_value);
-    void Remove(const K& a_key);
+    bool Insert(const K& a_key, const V& a_value); // true - on success / false - on failure (Key Already Found in the HashMap)
+    bool Remove(const K& a_key); // true - on success / false - on failure (Key Not Found in the HashMap)
     Iterator Find(const K& a_key) const; // Returns an iterator to the Value of exists, else an Iterator that points to the end of the HashMap
     size_t Size() const; // Time-Complexity: O(1)
     Iterator Begin() const;
     Iterator End() const;
 
 private:
-    typename std::list<KeyValuePair<K,V>>::iterator SearchByKey(const K& a_key) const;
+    typename Types<K,V>::InnerContainer::iterator SearchByKey(const size_t a_bucketNumber, const K& a_key) const;
 
-    std::vector<std::list<KeyValuePair<K,V>>> m_buckets;
+    typename Types<K,V>::OuterContainer m_buckets;
     KeyHashingHandler<K>* m_hashHandler;
     size_t m_totalKeyValuePairs;
 };

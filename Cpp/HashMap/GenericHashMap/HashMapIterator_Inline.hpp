@@ -3,33 +3,55 @@
 
 
 #include "HashMapIterator.hpp"
-#include <vector>
-#include <list>
+#include "HashMapTypes.hpp"
+#include "KeyValuePair.hpp"
 #include "KeyValuePair_Inline.hpp"
 
 
 template <typename K, typename V>
-HashMap::HashMapIterator<K,V>::HashMapIterator(typename std::vector<std::list<KeyValuePair<K,V>>>::iterator a_vectorBeginIterator, typename std::vector<std::list<KeyValuePair<K,V>>>::iterator a_vectorEndIterator)
-: m_vectorCurrentIterator(a_vectorBeginIterator)
-, m_vectorEndIterator(a_vectorEndIterator)
-, m_listCurrentIterator()
-, m_listEndIterator() {
-    // The list iterators cannot be on the MIL
-    if(a_vectorBeginIterator != a_vectorEndIterator) { // ONLY if it is NOT the End HashMap Iterator
-        this->m_listCurrentIterator = (*a_vectorBeginIterator).begin();
-        this->m_listEndIterator = (*a_vectorBeginIterator).end();
+HashMap::HashMapIterator<K,V>::HashMapIterator(typename Types<K,V>::OuterContainer::iterator a_outerContainerBeginIterator, typename Types<K,V>::OuterContainer::iterator a_outerContainerEndIterator)
+: m_outerContainerCurrentIterator(a_outerContainerBeginIterator)
+, m_outerContainerEndIterator(a_outerContainerEndIterator)
+, m_innerContainerCurrentIterator()
+, m_innerContainerEndIterator() {
+    // The inner iterators cannot be on the MIL on the standard Begin/End cases (_outerContainerBeginIterator can be end() - and it shall not dereferenced)
+    if(a_outerContainerBeginIterator != a_outerContainerEndIterator) { // ONLY if it is NOT the End of HashMap (HashMap End() Iterator)
+        this->m_innerContainerCurrentIterator = (*a_outerContainerBeginIterator).begin();
+        this->m_innerContainerEndIterator = (*a_outerContainerBeginIterator).end();
 
-        this->PlaceIteratorOnNextValidLocation(true);
+        if(this->m_innerContainerCurrentIterator == this->m_innerContainerEndIterator) {
+            this->PlaceIteratorOnNextValidLocation();
+        }
     }
 }
 
 
 template <typename K, typename V>
-HashMap::HashMapIterator<K,V>::HashMapIterator(typename std::vector<std::list<KeyValuePair<K,V>>>::iterator a_vectorCurrentIterator, typename std::vector<std::list<KeyValuePair<K,V>>>::iterator a_vectorEndIterator, typename std::list<KeyValuePair<K,V>>::iterator a_listCurrentIterator)
-: m_vectorCurrentIterator(a_vectorCurrentIterator)
-, m_vectorEndIterator(a_vectorEndIterator)
-, m_listCurrentIterator(a_listCurrentIterator)
-, m_listEndIterator((*a_vectorCurrentIterator).end()){
+HashMap::HashMapIterator<K,V>::HashMapIterator(typename Types<K,V>::OuterContainer::iterator a_outerContainerCurrentIterator, typename Types<K,V>::OuterContainer::iterator a_outerContainerEndIterator, typename Types<K,V>::InnerContainer::iterator a_innerContainerCurrentIterator)
+: m_outerContainerCurrentIterator(a_outerContainerCurrentIterator)
+, m_outerContainerEndIterator(a_outerContainerEndIterator)
+, m_innerContainerCurrentIterator(a_innerContainerCurrentIterator)
+, m_innerContainerEndIterator((*a_outerContainerCurrentIterator).end()){
+}
+
+
+template <typename K, typename V>
+HashMap::HashMapIterator<K,V>::HashMapIterator(const HashMapIterator<K,V>& a_other)
+: m_outerContainerCurrentIterator(a_other.m_outerContainerCurrentIterator)
+, m_outerContainerEndIterator(a_other.m_outerContainerEndIterator)
+, m_innerContainerCurrentIterator(a_other.m_innerContainerCurrentIterator)
+, m_innerContainerEndIterator(a_other.m_innerContainerEndIterator){
+}
+
+
+template <typename K, typename V>
+HashMap::HashMapIterator<K,V>& HashMap::HashMapIterator<K,V>::operator=(const HashMapIterator<K,V>& a_other) {
+    this->m_outerContainerCurrentIterator = a_other.m_outerContainerCurrentIterator;
+    this->m_outerContainerEndIterator = a_other.m_outerContainerEndIterator;
+    this->m_innerContainerCurrentIterator = a_other.m_innerContainerCurrentIterator;
+    this->m_innerContainerEndIterator = a_other.m_innerContainerEndIterator;
+
+    return *this;
 }
 
 
@@ -43,56 +65,60 @@ HashMap::HashMapIterator<K,V>& HashMap::HashMapIterator<K,V>::operator++() {
 
 template <typename K, typename V>
 V& HashMap::HashMapIterator<K,V>::operator*() {
-    return (*(this->m_listCurrentIterator)).GetValueByRef();
+    return (*(this->m_innerContainerCurrentIterator)).GetValueByRef();
 }
 
 
 template <typename K, typename V>
 V HashMap::HashMapIterator<K,V>::operator*() const {
-    return (*(this->m_listCurrentIterator)).GetValue();
+    return (*(this->m_innerContainerCurrentIterator)).GetValue();
 }
 
 
 template <typename K, typename V>
 bool HashMap::HashMapIterator<K,V>::operator!=(const HashMapIterator<K,V>& a_other) {
-    if(this->m_vectorCurrentIterator != a_other.m_vectorCurrentIterator) {
+    if(this->m_outerContainerCurrentIterator != a_other.m_outerContainerCurrentIterator) {
         return true;
     }
 
     // Else - Both vectorCurrentIterators are equal
-    if(this->m_vectorCurrentIterator == this->m_vectorEndIterator) { // == a_other.m_vectorCurrentIterator - both are equal to vectorEndIterator
+    if(this->m_outerContainerCurrentIterator == this->m_outerContainerEndIterator) { // == a_other.m_outerContainerCurrentIterator - both are equal to vectorEndIterator
         return false;
     }
 
     // Else - They are on the same vector's place (same list) - check their equality by looking at their listCurrentIterators
-    return this->m_listCurrentIterator != a_other.m_listCurrentIterator;
+    return this->m_innerContainerCurrentIterator != a_other.m_innerContainerCurrentIterator;
 }
 
 
 template <typename K, typename V>
-void HashMap::HashMapIterator<K,V>::PlaceIteratorOnNextValidLocation(bool a_isInitializationPart) {
-    bool hasPlacedCorrectly = false;
+bool HashMap::HashMapIterator<K,V>::operator==(const HashMapIterator<K,V>& a_other) {
+    return this->m_innerContainerCurrentIterator == a_other.m_innerContainerCurrentIterator;
+}
 
-    if(a_isInitializationPart) {
-        if(this->m_listCurrentIterator != this->m_listEndIterator) {
-            return; // No change is required
+
+template <typename K, typename V>
+void HashMap::HashMapIterator<K,V>::PlaceIteratorOnNextValidLocation() {
+    bool hasAtleastOneIncrementingOccurred = false;
+    while(this->m_outerContainerCurrentIterator != this->m_outerContainerEndIterator) {
+        if(this->m_innerContainerCurrentIterator != this->m_innerContainerEndIterator) {
+            if(hasAtleastOneIncrementingOccurred) {
+                break; // Found - can stop now (placed the iterator on a valid location
+            }
+
+            ++this->m_innerContainerCurrentIterator;
         }
-    }
 
-    while(this->m_vectorCurrentIterator != this->m_vectorEndIterator) {
-        if(this->m_listCurrentIterator != this->m_listEndIterator) {
-            ++this->m_listCurrentIterator;
-        }
-
-        if(this->m_listCurrentIterator == this->m_listEndIterator) { // If Now (after the ++) - reached the end of the currently iterated list
-            ++this->m_vectorCurrentIterator;
-            if(this->m_vectorCurrentIterator != this->m_vectorEndIterator) { // If Now (after the ++) - still did not reach the end of the whole vector
-                this->m_listCurrentIterator = (*(this->m_vectorCurrentIterator)).begin();
-                this->m_listEndIterator = (*(this->m_vectorCurrentIterator)).end();
+        if(this->m_innerContainerCurrentIterator == this->m_innerContainerEndIterator) { // If Now (after the ++) - reached the end of the currently iterated inner container
+            ++this->m_outerContainerCurrentIterator;
+            if(this->m_outerContainerCurrentIterator != this->m_outerContainerEndIterator) { // If Now (after the ++) - still did not reach the end of the whole outer container
+                this->m_innerContainerCurrentIterator = (*(this->m_outerContainerCurrentIterator)).begin();
+                this->m_innerContainerEndIterator = (*(this->m_outerContainerCurrentIterator)).end();
             }
         }
-        else { // this->m_listCurrentIterator != this->m_listEndIterator
-            break; // Then - Iterator has placed correctly
+
+        if(!hasAtleastOneIncrementingOccurred) {
+            hasAtleastOneIncrementingOccurred = true;
         }
     }
 }
