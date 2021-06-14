@@ -34,8 +34,10 @@ public:
     void operator delete[](void* a_sharedPointer) = delete;
 
     // Valid Operations
-    T& operator*() const;
+    T& operator*();
+    const T& operator*() const;
     T* operator->();
+    const T* operator->() const;
     T* GetRawPointer(); // Using Get method is the user's responsability (Returns the stored pointer)
     size_t GetSharedReferencesCount() const; // Same as Use count, returns 0 if pointer is nullptr
 
@@ -57,8 +59,8 @@ public:
 
     // Valid Casts
     operator bool();
-    explicit operator T*(); // To be able to explicit cast to a T* (Note: Casting to a raw pointer is the user's responsability)
-    explicit operator void*(); // To be able to explicit cast to a void* (Note: Casting to a generic raw pointer is the user's responsability)
+    explicit operator const T*(); // To be able to explicit cast to a T* (Note: Casting to a raw pointer is the user's responsability)
+    explicit operator const void*(); // To be able to explicit cast to a void* (Note: Casting to a generic raw pointer is the user's responsability)
 
 private:
     explicit SharedPointer(T* a_pointer); // To force using MakeSharedPointer static method

@@ -15,7 +15,7 @@ namespace nm {
 namespace smartpointers {
 
 
-// Must be inline (to tag this function with Weak Tag)
+// Must be inline (to tag this function with Weak Symbol Tag)
 template <typename T>
 inline static size_t* SelectCorrectPointerValue(T* a_innerObjectPointer) {
     return (a_innerObjectPointer) ? new size_t(1) : nullptr;
@@ -99,7 +99,17 @@ SharedPointer<T>::~SharedPointer() {
 
 
 template <typename T>
-T& SharedPointer<T>::operator*() const {
+T& SharedPointer<T>::operator*() {
+    if(!this->m_pointer) {
+        throw std::logic_error("Null Pointer Dereferencing Error");
+    }
+
+    return *(this->m_pointer);
+}
+
+
+template <typename T>
+const T& SharedPointer<T>::operator*() const {
     if(!this->m_pointer) {
         throw std::logic_error("Null Pointer Dereferencing Error");
     }
@@ -110,6 +120,16 @@ T& SharedPointer<T>::operator*() const {
 
 template <typename T>
 T* SharedPointer<T>::operator->() {
+    if(!this->m_pointer) {
+        throw std::logic_error("Null Pointer Dereferencing Error");
+    }
+
+    return this->m_pointer;
+}
+
+
+template <typename T>
+const T* SharedPointer<T>::operator->() const {
     if(!this->m_pointer) {
         throw std::logic_error("Null Pointer Dereferencing Error");
     }
@@ -184,37 +204,37 @@ bool SharedPointer<T>::operator!=(const std::nullptr_t& a_nullptr) {
 
 template <typename T>
 bool SharedPointer<T>::operator==(const void* a_rawPointer) {
-    return static_cast<void*>(this->m_pointer) == a_rawPointer;
+    return static_cast<const void*>(this->m_pointer) == a_rawPointer;
 }
 
 
 template <typename T>
 bool SharedPointer<T>::operator!=(const void* a_rawPointer) {
-    return static_cast<void*>(this->m_pointer) != a_rawPointer;
+    return static_cast<const void*>(this->m_pointer) != a_rawPointer;
 }
 
 
 template <typename T>
 bool SharedPointer<T>::operator<=(const void* a_rawPointer) {
-    return static_cast<void*>(this->m_pointer) <= a_rawPointer;
+    return static_cast<const void*>(this->m_pointer) <= a_rawPointer;
 }
 
 
 template <typename T>
 bool SharedPointer<T>::operator>=(const void* a_rawPointer) {
-    return static_cast<void*>(this->m_pointer) >= a_rawPointer;
+    return static_cast<const void*>(this->m_pointer) >= a_rawPointer;
 }
 
 
 template <typename T>
 bool SharedPointer<T>::operator<(const void* a_rawPointer) {
-    return static_cast<void*>(this->m_pointer) < a_rawPointer;
+    return static_cast<const void*>(this->m_pointer) < a_rawPointer;
 }
 
 
 template <typename T>
 bool SharedPointer<T>::operator>(const void* a_rawPointer) {
-    return static_cast<void*>(this->m_pointer) > a_rawPointer;
+    return static_cast<const void*>(this->m_pointer) > a_rawPointer;
 }
 
 
@@ -225,13 +245,13 @@ SharedPointer<T>::operator bool() {
 
 
 template <typename T>
-SharedPointer<T>::operator T*() {
+SharedPointer<T>::operator const T*() {
     return this->m_pointer;
 }
 
 
 template <typename T>
-SharedPointer<T>::operator void*() {
+SharedPointer<T>::operator const void*() {
     return static_cast<void*>(this->m_pointer);
 }
 
@@ -254,7 +274,7 @@ void SharedPointer<T>::FreeSharedPointerResources() {
 }
 
 
-// Must be inline (to tag this function with Weak Tag)
+// Must be inline (to tag this function with Weak Symbol Tag)
 template <typename U>
 inline std::ostream& operator<<(std::ostream& a_os, const SharedPointer<U>& a_sharedPointer) {
     a_os << a_sharedPointer.m_pointer;
