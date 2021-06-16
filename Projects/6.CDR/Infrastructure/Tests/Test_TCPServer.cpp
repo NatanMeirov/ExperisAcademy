@@ -1,7 +1,7 @@
 #ifndef USE_SERVER_LOGGER
 #define USE_SERVER_LOGGER
 
-#include "../Server/TCPServer.hpp"
+#include "../Network/Server/TCPServer.hpp"
 #include <iostream>
 
 

@@ -1,4 +1,4 @@
-#include "../inc/TCPListeningSocket.hpp"
+#include "../Network/TCPListeningSocket.hpp"
 #include <string.h>
 #include <iostream>
 

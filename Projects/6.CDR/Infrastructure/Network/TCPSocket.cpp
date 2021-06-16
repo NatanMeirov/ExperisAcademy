@@ -1,4 +1,4 @@
-#include "../inc/TCPSocket.hpp"
+#include "TCPSocket.hpp"
 #include <cstddef> // size_t
 #include <string.h> // memset, memcpy
 #include <sys/socket.h> // C standard socket lib
@@ -62,6 +62,24 @@ nm::TCPSocket::BytesBufferProxy& nm::TCPSocket::BytesBufferProxy::operator=(cons
         this->m_bufferOfBytes = newBuffer;
         this->m_bufferSize = a_other.m_bufferSize;
     }
+
+    return *this;
+}
+
+
+nm::TCPSocket::BytesBufferProxy::BytesBufferProxy(BytesBufferProxy&& a_rvalue) noexcept
+: m_bufferOfBytes(a_rvalue.m_bufferOfBytes)
+, m_bufferSize(a_rvalue.m_bufferSize) {
+    a_rvalue.m_bufferOfBytes = nullptr; // MUST to do in order to save from a delete[]
+}
+
+
+nm::TCPSocket::BytesBufferProxy& nm::TCPSocket::BytesBufferProxy::operator=(BytesBufferProxy&& a_rvalue) noexcept {
+    delete[] this->m_bufferOfBytes;
+
+    this->m_bufferOfBytes = a_rvalue.m_bufferOfBytes;
+    this->m_bufferSize = a_rvalue.m_bufferSize;
+    a_rvalue.m_bufferOfBytes = nullptr;
 
     return *this;
 }

@@ -1,4 +1,4 @@
-#include "../inc/ConditionalVariable.hpp"
+#include "ConditionalVariable.hpp"
 #include <pthread.h> // mutex and conditional variable functions
 #include <stdexcept> // std::runtime_error
 

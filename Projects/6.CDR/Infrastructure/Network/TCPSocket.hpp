@@ -34,6 +34,8 @@ public:
         BytesBufferProxy(const unsigned char*  a_bufferOfBytes, const size_t a_bufferSize);
         BytesBufferProxy(const BytesBufferProxy& a_other);
         BytesBufferProxy& operator=(const BytesBufferProxy& a_other);
+        BytesBufferProxy(BytesBufferProxy&& a_rvalue) noexcept; // Move copy c'tor (better performance)
+        BytesBufferProxy& operator=(BytesBufferProxy&& a_rvalue) noexcept; // Move copy-assignment (better performance)
         ~BytesBufferProxy();
 
         const unsigned char* ToBytes() const { return this->m_bufferOfBytes; };

@@ -1,5 +1,5 @@
-#include "../inc/LockGuard.hpp"
-#include "../inc/Mutex.hpp"
+#include "LockGuard.hpp"
+#include "Mutex.hpp"
 
 
 nm::LockGuard::LockGuard(nm::Mutex& a_mutexToGuard)

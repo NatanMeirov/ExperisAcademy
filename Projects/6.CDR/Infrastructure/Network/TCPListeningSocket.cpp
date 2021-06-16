@@ -1,10 +1,10 @@
-#include "../inc/TCPListeningSocket.hpp"
+#include "TCPListeningSocket.hpp"
 #include <stdexcept> // std::runtime_error
 #include <sys/socket.h>
 #include <unistd.h> // fcntl
 #include <fcntl.h> // fcntl - Special Operation on file descriptors: used to set a Not Blocking flag on sockets
 #include <errno.h> // errno
-#include "../inc/TCPSocket.hpp"
+#include "TCPSocket.hpp"
 
 
 static void ChangeToNoBlockingSocket(int a_socketID) {

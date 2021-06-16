@@ -1,4 +1,4 @@
-#include "../inc/Semaphore.hpp"
+#include "Semaphore.hpp"
 #include <semaphore.h> // Semaphore functions
 #include <stdexcept> // std::runtime_error
 

@@ -1,4 +1,4 @@
-#include "../inc/Mutex.hpp"
+#include "Mutex.hpp"
 #include <pthread.h> // Mutex functions and MACROS
 #include <stdexcept> // std::runtime_error
 

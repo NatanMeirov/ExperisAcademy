@@ -1,4 +1,4 @@
-#include "../inc/Thread.hpp"
+#include "Thread.hpp"
 #include <pthread.h> // pthread_create, pthread_join, pthread_exit
 #include <stdexcept> // std::runtime_error
 
