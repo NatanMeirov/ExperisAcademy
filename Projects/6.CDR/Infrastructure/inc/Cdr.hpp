@@ -2,9 +2,8 @@
 #define __NM_CDR_CDR_HPP__
 
 
-#include <cstddef> // size_t
+#include <cstdint>
 #include <string> // std::string
-#include <ctime> // struct tm
 
 
 namespace nm {
@@ -14,15 +13,17 @@ namespace cdr {
 struct Cdr {
     enum UsageType { MOC, MTC, SMS_MO, SMS_MT, D, U, B, X };
 
-    size_t m_imsi;
+    uint64_t m_sequenceNumber;
+    uint64_t m_imsi;
     std::string m_imei;
     UsageType m_type;
     std::string m_msisdn;
     std::string m_callDate; // DD/MM/YYYY
     std::string m_callTime; // HH:MM:SS
     unsigned int m_duration; // In seconds
-    size_t m_bytesReceived; // If type is D (data)
-    size_t m_bytesTransmitted; // If type is D (data)
+    uint64_t m_bytesReceived; // If type is D (data)
+    uint64_t m_bytesTransmitted; // If type is D (data)
+    uint64_t m_imsiOfSecondParty;
     std::string m_msisdnOfSecondParty;
 };
 

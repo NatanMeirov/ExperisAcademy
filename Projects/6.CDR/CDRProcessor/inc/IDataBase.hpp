@@ -3,24 +3,24 @@
 
 
 #include <string> // std::string
+#include "../../Infrastructure/inc/Cdr.hpp"
 
 
 namespace nm{
 
 namespace cdr {
 
-// An interface for a database object
-template <typename QueryType, typename DataType> // QueryType can be a string ("SELECT * FROM ...") in MySQL server implementation
+// An interface for a database object (uint64_t stands for an ID numbers)
 class IDataBase {
 public:
     virtual ~IDataBase() = default;
-    virtual bool Load(const std::string& a_databaseFileName) = 0;
-    virtual bool Save(const std::string& a_databaseFileName) = 0;
+    virtual bool Load(const std::string& a_databaseFileNamePath) = 0;
+    virtual bool Save(const std::string& a_databaseFileNamePath) = 0;
 
-    virtual DataType Get(const QueryType& a_query) = 0;
-    virtual bool Update(const QueryType& a_query) = 0;
-    virtual bool Delete(const QueryType& a_query) = 0;
-    virtual bool Add(const QueryType& a_query, const DataType& _dataToAdd) = 0;
+    virtual Cdr Get(const uint64_t& a_query) = 0;
+    virtual bool Update(const uint64_t& a_query) = 0;
+    virtual bool Delete(const uint64_t& a_query) = 0;
+    virtual bool Add(const uint64_t& a_query, const Cdr& _dataToAdd) = 0;
 };
 
 } // cdr

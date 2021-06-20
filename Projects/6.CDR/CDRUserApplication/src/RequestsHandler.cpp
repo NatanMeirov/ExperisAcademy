@@ -1,4 +1,5 @@
 #include "../inc/RequestsHandler.hpp"
+#include "../../Infrastructure/JsonSerializer/json.hpp"
 
 
 nm::cdr::RequestsHandler::RequestsHandler(const std::string& a_ipAddressOfServer, const unsigned int a_portNumberOfServer)
@@ -7,13 +8,12 @@ nm::cdr::RequestsHandler::RequestsHandler(const std::string& a_ipAddressOfServer
 }
 
 
-void nm::cdr::RequestsHandler::Request(const std::string& a_url) {
-    this->m_connectionSocket.Send(reinterpret_cast<const unsigned char*>(a_url.c_str()), (a_url.length() + 1)); // +1 stands for '\0'
+void nm::cdr::RequestsHandler::Request(const std::string& a_request) {
+    this->m_connectionSocket.Send(reinterpret_cast<const unsigned char*>(a_request.c_str()), (a_request.length() + 1)); // +1 stands for '\0'
 }
 
 
-nm::cdr::RequestsHandler::Json nm::cdr::RequestsHandler::Response() {
+nlohmann::json nm::cdr::RequestsHandler::Response() {
     nm::TCPSocket::BytesBufferProxy receivedBuffer = this->m_connectionSocket.Receive(RequestsHandler::RESPONSE_MAX_BUFFER_SIZE);
-
-    return reinterpret_cast<Json>(receivedBuffer.ToBytes());
+    return nlohmann::json::parse(reinterpret_cast<const char*>(receivedBuffer.ToBytes()));
 }

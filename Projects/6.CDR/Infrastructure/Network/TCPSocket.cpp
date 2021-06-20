@@ -42,6 +42,12 @@ static unsigned char* CreateBytesBufferFromOtherBuffer(const unsigned char* a_by
 }
 
 
+nm::TCPSocket::BytesBufferProxy::BytesBufferProxy()
+: m_bufferOfBytes(new unsigned char[0])
+, m_bufferSize(0) {
+}
+
+
 nm::TCPSocket::BytesBufferProxy::BytesBufferProxy(const unsigned char*  a_bufferOfBytes, const size_t a_bufferSize)
 : m_bufferOfBytes(CreateBytesBufferFromOtherBuffer(a_bufferOfBytes, a_bufferSize))
 , m_bufferSize(a_bufferSize) {
@@ -79,7 +85,7 @@ nm::TCPSocket::BytesBufferProxy& nm::TCPSocket::BytesBufferProxy::operator=(Byte
 
     this->m_bufferOfBytes = a_rvalue.m_bufferOfBytes;
     this->m_bufferSize = a_rvalue.m_bufferSize;
-    a_rvalue.m_bufferOfBytes = nullptr;
+    a_rvalue.m_bufferOfBytes = nullptr; // MUST to do in order to save from a delete[]
 
     return *this;
 }
@@ -87,6 +93,28 @@ nm::TCPSocket::BytesBufferProxy& nm::TCPSocket::BytesBufferProxy::operator=(Byte
 
 nm::TCPSocket::BytesBufferProxy::~BytesBufferProxy() {
     delete[] this->m_bufferOfBytes;
+}
+
+
+nm::TCPSocket::BytesBufferProxy& nm::TCPSocket::BytesBufferProxy::operator+=(const BytesBufferProxy& a_other) {
+    size_t newBufferSize = this->m_bufferSize + a_other.m_bufferSize;
+    unsigned char* newBuffer = new unsigned char[newBufferSize];
+
+    memcpy(newBuffer, this->m_bufferOfBytes, this->m_bufferSize);
+    memcpy(newBuffer + this->m_bufferSize, a_other.m_bufferOfBytes, a_other.m_bufferSize);
+
+    delete[] this->m_bufferOfBytes;
+    this->m_bufferOfBytes = newBuffer;
+    this->m_bufferSize = newBufferSize;
+
+    return *this;
+}
+
+
+nm::TCPSocket::BytesBufferProxy nm::TCPSocket::BytesBufferProxy::operator+(const BytesBufferProxy& a_other) const {
+    BytesBufferProxy newBytesBuffer(*this);
+
+    return newBytesBuffer += a_other;
 }
 
 

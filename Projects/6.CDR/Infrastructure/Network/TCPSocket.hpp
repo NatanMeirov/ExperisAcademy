@@ -31,12 +31,16 @@ public:
     class BytesBufferProxy { // For RAII
         friend std::ostream& operator<<(std::ostream& a_os, const BytesBufferProxy& a_bufferProxy) { return a_os << a_bufferProxy.m_bufferOfBytes; }
     public:
+        BytesBufferProxy();
         BytesBufferProxy(const unsigned char*  a_bufferOfBytes, const size_t a_bufferSize);
         BytesBufferProxy(const BytesBufferProxy& a_other);
         BytesBufferProxy& operator=(const BytesBufferProxy& a_other);
         BytesBufferProxy(BytesBufferProxy&& a_rvalue) noexcept; // Move copy c'tor (better performance)
         BytesBufferProxy& operator=(BytesBufferProxy&& a_rvalue) noexcept; // Move copy-assignment (better performance)
         ~BytesBufferProxy();
+
+        BytesBufferProxy& operator+=(const BytesBufferProxy& a_other);
+        BytesBufferProxy operator+(const BytesBufferProxy& a_other) const;
 
         const unsigned char* ToBytes() const { return this->m_bufferOfBytes; };
         size_t Size() const { return this->m_bufferSize; }

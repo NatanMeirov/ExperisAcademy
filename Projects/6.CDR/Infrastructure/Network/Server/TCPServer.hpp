@@ -1,13 +1,11 @@
-#ifndef __NM_CDR_TCPSERVER_HPP__
-#define __NM_CDR_TCPSERVER_HPP__
+#ifndef __NM_TCPSERVER_HPP__
+#define __NM_TCPSERVER_HPP__
 
 #include <cstddef> // size_t
 #include "C-API_GenericServer/GenericServer-IPv4.h"
 
 
 namespace nm {
-
-namespace cdr {
 
 class TCPServer {
 public:
@@ -22,9 +20,7 @@ private:
     Server* m_server;
 };
 
-} // cdr
-
 } // nm
 
 
-#endif // __NM_CDR_TCPSERVER_HPP__
+#endif // __NM_TCPSERVER_HPP__
