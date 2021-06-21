@@ -14,14 +14,14 @@ namespace cdr {
 class Processor {
 public:
     struct GlobalProcessorThreadsData {
-        GlobalProcessorThreadsData(const IDataBase& a_referenceToDatabase) : m_referenceToDatabase(a_referenceToDatabase), m_hasStopRequiredForRunningThreads(false), m_ProviderListeningHasFinished(false), m_restApiServerHasFinished(false) {}
+        GlobalProcessorThreadsData(IDataBase* a_database) : m_database(a_database), m_isStopRequiredForRunningThreads(false), m_ProviderListeningHasFinished(false), m_restApiServerHasFinished(false) {}
 
         static constexpr unsigned int m_portNumberOfProviderListening = 4040;
         static constexpr unsigned int m_portNumberOfRestApiServer = 8080;
         static constexpr unsigned int m_restApiServerMaxWaitingClients = 1000;
         static constexpr unsigned int m_restApiServerMaxBufferSizeForSingleMessage = 4096;
-        const IDataBase& m_referenceToDatabase;
-        bool m_hasStopRequiredForRunningThreads;
+        std::shared_ptr<IDataBase> m_database;
+        bool m_isStopRequiredForRunningThreads;
         bool m_ProviderListeningHasFinished;
         bool m_restApiServerHasFinished;
     };
@@ -35,9 +35,8 @@ private:
     void StartProviderListeningThread();
     void StartRestApiServerThread();
 
-    std::shared_ptr<IDataBase> m_database; // Order is important!
     CdrFileParser m_parser;
-    GlobalProcessorThreadsData m_globalThreadsData; // The threads should get a reference (an address) of this global data to be used inside them (should be passed as the context to the thread)
+    std::shared_ptr<GlobalProcessorThreadsData> m_globalThreadsData; // The threads should get a reference (an address) of this global data to be used inside them (should be passed as the context to the thread)
 };
 
 } // cdr

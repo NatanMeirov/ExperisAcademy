@@ -20,7 +20,7 @@ public:
     virtual Cdr Get(const uint64_t& a_query) = 0;
     virtual bool Update(const uint64_t& a_query) = 0;
     virtual bool Delete(const uint64_t& a_query) = 0;
-    virtual bool Add(const uint64_t& a_query, const Cdr& _dataToAdd) = 0;
+    virtual bool Add(const uint64_t& a_query, Cdr& _dataToAdd) = 0;
 };
 
 } // cdr

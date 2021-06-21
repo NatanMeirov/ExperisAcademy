@@ -16,6 +16,8 @@ public:
     Thread(TaskFunction a_taskToExecute);
     Thread(const Thread& a_other) = delete;
     Thread& operator=(const Thread& a_other) = delete;
+    Thread(Thread&& a_rvalue) noexcept; // Move c'tor
+    Thread& operator=(Thread&& a_rvalue) noexcept; // Move assignment
     ~Thread();
 
     void* operator new(size_t size) = delete;
@@ -27,12 +29,13 @@ public:
 
     void* Join(); // Returns the value that the executed function has returned after its finish
     void Detach(); // Detached thread will mark as an unavailable thread (for exit, join or detach)
+    void Cancel(); // Cancels the thread (its execution will stop)
 
 private:
     pthread_t m_threadID;
     TaskFunction m_taskToExecute;
     void* m_context;
-    bool m_isAvailableThread;
+    bool* m_isAvailableThread;
 };
 
 } // nm

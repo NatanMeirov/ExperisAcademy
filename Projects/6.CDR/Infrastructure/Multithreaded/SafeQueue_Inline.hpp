@@ -28,11 +28,14 @@ void nm::SafeQueue<T>::Enqueue(const T& a_item) {
 
 
 template <typename T>
-void nm::SafeQueue<T>::Dequeue() {
+T nm::SafeQueue<T>::Dequeue() {
     this->m_currentOccupiedPlacesInQueue.Down();
     nm::LockGuard(this->m_lock);
+    T popedItem = this->m_queue.front();
     this->m_queue.pop();
     this->m_currentFreePlacesInQueue.Up();
+
+    return popedItem;
 }
 
 

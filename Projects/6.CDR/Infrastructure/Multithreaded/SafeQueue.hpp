@@ -17,10 +17,10 @@ public:
     explicit SafeQueue(const size_t a_initialCapacity);
     SafeQueue(const SafeQueue& a_other) = delete;
     SafeQueue& operator=(const SafeQueue& a_other) = delete;
-    ~SafeQueue();
+    ~SafeQueue() = default;
 
     void Enqueue(const T& a_item);
-    void Dequeue();
+    T Dequeue();
     bool IsEmpty();
     T& GetFront();
     T& GetBack();

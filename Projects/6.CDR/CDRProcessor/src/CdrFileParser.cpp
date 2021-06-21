@@ -31,7 +31,7 @@ std::vector<nm::cdr::Cdr> nm::cdr::CdrFileParser::ParseCdrFileToCdrs(const std::
     std::vector<nm::cdr::Cdr> parsedCdrs;
 
     std::getline(ifs, singleLine); // Extract header (file length)
-    size_t linesNumber = std::stoi(singleLine);
+    size_t linesNumber = std::stoul(singleLine); // Not in use here
 
     while(std::getline(ifs, singleLine)) {
         parsedCdrs.push_back(this->ConvertSingleLineToCdr(singleLine));
