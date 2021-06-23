@@ -12,10 +12,12 @@ class Directory {
 public:
     class DirectoryItem {
     public:
+        DirectoryItem() : m_directoryEntry(nullptr) {}
         DirectoryItem(struct dirent* a_directoryEntry) : m_directoryEntry(a_directoryEntry) {}
 
-        bool operator==(const std::nullptr_t& a_nullptr) { return this->m_directoryEntry == nullptr; }
-        bool operator!=(const std::nullptr_t& a_nullptr) { return this->m_directoryEntry != nullptr; }
+        bool operator==(const std::nullptr_t& a_nullptr) { (void)a_nullptr; return this->m_directoryEntry == nullptr; }
+        bool operator!=(const std::nullptr_t& a_nullptr) { (void)a_nullptr; return this->m_directoryEntry != nullptr; }
+        operator bool() { return bool(this->m_directoryEntry); }
         std::string GetName() const {return std::string(this->m_directoryEntry->d_name); }
 
     private:

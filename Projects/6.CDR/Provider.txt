@@ -1,0 +1,1 @@
+g++ -ansi -pedantic -std=c++11 -Wextra -Wall -g3 provider_main.cpp src/Provider.cpp ../Infrastructure/Network/TCPSocket.cpp ../Infrastructure/System/Directory.cpp -o ProviderProgram.out -lpthread

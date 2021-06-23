@@ -11,7 +11,7 @@ static void* ThreadPoolWorkingProcess(void* a_context) {
     nm::runtime::ThreadPool::ThreadPoolSharedData* globalThreadPoolData = static_cast<nm::runtime::ThreadPool::ThreadPoolSharedData*>(a_context);
 
     while(!globalThreadPoolData->m_isRequiredStopThreadPoolFromRunning || !globalThreadPoolData->m_tasksQueue.IsEmpty()) {
-        std::shared_ptr<ICommand> task = globalThreadPoolData->m_tasksQueue.Dequeue();
+        std::shared_ptr<nm::ICommand> task = globalThreadPoolData->m_tasksQueue.Dequeue();
         task->Execute(); // Task Execution
     }
 
@@ -23,8 +23,16 @@ nm::runtime::ThreadPool::ThreadPool(const size_t a_workingThreadsNumber, const s
 : m_workers()
 , m_threadPoolSharedData(new ThreadPoolSharedData(a_sizeOfWorkingQueue)) {
     for(size_t i = 0; i < a_workingThreadsNumber; ++i) {
-        this->m_workers.push_back(nm::Thread(&ThreadPoolWorkingProcess, static_cast<void*>(this->m_threadPoolSharedData.get())));
+        this->m_workers.push_back(std::move(nm::Thread(&ThreadPoolWorkingProcess, static_cast<void*>(this->m_threadPoolSharedData.get()))));
     }
+}
+
+
+nm::runtime::ThreadPool::~ThreadPool() {
+    if(!this->m_threadPoolSharedData->m_isRequiredStopThreadPoolFromRunning) {
+        this->StopExecution();
+    }
+    // Else - already stopped
 }
 
 

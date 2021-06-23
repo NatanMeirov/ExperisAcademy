@@ -10,8 +10,8 @@
 
 
 template <typename T>
-nm::SafeQueue<T>::SafeQueue(size_t a_initialCapacity)
-: m_queue(a_initialCapacity)
+nm::SafeQueue<T>::SafeQueue(const size_t a_initialCapacity)
+: m_queue()
 , m_lock()
 , m_currentFreePlacesInQueue(SafeQueue<T>::SEMAPHORE_THREAD_OPTION, a_initialCapacity)
 , m_currentOccupiedPlacesInQueue(SafeQueue<T>::SEMAPHORE_THREAD_OPTION, 0) {
@@ -43,6 +43,13 @@ template <typename T>
 bool nm::SafeQueue<T>::IsEmpty() {
     nm::LockGuard(this->m_lock);
     return this->m_queue.empty();
+}
+
+
+template <typename T>
+size_t nm::SafeQueue<T>::Size() {
+    nm::LockGuard(this->m_lock);
+    return this->m_queue.size();
 }
 
 

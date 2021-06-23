@@ -24,7 +24,10 @@ private:
 
     void ShowMenu() const;
     std::string GetUserRequestAsString() const;
-    int GetUserRequestAsNumber() const;
+    long GetUserRequestAsNumberInRange(long a_min, long a_max) const;
+    void HandleClientBilling();
+    void HandleOperator();
+    void HandleClientLinkGraph();
 
     UIManager m_manager;
 };

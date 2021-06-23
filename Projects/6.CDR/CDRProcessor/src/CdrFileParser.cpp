@@ -4,6 +4,8 @@
 #include <fstream> // std::ifstream
 #include <sstream>
 #include "../../Infrastructure/inc/Cdr.hpp"
+#include "../../Infrastructure/Multithreaded/SafeQueue.hpp"
+#include "../../Infrastructure/Multithreaded/TThreadPool.hpp"
 
 
 nm::cdr::CdrFileParser::CdrFileParser()
@@ -28,13 +30,24 @@ void nm::cdr::CdrFileParser::InitializeTypesMap() {
 std::vector<nm::cdr::Cdr> nm::cdr::CdrFileParser::ParseCdrFileToCdrs(const std::string& a_cdrFilePath) const {
     std::ifstream ifs(a_cdrFilePath);
     std::string singleLine;
-    std::vector<nm::cdr::Cdr> parsedCdrs;
+    nm::SafeQueue<Cdr> outputCdrs(CdrFileParser::WORKING_TASKS_QUEUE_SIZE);
+    std::vector<Cdr> parsedCdrs;
+
+    auto task = [this, &outputCdrs](const std::string& a_singleLineOfCdr){
+        outputCdrs.Enqueue(this->ConvertSingleLineToCdr(a_singleLineOfCdr));
+    };
+
+    compiletime::ThreadPool<std::string, decltype(task)> threadPool(CdrFileParser::THREADS_NUMBER, CdrFileParser::WORKING_TASKS_QUEUE_SIZE, task);
 
     std::getline(ifs, singleLine); // Extract header (file length)
     size_t linesNumber = std::stoul(singleLine); // Not in use here
 
     while(std::getline(ifs, singleLine)) {
-        parsedCdrs.push_back(this->ConvertSingleLineToCdr(singleLine));
+        threadPool.PushWork(singleLine);
+    }
+
+    while(!outputCdrs.IsEmpty()) {
+        parsedCdrs.push_back(outputCdrs.Dequeue());
     }
 
     return parsedCdrs;

@@ -3,6 +3,7 @@
 
 
 #include <memory> // std::shared_ptr
+#include <unordered_map>
 #include "IDataBase.hpp"
 #include "CdrFileParser.hpp"
 
@@ -21,6 +22,7 @@ public:
         static constexpr unsigned int m_restApiServerMaxWaitingClients = 1000;
         static constexpr unsigned int m_restApiServerMaxBufferSizeForSingleMessage = 4096;
         std::shared_ptr<IDataBase> m_database;
+        std::unordered_map<std::string, uint64_t> m_msisdnToImsiTable; // A map to be used to "map" a given MSISDN number (string) to IMSI number (uint64)
         bool m_isStopRequiredForRunningThreads;
         bool m_ProviderListeningHasFinished;
         bool m_restApiServerHasFinished;
@@ -32,6 +34,9 @@ public:
     void Process(); // Main loop of processor - checks the directory and uses the parser to get the new Cdrs (from CdrFile) - and update the database (database should use threads pool!)
 
 private:
+    static const unsigned int THREADS_NUMBER = 4;
+    static const unsigned int WORKING_TASKS_QUEUE_SIZE = 39;
+
     void StartProviderListeningThread();
     void StartRestApiServerThread();
 

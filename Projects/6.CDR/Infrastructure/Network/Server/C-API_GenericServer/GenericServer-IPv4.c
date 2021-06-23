@@ -490,6 +490,7 @@ static ServerResult AcceptNewClients(Server* _server)
 
 static void HandleExistingClientsRequests(Server* _server, fd_set _socketsSignalsIndicator, int _clientsSocketSignalsCount)
 {
+    int isServerShouldStopAfterHandlingAllClients = 0;
     Response response;
     HandlingClientResult result;
     Socket* currentClientSocket = NULL;
@@ -513,7 +514,11 @@ static void HandleExistingClientsRequests(Server* _server, fd_set _socketsSignal
                 response.m_clientID = *currentClientSocket; /* Current socket number is the default value of the response */
                 response.m_isMessageDeallocationRequired = 0;
 
-                _server->m_onClientMessage((void*)_server->m_receivedMessagesBuffer, *currentClientSocket, &response, _server->m_applicationInfo);
+                isServerShouldStopAfterHandlingAllClients = _server->m_onClientMessage((void*)_server->m_receivedMessagesBuffer, *currentClientSocket, &response, _server->m_applicationInfo);
+                if(isServerShouldStopAfterHandlingAllClients)
+                {
+                    _server->m_isStopServerFromRunning = 1;
+                }
 
                 result = HandleResponse(&response); /* Send message /  */
                 if(result == CLIENT_FINISH || result == CLIENT_ERROR)

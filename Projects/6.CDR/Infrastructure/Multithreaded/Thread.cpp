@@ -5,10 +5,8 @@
 
 nm::Thread::Thread(TaskFunction a_taskToExecute, void* a_context)
 : m_threadID()
-, m_taskToExecute(a_taskToExecute)
-, m_context(a_context)
 , m_isAvailableThread(new bool(true)) {
-    int statusCode = pthread_create(&this->m_threadID, NULL, this->m_taskToExecute, this->m_context);
+    int statusCode = pthread_create(&this->m_threadID, NULL, a_taskToExecute, a_context);
     if(statusCode != 0) {
         *this->m_isAvailableThread = false;
         throw std::runtime_error("Failed while trying to initialize the Thread");
@@ -23,8 +21,6 @@ nm::Thread::Thread(TaskFunction a_taskToExecute)
 
 nm::Thread::Thread(Thread&& a_rvalue) noexcept
 : m_threadID(a_rvalue.m_threadID)
-, m_taskToExecute(a_rvalue.m_taskToExecute)
-, m_context(a_rvalue.m_context)
 , m_isAvailableThread(a_rvalue.m_isAvailableThread) {
     a_rvalue.m_isAvailableThread = nullptr; // Move
 }
@@ -39,8 +35,6 @@ nm::Thread& nm::Thread::Thread::operator=(Thread&& a_rvalue) noexcept {
     delete this->m_isAvailableThread;
 
     this->m_threadID = a_rvalue.m_threadID;
-    this->m_taskToExecute = a_rvalue.m_taskToExecute;
-    this->m_context = a_rvalue.m_context;
     this->m_isAvailableThread = a_rvalue.m_isAvailableThread;
     a_rvalue.m_isAvailableThread = nullptr; // Move
 
@@ -74,7 +68,7 @@ void nm::Thread::Detach() {
     if(*this->m_isAvailableThread) {
         int statusCode = pthread_detach(this->m_threadID);
         if(statusCode != 0) {
-            throw std::runtime_error("Failed while trying to join");
+            throw std::runtime_error("Failed while trying to detach");
         }
 
         *this->m_isAvailableThread = false; // Not critical if an exception is thrown and this line is not executing

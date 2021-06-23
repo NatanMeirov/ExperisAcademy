@@ -10,9 +10,9 @@
 
 
 nm::TCPSocket::TCPSocket::SocketAddressData::SocketAddressData(const std::string& a_ipAddress, const unsigned int a_portNumber)
-: m_ipAddress(a_ipAddress)
-, m_portNumber(a_portNumber)
-, m_socketAddress() {
+: m_socketAddress()
+, m_ipAddress(a_ipAddress)
+, m_portNumber(a_portNumber) {
     memset(&this->m_socketAddress, 0, sizeof(this->m_socketAddress));
     this->m_socketAddress.sin_addr.s_addr = inet_addr(this->m_ipAddress.c_str());
     this->m_socketAddress.sin_port = htons(this->m_portNumber);

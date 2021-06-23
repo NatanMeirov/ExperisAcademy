@@ -2,7 +2,7 @@
 #define __NM_ICOMMAND_HPP__
 
 
-namespace {
+namespace nm{
 
 // A polymorphic interface of Command design pattern, for commands oriented class objects
 class ICommand {

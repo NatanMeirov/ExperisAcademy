@@ -33,8 +33,6 @@ public:
 
 private:
     pthread_t m_threadID;
-    TaskFunction m_taskToExecute;
-    void* m_context;
     bool* m_isAvailableThread;
 };
 

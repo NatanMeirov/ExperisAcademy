@@ -3,6 +3,8 @@
 
 
 #include <string> // std::string
+#include <memory> // std::shared_ptr
+#include "../../Infrastructure/inc/InfoObj.hpp"
 #include "../../Infrastructure/inc/Cdr.hpp"
 
 
@@ -13,14 +15,16 @@ namespace cdr {
 // An interface for a database object (uint64_t stands for an ID numbers)
 class IDataBase {
 public:
+    enum InfoObjOption { BILLING, OPERATOR, LINKGRAPH };
+
     virtual ~IDataBase() = default;
     virtual bool Load(const std::string& a_databaseFileNamePath) = 0;
     virtual bool Save(const std::string& a_databaseFileNamePath) = 0;
 
-    virtual Cdr Get(const uint64_t& a_query) = 0;
-    virtual bool Update(const uint64_t& a_query) = 0;
-    virtual bool Delete(const uint64_t& a_query) = 0;
-    virtual bool Add(const uint64_t& a_query, Cdr& _dataToAdd) = 0;
+    virtual const InfoObj* Get(const std::string& a_query, InfoObjOption a_option) = 0;
+    virtual bool Update(const std::string& a_query) = 0;
+    virtual bool Delete(const std::string& a_query) = 0;
+    virtual bool Add(const std::string& a_query, Cdr& _dataToAdd) = 0;
 };
 
 } // cdr

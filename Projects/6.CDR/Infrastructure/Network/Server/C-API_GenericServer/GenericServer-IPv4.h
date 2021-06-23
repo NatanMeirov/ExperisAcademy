@@ -70,11 +70,12 @@ typedef enum ServerResult
  *                       - The size of the message to send to the client
  *                       - A boolean flag to tell the server if a deallocation (free) is required for the message after its sending (default value: false)
  * @param[in] _applicationInfo: The application context to be used in the handler function (that application context was given in the server's creation part)
- * @return None
+ * @return 1 - if the server should stop its running / 0 - if the server should continue its running
  *
  * @warning The message will be a stream of received bytes (unsigned chars), that stored is a stack allocated buffer (buffer size: 4K bits [4096])
+ * @warning The deallocation (if set to true [using the boolean flag]) - is implemented in C (using free() function) - make sure to NOT allocate the buffer's memory on the heap using new keywork (C++)
  */
-typedef void (*ClientMessageHandler)(void* _message, int _clientID, Response* _response, void* _applicationInfo);
+typedef int (*ClientMessageHandler)(void* _message, int _clientID, Response* _response, void* _applicationInfo);
 
 /**
  * @brief A pointer to a function to be triggered as an handler when an error has occurred in the server, the error handler should return a bool value to tell the server how it should operate (0, if the server should NOT stop, else 1 if it HAVE TO stop its running)

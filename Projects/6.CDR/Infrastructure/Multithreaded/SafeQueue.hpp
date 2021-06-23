@@ -22,6 +22,7 @@ public:
     void Enqueue(const T& a_item);
     T Dequeue();
     bool IsEmpty();
+    size_t Size();
     T& GetFront();
     T& GetBack();
 

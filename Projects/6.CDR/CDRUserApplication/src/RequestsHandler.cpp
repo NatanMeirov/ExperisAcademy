@@ -15,5 +15,5 @@ void nm::cdr::RequestsHandler::Request(const std::string& a_request) {
 
 nlohmann::json nm::cdr::RequestsHandler::Response() {
     nm::TCPSocket::BytesBufferProxy receivedBuffer = this->m_connectionSocket.Receive(RequestsHandler::RESPONSE_MAX_BUFFER_SIZE);
-    return nlohmann::json::parse(reinterpret_cast<const char*>(receivedBuffer.ToBytes()));
+    return nlohmann::json(reinterpret_cast<const char*>(receivedBuffer.ToBytes()));
 }

@@ -19,6 +19,9 @@ public:
     std::vector<Cdr> ParseCdrFileToCdrs(const std::string& a_cdrFilePath) const;
 
 private:
+    static const unsigned int THREADS_NUMBER = 4;
+    static const unsigned int WORKING_TASKS_QUEUE_SIZE = 39;
+
     void InitializeTypesMap();
     Cdr ConvertSingleLineToCdr(const std::string& a_singleLine) const;
 
