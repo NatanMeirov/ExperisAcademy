@@ -41,23 +41,28 @@ public:
         nm::Mutex m_lock;
     };
 
-    Processor();
+    Processor(const unsigned int a_processingTimeAmountInMinutes);
     ~Processor();
 
-    void Process(); // Main loop of processor - checks the directory and uses the parser to get the new Cdrs (from CdrFile) - and update the database (database should use threads pool!)
+    void Run();
 
 private:
     static const unsigned int THREADS_NUMBER = 4; // TODO: use configuration file
     static const unsigned int WORKING_TASKS_QUEUE_SIZE = 39; // TODO: use configuration file
+    static const unsigned int SECONDS_IN_ONE_MINUTE = 60;
+
+    void Process(); // Main loop of processor - checks the directory and uses the parser to get the new Cdrs (from CdrFile) - and update the database (database should use threads pool!)
+
+    unsigned int SleepingAmount() const { return this->m_processingTimeAmountInSeconds; }
 
     void AddNewCdrToMsisdnToImsiTable(Cdr& a_newCdr);
-    void RemoveAllFilesFromDirectory(const std::string& a_dirNameToRemoveAllItemsFrom);
 
     void StartProviderListeningThread();
     void StartRestApiServerThread();
 
     CdrFileParser m_parser;
     std::shared_ptr<GlobalProcessorThreadsData> m_globalThreadsData; // The threads should get a reference (an address) of this global data to be used inside them (should be passed as the context to the thread)
+    unsigned int m_processingTimeAmountInSeconds;
 };
 
 } // cdr

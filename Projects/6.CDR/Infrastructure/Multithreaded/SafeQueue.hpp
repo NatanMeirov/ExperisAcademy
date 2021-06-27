@@ -3,7 +3,7 @@
 
 
 #include <cstddef> // size_t
-#include <queue> // std::queue
+#include "Queue.hpp"
 #include "Mutex.hpp"
 #include "Semaphore.hpp"
 
@@ -29,7 +29,7 @@ public:
 private:
     static const int SEMAPHORE_THREAD_OPTION = 0;
 
-    std::queue<T> m_queue;
+    nm::Queue<T> m_queue;
     nm::Mutex m_lock;
     nm::Semaphore m_currentFreePlacesInQueue;
     nm::Semaphore m_currentOccupiedPlacesInQueue;

@@ -17,6 +17,8 @@ struct LinkGraphInfoObj : public InfoObj {
         SecondPartyInfo m_secondPartyInfo;
     };
 
+    LinkGraphInfoObj() : m_graph() {}
+
     std::unordered_map<uint64_t, SecondParty> m_graph;
 };
 

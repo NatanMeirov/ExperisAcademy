@@ -1,7 +1,7 @@
 #include "ThreadPool.hpp"
 #include <cstddef> // size_t
 #include <vector>
-#include <memory> // std::shared_ptr
+// #include <memory> // std::shared_ptr
 #include "Thread.hpp"
 #include "SafeQueue_Inline.hpp"
 #include "ICommand.hpp"
@@ -11,7 +11,8 @@ static void* ThreadPoolWorkingProcess(void* a_context) {
     nm::runtime::ThreadPool::ThreadPoolSharedData* globalThreadPoolData = static_cast<nm::runtime::ThreadPool::ThreadPoolSharedData*>(a_context);
 
     while(!globalThreadPoolData->m_isRequiredStopThreadPoolFromRunning || !globalThreadPoolData->m_tasksQueue.IsEmpty()) {
-        std::shared_ptr<nm::ICommand> task = globalThreadPoolData->m_tasksQueue.Dequeue();
+        // std::shared_ptr<nm::ICommand> task = globalThreadPoolData->m_tasksQueue.Dequeue();
+        nm::ICommand* task = globalThreadPoolData->m_tasksQueue.Dequeue();
         task->Execute(); // Task Execution
     }
 
@@ -36,16 +37,23 @@ nm::runtime::ThreadPool::~ThreadPool() {
 }
 
 
-void nm::runtime::ThreadPool::PushTask(std::shared_ptr<ICommand> a_task) {
+void nm::runtime::ThreadPool::PushTask(ICommand* a_task) {
     if(!this->m_threadPoolSharedData->m_isRequiredStopThreadPoolFromRunning) {
         this->m_threadPoolSharedData->m_tasksQueue.Enqueue(a_task);
     }
 }
 
 
-void nm::runtime::ThreadPool::PushTask(ICommand* a_task) {
-    this->PushTask(std::shared_ptr<ICommand>(a_task));
-}
+// void nm::runtime::ThreadPool::PushTask(std::shared_ptr<ICommand> a_task) {
+//     if(!this->m_threadPoolSharedData->m_isRequiredStopThreadPoolFromRunning) {
+//         this->m_threadPoolSharedData->m_tasksQueue.Enqueue(a_task);
+//     }
+// }
+
+
+// void nm::runtime::ThreadPool::PushTask(ICommand* a_task) {
+//     this->PushTask(std::shared_ptr<ICommand>(a_task));
+// }
 
 
 void nm::runtime::ThreadPool::StopExecution() {
@@ -56,7 +64,7 @@ void nm::runtime::ThreadPool::StopExecution() {
         try {
             this->m_workers.at(i).Cancel();
         }
-        catch(const std::exception& ex) {
+        catch(...) {
             // No-Op - it is a valid situation, because the thread may already has finished its running
         }
     }

@@ -2,6 +2,7 @@
 #include <fstream> // std::ofstream, std::ifstream
 #include <iostream> // Error handling
 #include <vector>
+#include <unistd.h> // sleep
 #include <stdlib.h> // malloc
 #include <string.h> // memcpy
 #include "../inc/RAMDataBase.hpp"
@@ -18,9 +19,10 @@ static void* RestApiServerAction(void* a_context);
 static int ServerOnError(ServerResult _errorCode, const char* _errorMessage, void* _applicationInfo);
 static int ServerOnMessage(void* _message, int _clientID, Response* _response, void* _applicationInfo);
 
-nm::cdr::Processor::Processor() // TODO: Create DataBaseFactory class
+nm::cdr::Processor::Processor(const unsigned int a_processingTimeAmountInMinutes) // TODO: Create DataBaseFactory class
 : m_parser()
-, m_globalThreadsData(new GlobalProcessorThreadsData(new RAMDataBase())) {
+, m_globalThreadsData(new GlobalProcessorThreadsData(new RAMDataBase()))
+, m_processingTimeAmountInSeconds(a_processingTimeAmountInMinutes * Processor::SECONDS_IN_ONE_MINUTE) {
     m_globalThreadsData->m_database->Load("ProcessorFiles/database");
     this->StartProviderListeningThread();
     this->StartRestApiServerThread();
@@ -33,6 +35,14 @@ nm::cdr::Processor::~Processor() {
         this->m_globalThreadsData->m_processorRelatedThreads.at(i)->Cancel(); // Cancel the processor's working threads
     }
     m_globalThreadsData->m_database->Save("ProcessorFiles/database");
+}
+
+
+void nm::cdr::Processor::Run() {
+    while(true) { // Polling
+        sleep(this->SleepingAmount());
+        this->Process();
+    }
 }
 
 
@@ -50,15 +60,49 @@ void nm::cdr::Processor::StartRestApiServerThread() {
 }
 
 
+// Implementation that uses a thread pool in a thread pool
+// void nm::cdr::Processor::Process() {
+//     SafeQueue<std::vector<Cdr>> outputQueue(Processor::WORKING_TASKS_QUEUE_SIZE);
+
+//     auto task = [this, &outputQueue](const std::string& a_cdrFile){
+//         outputQueue.Enqueue(this->m_parser.ParseCdrFileToCdrs(a_cdrFile));
+//     };
+
+//     compiletime::ThreadPool<std::string, decltype(task)> threadPool(Processor::THREADS_NUMBER, Processor::WORKING_TASKS_QUEUE_SIZE, task);
+
+//     std::string newDirName("ProcessorFiles/new");
+//     std::string doneDirName("ProcessorFiles/done");
+//     Directory processingDirectory(newDirName);
+//     Directory::DirectoryItem fileInDir;
+//     while((fileInDir = processingDirectory.GetNextItem())) { // While is not nullptr - and there are more items in the directory
+//         if((fileInDir.GetName() == "." || fileInDir.GetName() == "..")) {
+//             continue;
+//         }
+
+//         // Processing
+//         threadPool.PushWork(newDirName + "/" + fileInDir.GetName());
+
+//         // Moving the file to "done" directory
+//         std::ofstream doneFile(doneDirName + "/" + fileInDir.GetName()); // Creates new file with the same name in "done"
+//         std::ifstream currentCdrFile(newDirName + "/" + fileInDir.GetName());
+
+//         doneFile << currentCdrFile.rdbuf(); // Copy
+//     }
+
+//     while(!outputQueue.IsEmpty()) {
+//         std::vector<Cdr> newCdrs = outputQueue.Dequeue();
+//         for(size_t i = 0; i < newCdrs.size(); ++i) {
+//             this->AddNewCdrToMsisdnToImsiTable(newCdrs.at(i));
+//             this->m_globalThreadsData->m_database->Add(std::to_string(newCdrs.at(i).m_imsi), newCdrs.at(i));
+//         }
+//     }
+
+//     this->RemoveAllFilesFromDirectory(newDirName);
+// }
+
+
 void nm::cdr::Processor::Process() {
-    SafeQueue<std::vector<Cdr>> outputQueue(Processor::WORKING_TASKS_QUEUE_SIZE);
-
-    auto task = [this, &outputQueue](const std::string& a_cdrFile){
-        outputQueue.Enqueue(this->m_parser.ParseCdrFileToCdrs(a_cdrFile));
-    };
-
-    compiletime::ThreadPool<std::string, decltype(task)> threadPool(Processor::THREADS_NUMBER, Processor::WORKING_TASKS_QUEUE_SIZE, task);
-
+    std::vector<Cdr> newCdrs;
     std::string newDirName("ProcessorFiles/new");
     std::string doneDirName("ProcessorFiles/done");
     Directory processingDirectory(newDirName);
@@ -68,25 +112,22 @@ void nm::cdr::Processor::Process() {
             continue;
         }
 
-        // Processing
-        threadPool.PushWork(newDirName + "/" + fileInDir.GetName());
+        // Processing and adding to the DataBase
+        newCdrs = this->m_parser.ParseCdrFileToCdrs(newDirName + "/" + fileInDir.GetName());
+        for(size_t i = 0; i < newCdrs.size(); ++i) {
+            this->AddNewCdrToMsisdnToImsiTable(newCdrs.at(i));
+            this->m_globalThreadsData->m_database->Add(std::to_string(newCdrs.at(i).m_imsi), newCdrs.at(i));
+        }
 
         // Moving the file to "done" directory
         std::ofstream doneFile(doneDirName + "/" + fileInDir.GetName()); // Creates new file with the same name in "done"
         std::ifstream currentCdrFile(newDirName + "/" + fileInDir.GetName());
 
         doneFile << currentCdrFile.rdbuf(); // Copy
-    }
 
-    while(!outputQueue.IsEmpty()) {
-        std::vector<Cdr> newCdrs = outputQueue.Dequeue();
-        for(size_t i = 0; i < newCdrs.size(); ++i) {
-            this->AddNewCdrToMsisdnToImsiTable(newCdrs.at(i));
-            this->m_globalThreadsData->m_database->Add(std::to_string(newCdrs.at(i).m_imsi), newCdrs.at(i));
-        }
+        // Remove the file from "new" directory
+        std::remove((newDirName + "/" + fileInDir.GetName()).c_str());
     }
-
-    this->RemoveAllFilesFromDirectory(newDirName);
 }
 
 
@@ -94,19 +135,6 @@ void nm::cdr::Processor::AddNewCdrToMsisdnToImsiTable(Cdr& a_newCdr) {
     if(this->m_globalThreadsData->m_msisdnToImsiTable.find(a_newCdr.m_msisdn) == this->m_globalThreadsData->m_msisdnToImsiTable.end()) {
         // Key does not exist in the table
         this->m_globalThreadsData->m_msisdnToImsiTable[a_newCdr.m_msisdn] = a_newCdr.m_imsi; // Add to the table
-    }
-}
-
-
-void nm::cdr::Processor::RemoveAllFilesFromDirectory(const std::string& a_dirNameToRemoveAllItemsFrom) {
-    Directory processingDirectory(a_dirNameToRemoveAllItemsFrom);
-    Directory::DirectoryItem fileInDir;
-    while((fileInDir = processingDirectory.GetNextItem())) { // While is not nullptr - and there are more items in the directory
-        if((fileInDir.GetName() == "." || fileInDir.GetName() == "..")) {
-            continue;
-        }
-
-        std::remove((a_dirNameToRemoveAllItemsFrom + "/" + fileInDir.GetName()).c_str());
     }
 }
 

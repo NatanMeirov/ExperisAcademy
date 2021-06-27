@@ -20,6 +20,8 @@ public:
     virtual void Execute() override;
 
 private:
+    void UpdateBillingInfoObjectAccordingCdr(BillingInfoObj& a_billingInfoObj) const;
+
     uint64_t m_imsi;
     Cdr m_cdrToAddToTable;
     std::unordered_map<uint64_t, BillingInfoObj>& m_tableToUpdate;

@@ -11,3 +11,8 @@ nm::cdr::LinkGraphTask::LinkGraphTask(const uint64_t a_imsi, const Cdr& a_cdrToA
 void nm::cdr::LinkGraphTask::Execute() {
     // TODO
 }
+
+
+void nm::cdr::LinkGraphTask::UpdateLinkGraphInfoObjectAccordingCdr(LinkGraphInfoObj& a_linkGraphInfoObj) const {
+    // TODO
+}

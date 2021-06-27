@@ -35,19 +35,17 @@ bool nm::cdr::RAMDataBase::Load(const std::string &a_databaseDirectoryPath) {
 const nm::cdr::InfoObj* nm::cdr::RAMDataBase::Get(const std::string& a_query, InfoObjOption a_option) {
     switch(a_option) {
     case IDataBase::BILLING: {
-
+        return &this->m_billingInfoTable.at(std::stoul(a_query));
     }
 
     case IDataBase::OPERATOR: {
-
+        return &this->m_operatorSettlementTable.at(a_query);
     }
 
     case IDataBase::LINKGRAPH: {
-
+        return &this->m_linkGraphTable.at(std::stoul(a_query));
     }
     }
-
-    return nullptr;
 }
 
 

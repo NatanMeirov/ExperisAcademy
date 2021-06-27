@@ -14,6 +14,8 @@ namespace nm {
 namespace cdr {
 
 struct BillingInfoObj : public InfoObj {
+    BillingInfoObj() : m_outgoingVoiceCallDuration(0), m_incomingVoiceCallDuration(0), m_totalDataTransferred(0), m_totalDataReceived(0), m_totalSmsSent(0), m_totalSmsReceived(0), m_secondPartiesInfoTable() {}
+
     size_t m_outgoingVoiceCallDuration;
     size_t m_incomingVoiceCallDuration;
     size_t m_totalDataTransferred;

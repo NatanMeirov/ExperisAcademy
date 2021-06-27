@@ -20,6 +20,8 @@ public:
     virtual void Execute() override;
 
 private:
+    void UpdateOperatorInfoObjectAccordingCdr(OperatorInfoObj& a_operatorInfoObj) const;
+
     std::string m_mccmnc;
     Cdr m_cdrToAddToTable;
     std::unordered_map<std::string, OperatorInfoObj>& m_tableToUpdate;

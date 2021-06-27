@@ -97,8 +97,8 @@ nm::cdr::Cdr nm::cdr::CdrFileParser::ConvertSingleLineToCdr(const std::string& a
     cdr.m_bytesTransmitted = std::stoul(subStringContainer);
 
     // IMEI of second party:
-    std::getline(lineAsStream, subStringContainer, delimiter);
-    cdr.m_imsiOfSecondParty = std::stoul(subStringContainer);
+    std::getline(lineAsStream, subStringContainer, delimiter); // Data cdr will contain nullptr as the std::string here
+    cdr.m_imsiOfSecondParty = (cdr.m_type != Cdr::UsageType::D) ? std::stoul(subStringContainer) : 0;
 
     // MSISDN of second party:
     std::getline(lineAsStream, cdr.m_msisdnOfSecondParty, delimiter);

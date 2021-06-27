@@ -3,11 +3,8 @@
 
 
 int main() {
-    nm::cdr::Processor processor;
-    // processor.Process();
-    std::cout << "Press any key to exit ";
-    char EndStopper;
-    std::cin >> EndStopper;
+    nm::cdr::Processor processor(0);
+    processor.Run();
 
     return 0;
 }
