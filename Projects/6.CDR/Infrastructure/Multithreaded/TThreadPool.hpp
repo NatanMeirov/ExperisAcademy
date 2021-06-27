@@ -15,7 +15,7 @@ namespace nm {
 
 namespace compiletime {
 
-// The TaskFunctor is NOT generic - the task would be always the same, and only the work param (T) is changing al the time
+// The TaskFunctor is NOT generic - the task would be always the same, and only the work param (T) is changing all the time
 // The TaskFunctor should contain the WHOLE DATA required to its execution - to be passed into the working threads (as their context), and the TaskFunctor should get T paramether for its execution!
 // T Concept: MUST be copy-constructable
 template <typename T, typename TaskFunctor>
@@ -30,8 +30,8 @@ public:
     struct ThreadPoolSharedData {
         ThreadPoolSharedData(const size_t a_workingQueueInitialSize, TaskFunctor a_task) : m_worksQueue(a_workingQueueInitialSize), m_task(a_task), m_isRequiredStopThreadPoolFromRunning(false) {}
 
-        TaskFunctor m_task;
         SafeQueue<T> m_worksQueue;
+        TaskFunctor m_task;
         bool m_isRequiredStopThreadPoolFromRunning;
     };
 

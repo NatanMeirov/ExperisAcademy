@@ -10,8 +10,9 @@ nm::cdr::UrlBuilder::UrlBuilder(UrlBuilderParams* a_params)
 
 
 std::string nm::cdr::UrlBuilder::BuildRequest() {
-    return std::string("http") + (this->m_params->m_isSecuredHTTP ? "s" : "") + "://"
+    return std::string("GET http") + (this->m_params->m_isSecuredHTTP ? "s" : "") + "://"
     + this->m_params->m_destServerIpAddress + ":"
     + std::to_string(this->m_params->m_destServerPortNumber) + "/"
-    + this->m_params->m_routingStrategy->GetRoute(this->m_params->m_mainRouteOption, this->m_params->m_routingParams);
+    + this->m_params->m_routingStrategy->GetRoute(this->m_params->m_mainRouteOption, this->m_params->m_routingParams)
+    + " HTTP/1.1";
 }

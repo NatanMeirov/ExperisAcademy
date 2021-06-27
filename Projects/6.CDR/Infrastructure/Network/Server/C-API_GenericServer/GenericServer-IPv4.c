@@ -589,6 +589,7 @@ static void DisconnectAndRemoveClientFromServer(Server* _server, void* _elementT
 static HandlingClientResult HandleResponse(Response* _response)
 {
     ssize_t bytes;
+    size_t totalSentBytes = 0;
     size_t i;
 
     if(_response->m_responseStatus == RESPONSE_SEND_MESSAGE)
@@ -602,10 +603,11 @@ static HandlingClientResult HandleResponse(Response* _response)
         {
             for(i = 0; i < TIMEOUT_VALUE; ++i)
             {
-                bytes = send(_response->m_clientID, _response->m_responseMessageContent, _response->m_responseMessageContentSize, 0);
-                if(bytes == _response->m_responseMessageContentSize)
+                totalSentBytes += bytes;
+                bytes = send(_response->m_clientID, (void*)((unsigned char*)_response->m_responseMessageContent + totalSentBytes) /* Offset of the previously sent bytes */, _response->m_responseMessageContentSize - totalSentBytes /* Sending only the rest of the message (minus the previously sent bytes) */, 0);
+                if(bytes + totalSentBytes == _response->m_responseMessageContentSize)
                 {
-                    break; /* Succeed to send */
+                    break; /* Succeed to send all the message */
                 }
             }
         }

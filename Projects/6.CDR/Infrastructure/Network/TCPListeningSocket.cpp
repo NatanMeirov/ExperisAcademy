@@ -23,7 +23,7 @@ static void ChangeToNoBlockingSocket(int a_socketID) {
 nm::TCPListeningSocket::TCPListeningSocket(const unsigned int a_listeningPortNumber, bool a_isNoBlockingRequired)
 : TCPSocket("0.0.0.0" , a_listeningPortNumber) // 0.0.0.0 => listening to any ip address
 , m_isNoBlockingRequired(a_isNoBlockingRequired)
-, m_lastConnectedClientSocketID(-1) {
+, m_lastAcceptedClientSocketID(-1) {
 }
 
 
@@ -39,8 +39,8 @@ void nm::TCPListeningSocket::Configure() {
 bool nm::TCPListeningSocket::Accept() {
     struct sockaddr_in clientSocketAddress;
     unsigned int clientSocketAddressSize = sizeof(clientSocketAddress);
-    this->m_lastConnectedClientSocketID = accept(this->GetSocketID(), reinterpret_cast<struct sockaddr*>(&clientSocketAddress), &clientSocketAddressSize);
-    if(this->m_lastConnectedClientSocketID < 0)
+    this->m_lastAcceptedClientSocketID = accept(this->GetSocketID(), reinterpret_cast<struct sockaddr*>(&clientSocketAddress), &clientSocketAddressSize);
+    if(this->m_lastAcceptedClientSocketID < 0)
     {
         if(!this->m_isNoBlockingRequired) {
             throw std::runtime_error("Failed to accept a connection...");
@@ -56,7 +56,7 @@ bool nm::TCPListeningSocket::Accept() {
     }
 
     if(this->m_isNoBlockingRequired) {
-        ChangeToNoBlockingSocket(this->m_lastConnectedClientSocketID);
+        ChangeToNoBlockingSocket(this->m_lastAcceptedClientSocketID);
     }
 
     return true;
@@ -85,8 +85,8 @@ void nm::TCPListeningSocket::Bind() {
 }
 
 
-void nm::TCPListeningSocket::Listen() {
-    int statusResult = listen(this->GetSocketID(), 1); // Listening only to 1 single connecting at a time
+void nm::TCPListeningSocket::Listen(const unsigned int a_connectionsWaitingQueueSize) {
+    int statusResult = listen(this->GetSocketID(), a_connectionsWaitingQueueSize);
     if(statusResult < 0) {
         throw std::runtime_error("Failed to make the socket as listening socket...");
     }
@@ -95,7 +95,7 @@ void nm::TCPListeningSocket::Listen() {
 
 nm::TCPSocket::BytesBufferProxy nm::TCPListeningSocket::Receive(const size_t a_bytesToReceive) {
     unsigned char* buffer = new unsigned char[a_bytesToReceive];
-    ssize_t receivedBytes = recv(this->m_lastConnectedClientSocketID, static_cast<void*>(buffer), a_bytesToReceive, 0);
+    ssize_t receivedBytes = recv(this->m_lastAcceptedClientSocketID, static_cast<void*>(buffer), a_bytesToReceive, 0);
     size_t sizeOfBufferToAllocate;
 
     if(receivedBytes < 0) {
@@ -118,19 +118,4 @@ nm::TCPSocket::BytesBufferProxy nm::TCPListeningSocket::Receive(const size_t a_b
     delete[] buffer;
 
     return bufferProxy;
-}
-
-
-size_t nm::TCPListeningSocket::Send(const unsigned char* a_message, const size_t a_messageSize) {
-    return this->Send(BytesBufferProxy(a_message, a_messageSize));
-}
-
-
-size_t nm::TCPListeningSocket::Send(const BytesBufferProxy &a_message) {
-    ssize_t sentBytes = send(this->m_lastConnectedClientSocketID, static_cast<const void*>(a_message.ToBytes()), a_message.Size(), 0);
-    if(sentBytes < 0) {
-        throw std::runtime_error("Failed to send a message...");
-    }
-
-    return size_t(sentBytes);
 }

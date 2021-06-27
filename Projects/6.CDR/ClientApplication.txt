@@ -1,1 +1,1 @@
-g++ -ansi -pedantic -std=c++11 -g3 clientapplication_main.cpp src/*.cpp ../Infrastructure/Network/*.cpp -o ClientApplicationProgram.out
+g++ -ansi -pedantic -std=c++11 -g3 -Wall -Wextra clientapplication_main.cpp src/*.cpp ../Infrastructure/Network/*.cpp -o ClientApplicationProgram.out

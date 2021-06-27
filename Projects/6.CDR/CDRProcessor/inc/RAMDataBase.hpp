@@ -29,8 +29,8 @@ public:
     virtual bool Add(const std::string& a_query, Cdr& a_dataToAdd) override; // Use task factory to create new 3 tasks (to add this single cdr to all 3 data-maps)
 
 private:
-    static const unsigned int THREADS_NUMBER = 4;
-    static const unsigned int WORKING_TASKS_QUEUE_SIZE = 39;
+    static const unsigned int THREADS_NUMBER = 4; // TODO: use configuration file
+    static const unsigned int WORKING_TASKS_QUEUE_SIZE = 39; // TODO: use configuration file
 
     std::unordered_map<uint64_t, BillingInfoObj> m_billingInfoTable; // Key: IMSI
     std::unordered_map<std::string, OperatorInfoObj> m_operatorSettlementTable; // Key: MCC+MNC (operator info)

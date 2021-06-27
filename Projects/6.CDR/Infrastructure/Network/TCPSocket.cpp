@@ -126,15 +126,21 @@ void nm::TCPSocket::Connect() {
 }
 
 
-size_t nm::TCPSocket::Send(const unsigned char* a_message, const size_t a_messageSize) {
-    return this->Send(BytesBufferProxy(a_message, a_messageSize));
+size_t nm::TCPSocket::Send(const unsigned char* a_message, const size_t a_messageSize, bool a_provideFullMessageSending) {
+    return this->Send(BytesBufferProxy(a_message, a_messageSize), a_provideFullMessageSending);
 }
 
 
-size_t nm::TCPSocket::Send(const BytesBufferProxy &a_message) {
-    ssize_t sentBytes = send(this->m_socketID, static_cast<const void*>(a_message.ToBytes()), a_message.Size(), 0);
+size_t nm::TCPSocket::Send(const BytesBufferProxy &a_message, bool a_provideFullMessageSending) {
+    ssize_t sentBytes = send(this->GetSocketIDToSendTheMessageTo(), static_cast<const void*>(a_message.ToBytes()), a_message.Size(), 0);
     if(sentBytes < 0) {
         throw std::runtime_error("Failed to send a message...");
+    }
+
+    if(a_provideFullMessageSending && sentBytes < a_message.Size()) {
+        while(sentBytes < a_message.Size()) {
+            sentBytes += send(this->GetSocketIDToSendTheMessageTo(), static_cast<const void*>(a_message.ToBytes() + sentBytes), a_message.Size() - sentBytes, 0);
+        }
     }
 
     return size_t(sentBytes);

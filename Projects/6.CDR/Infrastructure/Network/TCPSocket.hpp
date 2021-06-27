@@ -56,13 +56,14 @@ public:
     virtual ~TCPSocket();
 
     void Connect(); // Throws on failure
-    virtual size_t Send(const unsigned char* a_message, const size_t a_messageSize); // Retuns the number of sent bytes, Throws on failure
-    virtual size_t Send(const BytesBufferProxy& a_message); // Retuns the number of sent bytes, Throws on failure
+    virtual size_t Send(const unsigned char* a_message, const size_t a_messageSize, bool a_provideFullMessageSending = true); // Retuns the number of sent bytes, Throws on failure
+    virtual size_t Send(const BytesBufferProxy& a_message, bool a_provideFullMessageSending = true); // Returns the number of sent bytes, Throws on failure
     virtual BytesBufferProxy Receive(const size_t a_bytesToReceive); // Returns the received buffer, Throws on failure
 
 protected:
     SocketAddressData& GetSocketAddressData() { return this->m_socketAddressData; }
-    SocketID& GetSocketID() { return this->m_socketID; }
+    SocketID GetSocketID() { return this->m_socketID; }
+    virtual SocketID GetSocketIDToSendTheMessageTo() { return this->m_socketID; }
 
 private:
     SocketAddressData m_socketAddressData;

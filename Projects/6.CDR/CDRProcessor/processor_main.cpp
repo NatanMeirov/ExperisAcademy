@@ -4,8 +4,8 @@
 
 int main() {
     nm::cdr::Processor processor;
-
-    std::cout << "Press any key to exit";
+    // processor.Process();
+    std::cout << "Press any key to exit ";
     char EndStopper;
     std::cin >> EndStopper;
 
