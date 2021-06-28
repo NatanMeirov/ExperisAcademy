@@ -10,7 +10,7 @@
 static void* ThreadPoolWorkingProcess(void* a_context) {
     nm::runtime::ThreadPool::ThreadPoolSharedData* globalThreadPoolData = static_cast<nm::runtime::ThreadPool::ThreadPoolSharedData*>(a_context);
 
-    while(!globalThreadPoolData->m_isRequiredStopThreadPoolFromRunning || !globalThreadPoolData->m_tasksQueue.IsEmpty()) {
+    while(!globalThreadPoolData->IsRequiredStopThreadPoolFromRunning() || !globalThreadPoolData->m_tasksQueue.IsEmpty()) {
         // std::shared_ptr<nm::ICommand> task = globalThreadPoolData->m_tasksQueue.Dequeue();
         nm::ICommand* task = globalThreadPoolData->m_tasksQueue.Dequeue();
         task->Execute(); // Task Execution
@@ -30,7 +30,7 @@ nm::runtime::ThreadPool::ThreadPool(const size_t a_workingThreadsNumber, const s
 
 
 nm::runtime::ThreadPool::~ThreadPool() {
-    if(!this->m_threadPoolSharedData->m_isRequiredStopThreadPoolFromRunning) {
+    if(!this->m_threadPoolSharedData->IsRequiredStopThreadPoolFromRunning()) {
         this->StopExecution();
     }
     // Else - already stopped
@@ -38,14 +38,14 @@ nm::runtime::ThreadPool::~ThreadPool() {
 
 
 void nm::runtime::ThreadPool::PushTask(ICommand* a_task) {
-    if(!this->m_threadPoolSharedData->m_isRequiredStopThreadPoolFromRunning) {
+    if(!this->m_threadPoolSharedData->IsRequiredStopThreadPoolFromRunning()) {
         this->m_threadPoolSharedData->m_tasksQueue.Enqueue(a_task);
     }
 }
 
 
 // void nm::runtime::ThreadPool::PushTask(std::shared_ptr<ICommand> a_task) {
-//     if(!this->m_threadPoolSharedData->m_isRequiredStopThreadPoolFromRunning) {
+//     if(!this->m_threadPoolSharedData->IsRequiredStopThreadPoolFromRunning()) {
 //         this->m_threadPoolSharedData->m_tasksQueue.Enqueue(a_task);
 //     }
 // }
@@ -57,7 +57,7 @@ void nm::runtime::ThreadPool::PushTask(ICommand* a_task) {
 
 
 void nm::runtime::ThreadPool::StopExecution() {
-    this->m_threadPoolSharedData->m_isRequiredStopThreadPoolFromRunning = true;
+    this->m_threadPoolSharedData->SetIsRequiredStopThreadPoolFromRunning(true);
     while(!this->m_threadPoolSharedData->m_tasksQueue.IsEmpty()); // A polling loop to check if the safe queue is empty
 
     for(size_t i = 0; i < this->m_workers.size(); ++i) { // A "cleaning" loop (to ensure that all the threads has finished and did not block)

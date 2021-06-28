@@ -33,6 +33,7 @@ private:
 
     pthread_mutex_t m_mutex;
     bool m_isAvailableMutex;
+    bool m_isLocked;
 };
 
 } // nm

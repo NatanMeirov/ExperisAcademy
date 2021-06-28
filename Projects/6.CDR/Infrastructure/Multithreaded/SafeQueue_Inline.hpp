@@ -21,8 +21,9 @@ nm::SafeQueue<T>::SafeQueue(const size_t a_initialCapacity)
 template <typename T>
 void nm::SafeQueue<T>::Enqueue(const T& a_item) {
     this->m_currentFreePlacesInQueue.Down();
-    nm::LockGuard(this->m_lock);
+    this->m_lock.Lock();
     this->m_queue.Enqueue(a_item);
+    this->m_lock.Unlock();
     this->m_currentOccupiedPlacesInQueue.Up();
 }
 
@@ -30,8 +31,9 @@ void nm::SafeQueue<T>::Enqueue(const T& a_item) {
 template <typename T>
 T nm::SafeQueue<T>::Dequeue() {
     this->m_currentOccupiedPlacesInQueue.Down();
-    nm::LockGuard(this->m_lock);
+    this->m_lock.Lock();
     T popedItem = this->m_queue.Dequeue();
+    this->m_lock.Unlock();
     this->m_currentFreePlacesInQueue.Up();
 
     return popedItem;
@@ -40,12 +42,14 @@ T nm::SafeQueue<T>::Dequeue() {
 
 template <typename T>
 bool nm::SafeQueue<T>::IsEmpty() {
+    nm::LockGuard(this->m_lock);
     return this->m_queue.IsEmpty();
 }
 
 
 template <typename T>
 size_t nm::SafeQueue<T>::Size() {
+    nm::LockGuard(this->m_lock);
     return this->m_queue.Size();
 }
 

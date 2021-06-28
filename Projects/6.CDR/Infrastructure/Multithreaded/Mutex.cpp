@@ -5,31 +5,46 @@
 
 nm::Mutex::Mutex()
 : m_mutex(PTHREAD_MUTEX_INITIALIZER)
-, m_isAvailableMutex(true) {
+, m_isAvailableMutex(true)
+, m_isLocked(false) {
 }
 
 
 nm::Mutex::~Mutex() {
-    this->Destroy();
+    if(this->m_isAvailableMutex) {
+        this->Destroy();
+    }
 }
 
 
 void nm::Mutex::Lock() {
     if(this->m_isAvailableMutex) {
+        if(this->m_isLocked) {
+            throw std::runtime_error("Mutex is already locked");
+        }
+
         int statusCode = pthread_mutex_lock(&this->m_mutex);
         if(statusCode != 0) {
             throw std::runtime_error("Failed while trying to lock");
         }
+
+        this->m_isLocked = true;
     }
 }
 
 
 void nm::Mutex::Unlock() {
     if(this->m_isAvailableMutex) {
+        if(!this->m_isLocked) {
+            throw std::runtime_error("Mutex is already unlocked");
+        }
+
         int statusCode = pthread_mutex_unlock(&this->m_mutex);
         if(statusCode != 0) {
             throw std::runtime_error("Failed while trying to unlock");
         }
+
+        this->m_isLocked = false;
     }
 }
 
@@ -45,7 +60,9 @@ bool nm::Mutex::TryLock() {
 
 void nm::Mutex::Destroy() {
     if(this->m_isAvailableMutex) {
-        pthread_mutex_unlock(&this->m_mutex);
+        if(this->m_isLocked) {
+            pthread_mutex_unlock(&this->m_mutex);
+        }
         pthread_mutex_destroy(&this->m_mutex);
         this->m_isAvailableMutex = false;
     }

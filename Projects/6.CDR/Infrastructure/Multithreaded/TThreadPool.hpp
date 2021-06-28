@@ -7,6 +7,8 @@
 #include <cstddef> // size_t
 #include <vector>
 #include <memory> // std::shared_ptr
+#include "Mutex.hpp"
+#include "LockGuard.hpp"
 #include "Thread.hpp"
 #include "SafeQueue_Inline.hpp"
 
@@ -28,10 +30,14 @@ public:
     void StopWork(); // Stop TP from working - Would cancel all the running Threads
 
     struct ThreadPoolSharedData {
-        ThreadPoolSharedData(const size_t a_workingQueueInitialSize, TaskFunctor a_task) : m_worksQueue(a_workingQueueInitialSize), m_task(a_task), m_isRequiredStopThreadPoolFromRunning(false) {}
+        ThreadPoolSharedData(const size_t a_workingQueueInitialSize, TaskFunctor a_task) : m_worksQueue(a_workingQueueInitialSize), m_task(a_task), m_lock(), m_isRequiredStopThreadPoolFromRunning(false) {}
+
+        bool IsRequiredStopThreadPoolFromRunning() { nm::LockGuard guard(this->m_lock); return this->m_isRequiredStopThreadPoolFromRunning; }
+        void SetIsRequiredStopThreadPoolFromRunning(const bool a_state) { nm::LockGuard guard(this->m_lock); this->m_isRequiredStopThreadPoolFromRunning = a_state; }
 
         SafeQueue<T> m_worksQueue;
         TaskFunctor m_task;
+        nm::Mutex m_lock;
         bool m_isRequiredStopThreadPoolFromRunning;
     };
 
@@ -47,7 +53,7 @@ template <typename T, typename TaskFunctor>
 inline static void* ThreadPoolWorkingProcess(void* a_context) {
     typename ThreadPool<T,TaskFunctor>::ThreadPoolSharedData* globalThreadPoolData = static_cast<typename ThreadPool<T,TaskFunctor>::ThreadPoolSharedData*>(a_context);
 
-    while(!globalThreadPoolData->m_isRequiredStopThreadPoolFromRunning || !globalThreadPoolData->m_worksQueue.IsEmpty()) {
+    while(!globalThreadPoolData->IsRequiredStopThreadPoolFromRunning() || !globalThreadPoolData->m_worksQueue.IsEmpty()) {
         T work = globalThreadPoolData->m_worksQueue.Dequeue();
         globalThreadPoolData->m_task(work); // Task Execution on work
     }
@@ -68,7 +74,7 @@ ThreadPool<T, TaskFunctor>::ThreadPool(const size_t a_workingThreadsNumber, cons
 
 template <typename T, typename TaskFunctor>
 ThreadPool<T,TaskFunctor>::~ThreadPool() {
-    if(!this->m_threadPoolSharedData->m_isRequiredStopThreadPoolFromRunning) {
+    if(!this->m_threadPoolSharedData->IsRequiredStopThreadPoolFromRunning()) {
         this->StopWork();
     }
     // Else - already stopped
@@ -78,7 +84,7 @@ ThreadPool<T,TaskFunctor>::~ThreadPool() {
 
 template <typename T, typename TaskFunctor>
 void ThreadPool<T,TaskFunctor>::PushWork(const T& a_work) {
-    if(!this->m_threadPoolSharedData->m_isRequiredStopThreadPoolFromRunning) {
+    if(!this->m_threadPoolSharedData->IsRequiredStopThreadPoolFromRunning()) {
         this->m_threadPoolSharedData->m_worksQueue.Enqueue(a_work);
     }
 }
@@ -86,7 +92,7 @@ void ThreadPool<T,TaskFunctor>::PushWork(const T& a_work) {
 
 template <typename T, typename TaskFunctor>
 void ThreadPool<T,TaskFunctor>::StopWork() {
-    this->m_threadPoolSharedData->m_isRequiredStopThreadPoolFromRunning = true;
+    this->m_threadPoolSharedData->SetIsRequiredStopThreadPoolFromRunning(true);
     while(!this->m_threadPoolSharedData->m_worksQueue.IsEmpty()); // A polling loop to check if the safe queue is empty
 
     for(size_t i = 0; i < this->m_workers.size(); ++i) { // A "cleaning" loop (to ensure that all the threads has finished and did not block)

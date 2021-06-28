@@ -95,6 +95,6 @@ void nm::cdr::Provider::ProvideFiles() const {
         socket.Connect();
         socket.Send(cdrFileAsBytes);
 
-        // TODO: Add support at deleting the sent file
+        // std::remove(fullFilePath.c_str()); // Removes the previously sent file
     }
 }
