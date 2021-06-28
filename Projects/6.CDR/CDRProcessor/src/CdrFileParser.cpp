@@ -39,8 +39,8 @@ std::vector<nm::cdr::Cdr> nm::cdr::CdrFileParser::ParseCdrFileToCdrs(const std::
 
     compiletime::ThreadPool<std::string, decltype(task)> threadPool(CdrFileParser::THREADS_NUMBER, CdrFileParser::WORKING_TASKS_QUEUE_SIZE, task);
 
-    std::getline(ifs, singleLine); // Extract header (file length)
-    size_t linesNumber = std::stoul(singleLine); // Not in use here
+    std::getline(ifs, singleLine); // Extract header (file length) - not in use at all
+    // size_t linesNumber = std::stoul(singleLine); // Not needed
 
     while(std::getline(ifs, singleLine)) {
         threadPool.PushWork(singleLine);

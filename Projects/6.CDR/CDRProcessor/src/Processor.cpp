@@ -4,7 +4,7 @@
 #include <vector>
 #include <unistd.h> // sleep
 #include <stdlib.h> // malloc
-#include <string.h> // memcpy
+#include <string.h> // memcpy, strcpy
 #include "../inc/RAMDataBase.hpp"
 #include "../../Infrastructure/Multithreaded/Thread.hpp"
 #include "../../Infrastructure/Multithreaded/TThreadPool.hpp"
@@ -12,12 +12,18 @@
 #include "../../Infrastructure/Network/TCPListeningSocket.hpp"
 #include "../../Infrastructure/Network/Server/TCPServer.hpp"
 #include "../../Infrastructure/System/Directory.hpp"
+#include "../../Infrastructure/JsonSerializer/json.hpp"
 
 
 static void* ProviderListeningAction(void* a_context);
 static void* RestApiServerAction(void* a_context);
 static int ServerOnError(ServerResult _errorCode, const char* _errorMessage, void* _applicationInfo);
 static int ServerOnMessage(void* _message, int _clientID, Response* _response, void* _applicationInfo);
+int HandleError(Response* a_response);
+int HandleMsisdn(const std::string& a_request, Response* a_response, nm::cdr::Processor::GlobalProcessorThreadsData* a_data);
+int HandleOperator(const std::string& a_request, Response* a_response, nm::cdr::Processor::GlobalProcessorThreadsData* a_data);
+int HandleLinkGraph(const std::string& a_request, Response* a_response, nm::cdr::Processor::GlobalProcessorThreadsData* a_data);
+
 
 nm::cdr::Processor::Processor(const unsigned int a_processingTimeAmountInMinutes) // TODO: Create DataBaseFactory class
 : m_parser()
@@ -192,17 +198,64 @@ static void* RestApiServerAction(void* a_context) {
 
 // Using C Api
 static int ServerOnMessage(void* _message, int _clientID, Response* _response, void* _applicationInfo) {
-    // TODO:  read message, go to database and extract the correct data and return it to the user
-    unsigned char* response = (static_cast<unsigned char*>(malloc(36 * sizeof(unsigned char))));
-    memcpy(response, "{ response: error }", 36);
+    nm::cdr::Processor::GlobalProcessorThreadsData* data = static_cast<nm::cdr::Processor::GlobalProcessorThreadsData*>(_applicationInfo);
+    std::string request(static_cast<const char*>(_message));
+    if(request.find("GET") == std::string::npos) {
+        return HandleError(_response);
+    }
 
-    _response->m_isMessageDeallocationRequired = 1;
-    _response->m_responseMessageContent = response;
-    _response->m_responseMessageContentSize = 36;
-    _response->m_responseStatus = RESPONSE_SEND_MESSAGE;
+    if(request.find("msisdn") != std::string::npos) {
+        return HandleMsisdn(request, _response, data);
+    }
+    else if(request.find("operator") != std::string::npos) {
+        return HandleOperator(request, _response, data);
+    }
+    else if(request.find("link") != std::string::npos) {
+        return HandleLinkGraph(request, _response, data);
+    }
+    else { // Error
+        return HandleError(_response);
+    }
+}
+
+
+int HandleError(Response* a_response) {
+    size_t bufferSize = 1024; // 1 KB
+    char* responseJson =  static_cast<char*>(malloc(bufferSize));
+    if(!responseJson) {
+        return 1;
+    }
+
+    nlohmann::json j = { {"error", "an error has occurred while trying to analyze the request"} };
+    std::string jsonString = j.dump();
+    strcpy(responseJson, jsonString.c_str());
+
+    a_response->m_isMessageDeallocationRequired = 1;
+    a_response->m_responseMessageContent = responseJson;
+    a_response->m_responseMessageContentSize = bufferSize;
+    a_response->m_responseStatus = RESPONSE_SEND_MESSAGE;
 
     return 0;
 }
+
+
+int HandleMsisdn(const std::string& a_request, Response* a_response, nm::cdr::Processor::GlobalProcessorThreadsData* a_data) {
+    // TODO
+    return 0;
+}
+
+
+int HandleOperator(const std::string& a_request, Response* a_response, nm::cdr::Processor::GlobalProcessorThreadsData* a_data) {
+    // TODO
+    return 0;
+}
+
+
+int HandleLinkGraph(const std::string& a_request, Response* a_response, nm::cdr::Processor::GlobalProcessorThreadsData* a_data) {
+    // TODO
+    return 0;
+}
+
 
 
 int ServerOnError(ServerResult _errorCode, const char* _errorMessage, void* _applicationInfo) {
