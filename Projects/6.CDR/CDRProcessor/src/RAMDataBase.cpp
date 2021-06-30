@@ -69,6 +69,8 @@ bool nm::cdr::RAMDataBase::Add(const std::string& a_query, Cdr& a_dataToAdd) {
     this->m_threadPool.PushTask(billingTask);
     this->m_threadPool.PushTask(operatorTask);
     this->m_threadPool.PushTask(linkgraphTask);
+    
+    // TODO: find a way to handle the need of deleting the ICommand pointers, AFTER the execution of the tasks, and NOT before...
 
     return true;
 }
