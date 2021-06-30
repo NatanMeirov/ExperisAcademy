@@ -9,7 +9,8 @@ nm::Thread::Thread(TaskFunction a_taskToExecute, void* a_context)
     int statusCode = pthread_create(&this->m_threadID, NULL, a_taskToExecute, a_context);
     if(statusCode != 0) {
         *this->m_isAvailableThread = false;
-        throw std::runtime_error("Failed while trying to initialize the Thread");
+		delete this->m_isAvailableThread;
+        throw std::runtime_error("Failed while trying to create a Thread");
     }
 }
 
