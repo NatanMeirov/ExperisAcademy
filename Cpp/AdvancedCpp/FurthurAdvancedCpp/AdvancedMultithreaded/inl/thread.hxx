@@ -129,28 +129,31 @@ Thread<Func,RetT,Args...>::~Thread()
 {
     if(!m_isMoving) // Would not invoke the destruction action
     {
-        switch(m_destructionActionIndicator)
+        try
         {
-        case JOIN:
-        {
-            Join(); // Return value is ignored
-        }
+            switch(m_destructionActionIndicator)
+            {
+            case JOIN:
+            {
+                Join();
+                break;
+            }
 
-        case DETACH:
-        {
-            Detach();
-        }
+            case DETACH:
+            {
+                Detach();
+                break;
+            }
 
-        case CANCEL:
-        {
-            try
+            case CANCEL:
             {
                 Cancel();
+                break;
             }
-            catch (...)
-            { // No need to handle (error would be thrown ONLY if the thread has finished already)
             }
         }
+        catch(...)
+        { // No need to handle (error would be thrown ONLY if the thread has finished/detached/joined already)
         }
     }
 }
@@ -162,13 +165,17 @@ RetT Thread<Func,RetT,Args...>::Join()
     void* taskReturnedValue = nullptr;
     if(m_isAvailableThread)
     {
+        m_isAvailableThread = false;
+
         int statusCode = pthread_join(m_threadID, &taskReturnedValue);
         if(statusCode != 0)
         {
             throw std::runtime_error("Failed while trying to join");
         }
-
-        m_isAvailableThread = false; // Not critical if an exception is thrown and this line is not executing
+    }
+    else
+    {
+        throw std::runtime_error("Thread had been detached/joined/canceled already");
     }
 
     return ThreadJoinReturnHandler<RetT>()(taskReturnedValue);
@@ -180,13 +187,17 @@ void Thread<Func,RetT,Args...>::Detach()
 {
     if(m_isAvailableThread)
     {
+        m_isAvailableThread = false;
+
         int statusCode = pthread_detach(m_threadID);
         if(statusCode != 0)
         {
             throw std::runtime_error("Failed while trying to detach");
         }
-
-        m_isAvailableThread = false; // Not critical if an exception is thrown and this line is not executing
+    }
+    else
+    {
+        throw std::runtime_error("Thread had been detached/joined/canceled already");
     }
 }
 
@@ -194,13 +205,20 @@ void Thread<Func,RetT,Args...>::Detach()
 template <typename Func, typename RetT, typename ...Args>
 void Thread<Func,RetT,Args...>::Cancel()
 {
-    int statusCode = pthread_cancel(m_threadID);
-    if(statusCode != 0)
+    if(m_isAvailableThread)
     {
-        throw std::runtime_error("Failed while trying to cancel (maybe thread had finished already)");
-    }
+        m_isAvailableThread = false;
 
-    m_isAvailableThread = false; // Not critical if an exception is thrown and this line is not executing
+        int statusCode = pthread_cancel(m_threadID);
+        if(statusCode != 0)
+        {
+            throw std::runtime_error("Failed while trying to cancel (maybe the thread had finished already)");
+        }
+    }
+    else
+    {
+        throw std::runtime_error("Thread had been detached/joined/canceled already");
+    }
 }
 
 } // nm
