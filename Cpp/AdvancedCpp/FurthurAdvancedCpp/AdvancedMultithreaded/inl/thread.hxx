@@ -2,7 +2,7 @@
 #define NM_THREAD_HXX
 
 
-#include <pthread.h> // pthread_create, pthread_join, pthread_exit
+#include <pthread.h> // pthread_create, pthread_join, pthread_cancel
 #include <stdexcept> // std::runtime_error
 #include <tuple> // std::tuple, std::make_tuple
 #include <utility> // std::move
