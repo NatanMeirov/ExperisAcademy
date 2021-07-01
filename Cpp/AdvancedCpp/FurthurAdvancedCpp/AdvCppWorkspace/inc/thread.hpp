@@ -15,12 +15,13 @@ namespace advcpp
 
 /**
  * Concept of Func: Func must be Call-able (function pointer, functor, lambda expression) - and must be declared to get {Args...} as its parameters, and must be copy-constructable
- * Concept of Args: Args must be default-constructable and copy-constuctable (can be 0..N arguments)
- * To use this Thread with member function: wrap this pointer inside a functor Func
+ * Concept of Args...: Args must be default-constructable and copy-constuctable (can be 0..N arguments)
+ * Concept of RetT: RetT must be copy-constructable, and MUST NOT be of type void
+ * Note: To use this Thread with member function - wrap [this] pointer inside a functor Func or send it as one of the Arg...
  */
 
 
-template <typename Func, typename ...Args>
+template <typename Func, typename RetT, typename ...Args>
 class Thread {
 public:
     Thread(Func a_task, Args... a_args);
@@ -37,7 +38,7 @@ public:
     void operator delete(void* ptr) = delete;
     void operator delete[](void* ptr) = delete;
 
-    void Join();
+    RetT Join();
     void Detach();
     void Cancel();
 
