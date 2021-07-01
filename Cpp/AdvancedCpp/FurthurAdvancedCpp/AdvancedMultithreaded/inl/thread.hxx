@@ -12,14 +12,58 @@
 namespace nm
 {
 
+template <typename RetT, typename Func, typename ...Args>
+struct ThreadFuncInvoker
+{
+    void* operator()(Func a_func, std::tuple<Args...> a_tuple)
+    {
+        return reinterpret_cast<void*>(nm::meta::UnpackTupleAndCallFunc<RetT>(a_func, a_tuple));
+    }
+};
+
+
+// A specialization to ensure that a reinterpret_cast<void*> is NOT called on (void) return type
+template <typename Func, typename ...Args>
+struct ThreadFuncInvoker<void, Func, Args...>
+{
+    void* operator()(Func a_func, std::tuple<Args...> a_tuple)
+    {
+        nm::meta::UnpackTupleAndCallFunc<void>(a_func, a_tuple);
+
+        return nullptr;
+    }
+};
+
+
+template <typename RetT>
+struct ThreadJoinReturnHandler
+{
+    RetT operator()(void* a_returnValue)
+    {
+        return reinterpret_cast<RetT>(a_returnValue);
+    }
+};
+
+
+// A specialization to ensure that a reinterpret_cast<void> is NOT called on (void*) return type
+template <>
+struct ThreadJoinReturnHandler<void>
+{
+    void operator()(void* a_notUsedReturnValue)
+    {
+        (void)(a_notUsedReturnValue); // Unused
+        return;
+    }
+};
+
+
 template <typename Func, typename RetT, typename ...Args>
 void* Thread<Func,RetT,Args...>::Thread::Task(void* a_this)
 {
     Thread<Func,RetT,Args...>* self = static_cast<Thread<Func,RetT,Args...>*>(a_this);
-    self->m_task(self->m_args);
-    RetT returnedValue = nm::meta::UnpackTupleAndCallFunc<RetT>(self->m_task, self->m_args);
 
-    return reinterpret_cast<void*>(returnedValue);
+    // return nm::meta::UnpackTupleAndCallFunc<RetT>(self->m_task, self->m_args);
+    return ThreadFuncInvoker<RetT,Func,Args...>()(self->m_task, self->m_args);
 }
 
 
@@ -127,7 +171,7 @@ RetT Thread<Func,RetT,Args...>::Join()
         m_isAvailableThread = false; // Not critical if an exception is thrown and this line is not executing
     }
 
-    return reinterpret_cast<RetT>(taskReturnedValue);
+    return ThreadJoinReturnHandler<RetT>()(taskReturnedValue);
 }
 
 

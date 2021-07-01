@@ -34,14 +34,14 @@ struct SequenceExpander<0, Seq...>
 };
 
 
-template <typename RetT = void, typename Func, typename Tuple, size_t ...Seq>
+template <typename RetT, typename Func, typename Tuple, size_t ...Seq>
 RetT ExpandedFuncCall(Func a_func, Tuple a_tuple)
 {
     return a_func(std::get<Seq>(a_tuple) ...);
 }
 
 
-template <typename RetT = void, typename Func, typename ...Args>
+template <typename RetT, typename Func, typename ...Args>
 RetT UnpackTupleAndCallFunc(Func a_func, std::tuple<Args...> a_tuple)
 {
     return ExpandedFuncCall<RetT, Func, SequenceExpander<std::tuple_size<std::tuple<Args...>>::value>::type>(a_func, a_tuple);
