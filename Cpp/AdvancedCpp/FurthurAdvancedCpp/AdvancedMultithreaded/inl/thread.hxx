@@ -58,7 +58,7 @@ struct ThreadJoinReturnHandler<void>
 
 
 template <typename Func, typename RetT, typename ...Args>
-void* Thread<Func,RetT,Args...>::Thread::Task(void* a_this)
+void* Thread<Func,RetT,Args...>::Task(void* a_this)
 {
     Thread<Func,RetT,Args...>* self = static_cast<Thread<Func,RetT,Args...>*>(a_this);
 
