@@ -50,7 +50,7 @@ private:
     pthread_t m_threadID;
     DestructionAction m_destructionActionIndicator;
     bool m_isAvailableThread;
-    bool m_isMoving;
+    bool m_hasMoved;
 };
 
 } // nm

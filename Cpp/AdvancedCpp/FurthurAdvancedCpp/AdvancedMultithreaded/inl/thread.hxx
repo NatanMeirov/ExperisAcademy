@@ -74,7 +74,7 @@ Thread<Func,RetT,Args...>::Thread(Func a_task, Args... a_args, DestructionAction
 , m_threadID()
 , m_destructionActionIndicator(a_destructionActionIndicator)
 , m_isAvailableThread(true)
-, m_isMoving(false)
+, m_hasMoved(false)
 {
     int statusCode = pthread_create(&m_threadID, nullptr, Thread::Task, static_cast<void*>(this));
     if(statusCode < 0)
@@ -91,16 +91,16 @@ Thread<Func,RetT,Args...>::Thread(Thread&& a_rvalue) noexcept
 , m_threadID(a_rvalue.m_threadID)
 , m_destructionActionIndicator(a_rvalue.m_destructionActionIndicator)
 , m_isAvailableThread(a_rvalue.m_isAvailableThread)
-, m_isMoving(false)
+, m_hasMoved(false)
 {
-    a_rvalue.m_isMoving = true; // Move indicator
+    a_rvalue.m_hasMoved = true; // Move indicator
 }
 
 
 template <typename Func, typename RetT, typename ...Args>
 Thread<Func,RetT,Args...>& Thread<Func,RetT,Args...>::operator=(Thread&& a_rvalue) noexcept
 {
-    if(m_isAvailableThread)
+    if(m_isAvailableThread  && !m_hasMoved)
     {
         try
         {
@@ -115,10 +115,10 @@ Thread<Func,RetT,Args...>& Thread<Func,RetT,Args...>::operator=(Thread&& a_rvalu
     m_args = std::move(a_rvalue.m_args);
     m_threadID = a_rvalue.m_threadID;
     m_destructionActionIndicator = a_rvalue.m_destructionActionIndicator;
-    m_isMoving = false;
+    m_hasMoved = false;
 
     m_isAvailableThread = a_rvalue.m_isAvailableThread;
-    a_rvalue.m_isMoving = true; // Move indicator
+    a_rvalue.m_hasMoved = true; // Move indicator
 
     return *this;
 }
@@ -127,7 +127,7 @@ Thread<Func,RetT,Args...>& Thread<Func,RetT,Args...>::operator=(Thread&& a_rvalu
 template <typename Func, typename RetT, typename ...Args>
 Thread<Func,RetT,Args...>::~Thread()
 {
-    if(!m_isMoving) // Would not invoke the destruction action
+    if(!m_hasMoved) // Would not invoke the destruction action
     {
         try
         {
@@ -162,6 +162,11 @@ Thread<Func,RetT,Args...>::~Thread()
 template <typename Func, typename RetT, typename ...Args>
 RetT Thread<Func,RetT,Args...>::Join()
 {
+    if(m_hasMoved)
+    {
+        throw std::runtime_error("Failed while trying to join moved thread");
+    }
+
     void* taskReturnedValue = nullptr;
     if(m_isAvailableThread)
     {
@@ -185,6 +190,11 @@ RetT Thread<Func,RetT,Args...>::Join()
 template <typename Func, typename RetT, typename ...Args>
 void Thread<Func,RetT,Args...>::Detach()
 {
+    if(m_hasMoved)
+    {
+        throw std::runtime_error("Failed while trying to detach moved thread");
+    }
+
     if(m_isAvailableThread)
     {
         m_isAvailableThread = false;
@@ -205,6 +215,11 @@ void Thread<Func,RetT,Args...>::Detach()
 template <typename Func, typename RetT, typename ...Args>
 void Thread<Func,RetT,Args...>::Cancel()
 {
+    if(m_hasMoved)
+    {
+        throw std::runtime_error("Failed while trying to cancel moved thread");
+    }
+
     m_isAvailableThread = false; // Cannot check this flag as a condition, because there is a way that the thread is detached or joined, and they are not available, but they are cancelable...
 
     int statusCode = pthread_cancel(m_threadID);
