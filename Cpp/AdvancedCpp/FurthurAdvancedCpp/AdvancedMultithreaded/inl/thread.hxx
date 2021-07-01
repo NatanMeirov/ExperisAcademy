@@ -107,7 +107,7 @@ Thread<Func,RetT,Args...>& Thread<Func,RetT,Args...>::operator=(Thread&& a_rvalu
             Cancel();
         }
         catch(...)
-        { // No need to handle (error would be thrown ONLY if the thread has finished already)
+        { // No need to handle (error would be thrown ONLY if the thread had finished already)
         }
     }
 
@@ -153,7 +153,7 @@ Thread<Func,RetT,Args...>::~Thread()
             }
         }
         catch(...)
-        { // No need to handle (error would be thrown ONLY if the thread has finished/detached/joined already)
+        { // No need to handle (error would be thrown ONLY if the thread had finished/detached/joined already)
         }
     }
 }
@@ -205,19 +205,12 @@ void Thread<Func,RetT,Args...>::Detach()
 template <typename Func, typename RetT, typename ...Args>
 void Thread<Func,RetT,Args...>::Cancel()
 {
-    if(m_isAvailableThread)
-    {
-        m_isAvailableThread = false;
+    m_isAvailableThread = false; // Cannot check this flag as a condition, because there is a way that the thread is detached or joined, and they are not available, but they are cancelable...
 
-        int statusCode = pthread_cancel(m_threadID);
-        if(statusCode != 0)
-        {
-            throw std::runtime_error("Failed while trying to cancel (maybe the thread had finished already)");
-        }
-    }
-    else
+    int statusCode = pthread_cancel(m_threadID);
+    if(statusCode != 0)
     {
-        throw std::runtime_error("Thread had been detached/joined/canceled already");
+        throw std::runtime_error("Failed while trying to cancel (maybe the thread had finished already)");
     }
 }
 
