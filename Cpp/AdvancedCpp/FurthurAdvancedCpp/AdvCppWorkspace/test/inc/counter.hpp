@@ -6,9 +6,6 @@
 #include <iostream> // std::ostream
 
 
-namespace nm
-{
-
 namespace advcpp
 {
 
@@ -16,7 +13,7 @@ class Counter
 {
     friend std::ostream& operator<<(std::ostream& a_os, const Counter& a_counter);
 public:
-    Counter(const size_t a_countFrom = 0);
+    explicit Counter(const size_t a_countFrom = 0);
     Counter(const Counter& a_other) = default;
     Counter& operator=(const Counter& a_other) = default;
     ~Counter() = default;
@@ -34,8 +31,6 @@ private:
 };
 
 } // advcpp
-
-} // nm
 
 
 #endif // NM_COUNTER_HPP
