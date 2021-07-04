@@ -12,10 +12,11 @@
 namespace advcpp
 {
 
+/* Warning: The given ICallable task will be SHARED in all the N threads - make sure that the given task is thread-safe! */
 class ThreadGroup
 {
 public:
-    enum GroupDestructionAction { JOIN, DETACH, CANCEL };
+    enum GroupDestructionAction { JOIN, DETACH, CANCEL, ASSERTION };
 
     ThreadGroup(std::shared_ptr<ICallable> a_commonTask, const size_t a_threadsCount, GroupDestructionAction a_destructionActionIndicator);
     ThreadGroup(const ThreadGroup& a_other) = delete;
@@ -24,10 +25,10 @@ public:
 
     void Join();
     void Detach();
-    void Cancel();
+    void Cancel(bool a_ensureCompleteCancelation = false);
 
 private:
-    static constexpr Thread::DestructionAction DESTRUCT_THREAD_OPT[] = {Thread::JOIN, Thread::DETACH, Thread::CANCEL};
+    static constexpr Thread::DestructionAction DESTRUCT_THREAD_OPT[] = {Thread::JOIN, Thread::DETACH, Thread::CANCEL, Thread::ASSERTION};
 
 private:
     std::vector<std::shared_ptr<Thread>> m_threadsGroup;

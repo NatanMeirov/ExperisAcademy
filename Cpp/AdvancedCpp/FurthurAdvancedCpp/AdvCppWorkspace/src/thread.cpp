@@ -1,21 +1,14 @@
 #include <cstddef> // size_t
 #include <pthread.h>
 #include <memory> // std:shared_ptr
+#include <cassert> // assert
 #include "thread.hpp"
 #include "icallable.hpp"
+#include "safe_ref_counting_shared_ptr_wrapper.hpp"
 
 
 namespace advcpp
 {
-
-void* Thread::Task(void* a_task)
-{
-    ICallable* task = static_cast<ICallable*>(a_task);
-    (*task)();
-
-    return nullptr;
-}
-
 
 Thread::Thread(std::shared_ptr<ICallable> a_task, DestructionAction a_destructionActionIndicator)
 : m_task(a_task)
@@ -24,7 +17,8 @@ Thread::Thread(std::shared_ptr<ICallable> a_task, DestructionAction a_destructio
 , m_isAvailableThread(true)
 , m_hasMoved(false)
 {
-    int statusCode = pthread_create(&m_threadID, nullptr, Thread::Task, static_cast<void*>(a_task.get()));
+    SafeRefCountingSharedPtrWrapper<ICallable>* sharedPtrWrapper = new SafeRefCountingSharedPtrWrapper<ICallable>(m_task);
+    int statusCode = pthread_create(&m_threadID, nullptr, Thread::Task, sharedPtrWrapper);
     if(statusCode < 0)
     {
         throw std::runtime_error("Failed while trying to create a thread");
@@ -72,31 +66,31 @@ Thread::~Thread()
 {
     if(!m_hasMoved) // Would not invoke the destruction action
     {
-        try
+        switch(m_destructionActionIndicator)
         {
-            switch(m_destructionActionIndicator)
-            {
-            case JOIN:
-            {
-                Join();
-                break;
-            }
-
-            case DETACH:
-            {
-                Detach();
-                break;
-            }
-
-            case CANCEL:
-            {
-                Cancel();
-                break;
-            }
-            }
+        case JOIN:
+        {
+            CallJoin();
+            break;
         }
-        catch(...)
-        { // No need to handle (error would be thrown ONLY if the thread had finished/detached/joined already)
+
+        case DETACH:
+        {
+            CallDetach();
+            break;
+        }
+
+        case CANCEL:
+        {
+            CallCancel();
+            break;
+        }
+
+        case ASSERTION:
+        {
+            assert(!m_isAvailableThread);
+            break;
+        }
         }
     }
 }
@@ -106,18 +100,18 @@ void Thread::Join()
 {
     if(m_hasMoved)
     {
-        throw std::runtime_error("Failed while trying to join moved thread");
+        throw std::runtime_error("Failed while tried to join a moved thread");
     }
 
     if(m_isAvailableThread)
     {
-        m_isAvailableThread = false;
-
-        int statusCode = pthread_join(m_threadID, nullptr);
+        int statusCode = CallJoin();
         if(statusCode != 0)
         {
-            throw std::runtime_error("Failed while trying to join");
+            throw std::runtime_error("Failed while tried to join");
         }
+
+        m_isAvailableThread = false;
     }
     else
     {
@@ -130,18 +124,18 @@ void Thread::Detach()
 {
     if(m_hasMoved)
     {
-        throw std::runtime_error("Failed while trying to detach moved thread");
+        throw std::runtime_error("Failed while tried to detach a moved thread");
     }
 
     if(m_isAvailableThread)
     {
-        m_isAvailableThread = false;
-
-        int statusCode = pthread_detach(m_threadID);
+        int statusCode = CallDetach();
         if(statusCode != 0)
         {
-            throw std::runtime_error("Failed while trying to detach");
+            throw std::runtime_error("Failed while tried to detach");
         }
+
+        m_isAvailableThread = false;
     }
     else
     {
@@ -150,20 +144,58 @@ void Thread::Detach()
 }
 
 
-void Thread::Cancel()
+void Thread::Cancel(bool a_ensureCompleteCancelation)
 {
     if(m_hasMoved)
     {
-        throw std::runtime_error("Failed while trying to cancel moved thread");
+        throw std::runtime_error("Failed while tried to cancel a moved thread");
     }
 
-    m_isAvailableThread = false; // Cannot check this flag as a condition, because there is a way that the thread is detached or joined, and they are not available, but they are cancelable...
+    // Cannot check the m_isAvailableThread flag as a condition, because there is a way that the thread is detached or joined, and they are not available, but they are cancelable...
 
-    int statusCode = pthread_cancel(m_threadID);
+    int statusCode = CallCancel();
     if(statusCode != 0)
     {
-        throw std::runtime_error("Failed while trying to cancel (maybe the thread had finished already)");
+        throw std::runtime_error("Failed while tried to cancel (maybe the thread had finished already)");
     }
+
+    m_isAvailableThread = false;
+
+    if(a_ensureCompleteCancelation)
+    {
+        CallJoin(); // pthread_join after cancel would provide a PTHREAD_CANCELED
+    }
+}
+
+
+void* Thread::Task(void* a_ptrWrapper)
+{
+    SafeRefCountingSharedPtrWrapper<ICallable>* ptrWrapper = static_cast<SafeRefCountingSharedPtrWrapper<ICallable>*>(a_ptrWrapper);
+    std::shared_ptr<ICallable> task = ptrWrapper->GetSharedPtrCopy();
+
+    delete ptrWrapper; // For safety reasons (exception safe)
+
+    (*task)();
+
+    return nullptr;
+}
+
+
+int Thread::CallJoin()
+{
+    return pthread_join(m_threadID, nullptr);
+}
+
+
+int Thread::CallDetach()
+{
+    return pthread_detach(m_threadID);
+}
+
+
+int Thread::CallCancel()
+{
+    return pthread_cancel(m_threadID);
 }
 
 } // advcpp

@@ -9,7 +9,7 @@
 #include "counter_decrement_task.hpp"
 
 
-BEGIN_TEST(double_inc_threads_group_test_till_100)
+BEGIN_TEST(inc_threads_group_test_till_100_X_4)
     using advcpp::ThreadGroup;
     using advcpp::Counter;
     using advcpp::CounterIncrementTask;
@@ -27,7 +27,7 @@ BEGIN_TEST(double_inc_threads_group_test_till_100)
 END_TEST
 
 
-BEGIN_TEST(double_inc_threads_group_test_till_100000)
+BEGIN_TEST(inc_threads_group_test_till_100000_X_4)
     using advcpp::ThreadGroup;
     using advcpp::Counter;
     using advcpp::CounterIncrementTask;
@@ -70,7 +70,7 @@ END_TEST
 
 
 BEGIN_SUITE(ThreadsTest)
-    TEST(double_inc_threads_group_test_till_100)
-    TEST(double_inc_threads_group_test_till_100000)
+    TEST(inc_threads_group_test_till_100_X_4)
+    TEST(inc_threads_group_test_till_100000_X_4)
     TEST(double_join_group_and_exception)
 END_SUITE

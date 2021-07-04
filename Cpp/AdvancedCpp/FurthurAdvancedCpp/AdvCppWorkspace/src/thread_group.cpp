@@ -41,7 +41,7 @@ void advcpp::ThreadGroup::Join()
     }
     else
     {
-        throw std::runtime_error("Double join/detach.cancel attempts on a threads group");
+        throw std::runtime_error("Double join/detach/cancel attempts on the threads group");
     }
 }
 
@@ -59,12 +59,12 @@ void advcpp::ThreadGroup::Detach()
     }
     else
     {
-        throw std::runtime_error("Double join/detach.cancel attempts on a threads group");
+        throw std::runtime_error("Double join/detach/cancel attempts on the threads group");
     }
 }
 
 
-void advcpp::ThreadGroup::Cancel()
+void advcpp::ThreadGroup::Cancel(bool a_ensureCompleteCancelation)
 {
     m_isAvailableThreadGroup = false; // flag could be false before this assignment, if the group had previously joined or detached
 
@@ -72,7 +72,7 @@ void advcpp::ThreadGroup::Cancel()
     {
         try
         {
-            m_threadsGroup.at(i)->Cancel();
+            m_threadsGroup.at(i)->Cancel(a_ensureCompleteCancelation);
         }
         catch (...)
         { // The thread may finished already its execution - and a cancel would fail and an exception may be thrown (although its valid case)
