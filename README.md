@@ -1,2 +1,2 @@
-# Experis Academy - Natan Meirov
-Natan Meirov's Experis Academy works and projects, written in C/C++ (Linux environment)
+# Experis Academy Bootcamp - Natan Meirov
+Natan Meirov's Experis Academy's Bootcamp works and projects, written in C/C++ (Linux environment)

@@ -1,5 +1,5 @@
-#ifndef NM_META_TUPLE_UNPACK
-#define NM_META_TUPLE_UNPACK
+#ifndef NM_META_TUPLE_UNPACK_HXX
+#define NM_META_TUPLE_UNPACK_HXX
 
 
 #include <cstddef> // size_t
@@ -52,4 +52,4 @@ RetT UnpackTupleAndCallFunc(Func a_func, std::tuple<Args...> a_tuple)
 } // nm
 
 
-#endif // NM_META_TUPLE_UNPACK
+#endif // NM_META_TUPLE_UNPACK_HXX
