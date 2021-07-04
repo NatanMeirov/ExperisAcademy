@@ -20,7 +20,7 @@ public:
     ThreadGroup(std::shared_ptr<ICallable> a_commonTask, const size_t a_threadsCount, GroupDestructionAction a_destructionActionIndicator);
     ThreadGroup(const ThreadGroup& a_other) = delete;
     ThreadGroup& operator=(const ThreadGroup& a_other) = delete;
-    ~ThreadGroup() = default; // Each Thread handles its destruction, specified by DestructionAction option
+    ~ThreadGroup(); // Each Thread handles its destruction, specified by DestructionAction option
 
     void Join();
     void Detach();

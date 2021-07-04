@@ -17,7 +17,7 @@ public:
     CounterDecrementTask& operator=(const CounterDecrementTask& a_other) = delete; // reference member
     virtual ~CounterDecrementTask() = default;
 
-    virtual void operator()() override { while(m_decrementOperationsCount-- >0) { DecrementCounter();} }
+    virtual void operator()() override { for(size_t i = 0; i < m_decrementOperationsCount; ++i) { DecrementCounter();} }
 
 private:
     void DecrementCounter() { m_counter.Decrement(); }

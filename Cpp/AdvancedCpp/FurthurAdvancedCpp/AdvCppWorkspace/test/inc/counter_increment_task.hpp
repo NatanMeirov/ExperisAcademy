@@ -17,7 +17,7 @@ public:
     CounterIncrementTask& operator=(const CounterIncrementTask& a_other) = delete; // reference member
     virtual ~CounterIncrementTask() = default;
 
-    virtual void operator()() override { while(m_incrementOperationsCount-- >0) { IncrementCounter();} }
+    virtual void operator()() override { for(size_t i = 0; i < m_incrementOperationsCount; ++i) { IncrementCounter();} }
 
 private:
     void IncrementCounter() { m_counter.Increment(); }
