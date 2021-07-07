@@ -54,6 +54,8 @@ private:
 template <>
 class AtomicValue<bool>
 {
+    using Byte = unsigned char;
+
 public:
     explicit AtomicValue(bool a_startingValue = false);
     AtomicValue(const AtomicValue<bool>& a_other) = delete; // An atomic value SHOULD be passed by reference, and NOT by copy
@@ -78,7 +80,7 @@ public:
     operator bool() const;
 
 private:
-    mutable unsigned char m_atomicBool;
+    mutable Byte m_atomicBool;
 };
 
 

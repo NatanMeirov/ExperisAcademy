@@ -42,28 +42,28 @@ T nm::SafeQueue<T>::Dequeue() {
 
 template <typename T>
 bool nm::SafeQueue<T>::IsEmpty() {
-    nm::LockGuard(this->m_lock);
+    nm::LockGuard guard(this->m_lock);
     return this->m_queue.IsEmpty();
 }
 
 
 template <typename T>
 size_t nm::SafeQueue<T>::Size() {
-    nm::LockGuard(this->m_lock);
+    nm::LockGuard guard(this->m_lock);
     return this->m_queue.Size();
 }
 
 
 template <typename T>
 T& nm::SafeQueue<T>::GetFront() {
-    nm::LockGuard(this->m_lock);
+    nm::LockGuard guard(this->m_lock);
     return this->m_queue.Front();
 }
 
 
 template <typename T>
 T& nm::SafeQueue<T>::GetBack() {
-    nm::LockGuard(this->m_lock);
+    nm::LockGuard guard(this->m_lock);
     return this->m_queue.Back();
 }
 

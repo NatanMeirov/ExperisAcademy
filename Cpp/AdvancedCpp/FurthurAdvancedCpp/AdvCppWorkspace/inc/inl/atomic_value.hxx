@@ -3,7 +3,7 @@
 
 
 #include <type_traits> // std::is_integral
-
+#include "../atomic_value.hpp"
 
 namespace advcpp
 {
@@ -118,8 +118,8 @@ T AtomicValue<T>::Sub(T a_valueToSubtract)
 // Atomic Flag:
 
 inline AtomicValue<bool>::AtomicValue(bool a_startingValue)
-: m_atomicBool(a_startingValue)
 {
+    Set(a_startingValue);
 }
 
 
@@ -137,31 +137,31 @@ inline void AtomicValue<bool>::operator=(bool a_otherValue)
 
 inline void AtomicValue<bool>::Set(bool a_otherValue)
 {
-    while(!(__sync_bool_compare_and_swap(&m_atomicBool, m_atomicBool, a_otherValue))); // Polling - to make sure that the new value has stored successfully (that way is thread-safety)
+    while(!(__sync_bool_compare_and_swap(&m_atomicBool, m_atomicBool, Byte(a_otherValue)))); // Polling - to make sure that the new value has stored successfully (that way is thread-safety)
 }
 
 
 inline bool AtomicValue<bool>::SetIf(bool a_conditionalValue, bool a_newValue)
 {
-    return __sync_bool_compare_and_swap(&m_atomicBool, a_conditionalValue, a_newValue);
+    return __sync_bool_compare_and_swap(&m_atomicBool, Byte(a_conditionalValue), Byte(a_newValue));
 }
 
 
 inline void AtomicValue<bool>::True()
 {
-    while(!(__sync_bool_compare_and_swap(&m_atomicBool, m_atomicBool, true))); // Polling - to make sure that the new value has stored successfully (that way is thread-safety)
+    while(!(__sync_bool_compare_and_swap(&m_atomicBool, m_atomicBool, 1))); // Polling - to make sure that the new value has stored successfully (that way is thread-safety)
 }
 
 
 inline void AtomicValue<bool>::False()
 {
-    while(!(__sync_bool_compare_and_swap(&m_atomicBool, m_atomicBool, false))); // Polling - to make sure that the new value has stored successfully (that way is thread-safety)
+    while(!(__sync_bool_compare_and_swap(&m_atomicBool, m_atomicBool, 0))); // Polling - to make sure that the new value has stored successfully (that way is thread-safety)
 }
 
 
 inline bool AtomicValue<bool>::Check() const
 {
-    return __sync_add_and_fetch(&m_atomicBool, 0);
+    return __sync_or_and_fetch(&m_atomicBool, 0);
 }
 
 } // advcpp

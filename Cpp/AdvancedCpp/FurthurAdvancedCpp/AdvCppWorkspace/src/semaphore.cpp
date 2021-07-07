@@ -1,11 +1,11 @@
-#include "sem.hpp"
+#include "semaphore.hpp"
 #include <semaphore.h> // semaphore functions
 #include <stdexcept> // std::runtime_error
 #include <cassert> // assert
 #include "atomic_value.hpp"
 
 
-advcpp::Semaphore::Semaphore(int a_sharedOption, unsigned int a_initialValue)
+advcpp::Semaphore::Semaphore(unsigned int a_initialValue, int a_sharedOption)
 : m_semaphore()
 , m_isAvailableSemaphore(true)
 {

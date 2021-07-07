@@ -13,7 +13,7 @@ namespace advcpp
 class Semaphore
 {
 public:
-    Semaphore(int a_sharedOption, unsigned int a_initialValue);
+    Semaphore(unsigned int a_initialValue, int a_sharedOption = 0);
     Semaphore(const Semaphore& a_other) = delete;
     Semaphore& operator=(const Semaphore& a_other) = delete;
     ~Semaphore();
