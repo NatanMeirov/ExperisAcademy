@@ -15,7 +15,7 @@ template<typename Func>
 class NonICallableToICallableAdapterVV : public ICallable
 {
 public:
-    NonICallableToICallableAdapterVV(Func a_func) : m_func(a_func) {}
+    NonICallableToICallableAdapterVV(const Func& a_func) : m_func(a_func) {}
     virtual ~NonICallableToICallableAdapterVV() = default;
 
     virtual void operator()() override { m_func(); }
@@ -32,7 +32,7 @@ template<typename Func, typename RetT>
 class NonICallableToICallableAdapterRV : public ICallable
 {
 public:
-    NonICallableToICallableAdapterRV(Func a_func) : m_func(a_func), m_retVal() {}
+    NonICallableToICallableAdapterRV(const Func& a_func) : m_func(a_func), m_retVal() {}
     virtual ~NonICallableToICallableAdapterRV() = default;
 
     virtual void operator()() override { m_retVal = m_func(); }
@@ -50,7 +50,7 @@ template<typename Func, typename Arg>
 class NonICallableToICallableAdapterVA : public ICallable
 {
 public:
-    NonICallableToICallableAdapterVA(Func a_func, Arg a_arg) : m_func(a_func), m_arg(a_arg) {}
+    NonICallableToICallableAdapterVA(const Func& a_func, const Arg& a_arg) : m_func(a_func), m_arg(a_arg) {}
     virtual ~NonICallableToICallableAdapterVA() = default;
 
     virtual void operator()() override { m_func(m_arg); }
@@ -69,7 +69,7 @@ template<typename Func, typename RetT, typename Arg>
 class NonICallableToICallableAdapterRA : public ICallable
 {
 public:
-    NonICallableToICallableAdapterRA(Func a_func, Arg a_arg) : m_func(a_func), m_retVal(), m_arg(a_arg) {}
+    NonICallableToICallableAdapterRA(const Func& a_func, const Arg& a_arg) : m_func(a_func), m_retVal(), m_arg(a_arg) {}
     virtual ~NonICallableToICallableAdapterRA() = default;
 
     virtual void operator()() override { m_retVal = m_func(m_arg); }
@@ -90,7 +90,7 @@ template<typename Func, typename RetT, typename ArgA, typename ArgB>
 class NonICallableToICallableAdapterRAA : public ICallable
 {
 public:
-    NonICallableToICallableAdapterRAA(Func a_func, ArgA a_argA, ArgB a_argB) : m_func(a_func), m_retVal(), m_argA(a_argA), m_argB(a_argB) {}
+    NonICallableToICallableAdapterRAA(const Func& a_func, const ArgA& a_argA, const ArgB& a_argB) : m_func(a_func), m_retVal(), m_argA(a_argA), m_argB(a_argB) {}
     virtual ~NonICallableToICallableAdapterRAA() = default;
 
     virtual void operator()() override { m_retVal = m_func(m_argA, m_argB); }
@@ -112,7 +112,7 @@ template<typename Func, typename RetT, typename ArgA, typename ArgB, typename Ar
 class NonICallableToICallableAdapterRAAA : public ICallable
 {
 public:
-    NonICallableToICallableAdapterRAAA(Func a_func, ArgA a_argA, ArgB a_argB, ArgC a_argC) : m_func(a_func), m_retVal(), m_argA(a_argA), m_argB(a_argB), m_argC(a_argC) {}
+    NonICallableToICallableAdapterRAAA(const Func& a_func, const ArgA& a_argA, const ArgB& a_argB, const ArgC& a_argC) : m_func(a_func), m_retVal(), m_argA(a_argA), m_argB(a_argB), m_argC(a_argC) {}
     virtual ~NonICallableToICallableAdapterRAAA() = default;
 
     virtual void operator()() override { m_retVal = m_func(m_argA, m_argB, m_argC); }

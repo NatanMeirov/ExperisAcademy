@@ -4,6 +4,7 @@
 
 #include <cstddef> // size_t
 #include <iostream> // std::ostream
+#include "atomic_value.hpp"
 
 
 namespace advcpp
@@ -13,7 +14,7 @@ class Counter
 {
     friend std::ostream& operator<<(std::ostream& a_os, const Counter& a_counter);
 public:
-    explicit Counter(const size_t a_countFrom = 0);
+    explicit Counter(size_t a_countFrom = 0);
     Counter(const Counter& a_other) = default;
     Counter& operator=(const Counter& a_other) = default;
     ~Counter() = default;
@@ -22,12 +23,8 @@ public:
     void Decrement();
     size_t Count() const;
 
-    bool operator==(const Counter& a_other) const;
-    bool operator<(const Counter& a_other) const;
-    bool operator>(const Counter& a_other) const;
-
 private:
-    size_t m_count;
+    AtomicValue<size_t> m_count;
 };
 
 } // advcpp
