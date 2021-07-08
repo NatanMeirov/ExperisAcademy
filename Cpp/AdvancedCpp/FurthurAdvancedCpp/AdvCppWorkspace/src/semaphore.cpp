@@ -12,7 +12,7 @@ advcpp::Semaphore::Semaphore(unsigned int a_initialValue, int a_sharedOption)
     int statusCode = sem_init(&m_semaphore, a_sharedOption, a_initialValue);
     if(statusCode != 0)
     {
-        throw std::runtime_error("Failed while trying to initialize the Semaphore");
+        throw std::runtime_error("Failed while tried to initialize a semaphore");
     }
 }
 
@@ -44,7 +44,7 @@ void advcpp::Semaphore::Up()
         int statusCode = sem_post(&m_semaphore);
         if(statusCode != 0)
         {
-            throw std::runtime_error("Failed while trying to post");
+            throw std::runtime_error("Failed while tried to post");
         }
     }
 }
@@ -56,7 +56,7 @@ void advcpp::Semaphore::Down() {
         int statusCode = sem_wait(&m_semaphore);
         if(statusCode != 0)
         {
-            throw std::runtime_error("Failed while trying to wait");
+            throw std::runtime_error("Failed while tried to wait");
         }
     }
 }

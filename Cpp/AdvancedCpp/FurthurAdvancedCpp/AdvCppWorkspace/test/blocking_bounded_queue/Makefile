@@ -21,7 +21,7 @@ check: $(TARGET)
 	./$(TARGET)
 
 
-main: main.cpp $(INC)/blocking_bounded_queue.hpp $(SRC)/semaphore.cpp $(SRC)/mutex.cpp $(SRC)/lock_guard.cpp
+main: main.cpp $(INC)/blocking_bounded_queue.hpp $(SRC)/sync_handler.cpp $(SRC)/barrier.cpp $(SRC)/thread_destruction_policies.cpp
 
 
 clean:
