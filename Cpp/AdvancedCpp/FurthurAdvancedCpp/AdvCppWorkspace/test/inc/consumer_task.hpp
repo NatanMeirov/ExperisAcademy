@@ -17,9 +17,10 @@ namespace advcpp
 class ConsumerTask : public ICallable
 {
 public:
-    ConsumerTask(std::shared_ptr<BlockingBoundedQueue<int,AssertPolicy<int>>> a_queue, size_t a_maximumNumberOfIterations, std::shared_ptr<std::vector<int>> a_resultVector)
+    ConsumerTask(std::shared_ptr<BlockingBoundedQueue<int,AssertPolicy<int>>> a_queue, size_t a_maximumNumberOfIterations, std::shared_ptr<std::vector<int>> a_resultVector, std::mutex& a_mtx)
     : m_queue(a_queue)
     , m_resultVector(a_resultVector)
+    , m_mtx(a_mtx)
     , m_maximumNumberOfIterations(a_maximumNumberOfIterations)
     {
     }
@@ -28,15 +29,18 @@ public:
     {
         for(size_t i = 0; i < m_maximumNumberOfIterations; ++i)
         {
-            std::lock_guard<std::mutex> guard(m_lock); // To make a thread-safety push into the vector
-            m_resultVector->push_back(m_queue->Dequeue());
+            int number;
+            m_queue->Dequeue(number);
+
+            std::lock_guard<std::mutex> guard(m_mtx); // To make a thread-safety (between the consumers), and push into the vector
+            m_resultVector->push_back(number);
         }
     }
 
 private:
     std::shared_ptr<BlockingBoundedQueue<int,AssertPolicy<int>>> m_queue;
     std::shared_ptr<std::vector<int>> m_resultVector;
-    std::mutex m_lock;
+    std::mutex& m_mtx;
     size_t m_maximumNumberOfIterations;
 };
 

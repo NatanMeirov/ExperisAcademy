@@ -20,7 +20,8 @@ public:
 
     virtual void operator()() override
     {
-        for(size_t i = 0; i < m_decrementOperationsCount; ++i) {
+        for(size_t i = 0; i < m_decrementOperationsCount; ++i)
+        {
             DecrementCounter();
         }
     }

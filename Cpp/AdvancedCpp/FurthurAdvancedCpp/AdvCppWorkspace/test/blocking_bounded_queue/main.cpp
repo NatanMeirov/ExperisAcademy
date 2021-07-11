@@ -1,5 +1,6 @@
 #include "mu_test.h"
 #include <memory> // std::shared_ptr, std::make_shared
+#include <algorithm> // std::is_sorted
 #include "blocking_bounded_queue.hpp"
 #include "thread.hpp"
 #include "producer_task.hpp"
@@ -19,6 +20,19 @@ BEGIN_TEST(queue_assert_policy_check)
 END_TEST
 
 
+BEGIN_TEST(queue_no_operation_policy_check)
+    constexpr size_t N = 100;
+
+    {
+        BlockingBoundedQueue<int, NoOperationPolicy<int>> numbers(N, NoOperationPolicy<int>());
+        numbers.Enqueue(1);
+        numbers.Enqueue(2);
+        numbers.Enqueue(3);
+    }
+    ASSERT_PASS();
+END_TEST
+
+
 BEGIN_TEST(queue_clear_policy_check)
     constexpr size_t N = 100;
 
@@ -31,6 +45,36 @@ BEGIN_TEST(queue_clear_policy_check)
     ASSERT_PASS();
 
 END_TEST
+
+
+BEGIN_TEST(queue_save_policy_check)
+    constexpr size_t N = 100;
+
+    std::shared_ptr<std::vector<int>> vectorPtr(new std::vector<int>());
+    {
+        BlockingBoundedQueue<int, SavePolicy<int,std::vector<int>>> numbers(N, SavePolicy<int,std::vector<int>>(vectorPtr));
+        numbers.Enqueue(1);
+        numbers.Enqueue(2);
+        numbers.Enqueue(3);
+    }
+    ASSERT_THAT((*vectorPtr)[0] == 1 && (*vectorPtr)[1] == 2 && (*vectorPtr)[2] == 3);
+END_TEST
+
+
+BEGIN_TEST(queue_callback_policy_check)
+    constexpr size_t N = 100;
+
+    auto printInt = [](int a_number){ std::cout << a_number << " "; };
+    {
+        BlockingBoundedQueue<int, CallbackPolicy<int,decltype(printInt)>> numbers(N, CallbackPolicy<int,decltype(printInt)>(printInt));
+        numbers.Enqueue(1);
+        numbers.Enqueue(2);
+        numbers.Enqueue(3);
+    }
+    std::cout << "\nExpected: 1 2 3" << std::endl;
+    ASSERT_PASS();
+END_TEST
+
 
 
 BEGIN_TEST(queue_capacity_check)
@@ -54,10 +98,11 @@ BEGIN_TEST(queue_size_check)
     }
     ASSERT_EQUAL(numbers.Size(), N);
 
-    for(size_t i = 0; i < N; ++i)
+    for(int i = 0; i < int(N); ++i)
     {
-        size_t popped = numbers.Dequeue();
-        ASSERT_EQUAL(i, popped);
+        int num;
+        numbers.Dequeue(num);
+        ASSERT_EQUAL(i, num);
     }
 
     ASSERT_EQUAL(numbers.Size(), 0);
@@ -76,8 +121,10 @@ BEGIN_TEST(queue_is_full_check)
 
     ASSERT_THAT(numbers.IsFull());
 
-    numbers.Dequeue();
+    int num = N;
+    numbers.Dequeue(num);
 
+    ASSERT_EQUAL(num, 0); // Dequeue - the first number in the queue (from head of queue is 0)
     ASSERT_THAT(!numbers.IsFull());
 END_TEST
 
@@ -87,21 +134,24 @@ BEGIN_TEST(queue_is_empty_check)
 
     BlockingBoundedQueue<int, AssertPolicy<int>> numbers(N, AssertPolicy<int>());
     ASSERT_THAT(numbers.IsEmpty());
-    numbers.Enqueue(0);
+    numbers.Enqueue(N);
     ASSERT_THAT(!numbers.IsEmpty());
-    numbers.Dequeue();
+    int num = 0;
+    numbers.Dequeue(num);
     ASSERT_THAT(numbers.IsEmpty());
+    ASSERT_EQUAL(num, N);
 END_TEST
 
 
 BEGIN_TEST(queue_one_consumer_one_producer)
     constexpr size_t N = 10000000;
-    std::shared_ptr<BlockingBoundedQueue<int, AssertPolicy<int>>> numbers = std::make_shared<BlockingBoundedQueue<int, AssertPolicy<int>>>(N, AssertPolicy<int>());
+    std::shared_ptr<BlockingBoundedQueue<int, AssertPolicy<int>>> numbers = std::make_shared<BlockingBoundedQueue<int, AssertPolicy<int>>>((N/1000), AssertPolicy<int>());
     std::shared_ptr<std::vector<int>> resultVector(new std::vector<int>());
     resultVector->reserve(N);
+    std::mutex lock;
 
     std::shared_ptr<ProducerTask> producerTask = std::make_shared<ProducerTask>(numbers, N);
-    std::shared_ptr<ConsumerTask> consumerTask = std::make_shared<ConsumerTask>(numbers, N, resultVector);
+    std::shared_ptr<ConsumerTask> consumerTask = std::make_shared<ConsumerTask>(numbers, N, resultVector, lock);
 
     Thread<AssertionPolicy> producer(producerTask, AssertionPolicy());
     Thread<AssertionPolicy> consumer(consumerTask, AssertionPolicy());
@@ -111,17 +161,19 @@ BEGIN_TEST(queue_one_consumer_one_producer)
 
     ASSERT_EQUAL(resultVector->size(), N);
     ASSERT_THAT(numbers->IsEmpty());
+    ASSERT_THAT(std::is_sorted(resultVector->begin(), resultVector->end()));
 END_TEST
 
 
 BEGIN_TEST(queue_one_consumer_two_producers)
     constexpr size_t N = 10000000;
-    std::shared_ptr<BlockingBoundedQueue<int, AssertPolicy<int>>> numbers = std::make_shared<BlockingBoundedQueue<int, AssertPolicy<int>>>(N, AssertPolicy<int>());
+    std::shared_ptr<BlockingBoundedQueue<int, AssertPolicy<int>>> numbers = std::make_shared<BlockingBoundedQueue<int, AssertPolicy<int>>>((N/1000), AssertPolicy<int>());
     std::shared_ptr<std::vector<int>> resultVector(new std::vector<int>());
     resultVector->reserve(N);
+    std::mutex lock;
 
     std::shared_ptr<ProducerTask> producerTask = std::make_shared<ProducerTask>(numbers, (N/2));
-    std::shared_ptr<ConsumerTask> consumerTask = std::make_shared<ConsumerTask>(numbers, N, resultVector);
+    std::shared_ptr<ConsumerTask> consumerTask = std::make_shared<ConsumerTask>(numbers, N, resultVector, lock);
 
     Thread<AssertionPolicy> producer1(producerTask, AssertionPolicy());
     Thread<AssertionPolicy> producer2(producerTask, AssertionPolicy());
@@ -138,12 +190,13 @@ END_TEST
 
 BEGIN_TEST(queue_two_consumers_one_producer)
     constexpr size_t N = 10000000;
-    std::shared_ptr<BlockingBoundedQueue<int, AssertPolicy<int>>> numbers = std::make_shared<BlockingBoundedQueue<int, AssertPolicy<int>>>(N, AssertPolicy<int>());
+    std::shared_ptr<BlockingBoundedQueue<int, AssertPolicy<int>>> numbers = std::make_shared<BlockingBoundedQueue<int, AssertPolicy<int>>>((N/1000), AssertPolicy<int>());
     std::shared_ptr<std::vector<int>> resultVector(new std::vector<int>());
     resultVector->reserve(N);
+    std::mutex lock;
 
     std::shared_ptr<ProducerTask> producerTask = std::make_shared<ProducerTask>(numbers, N);
-    std::shared_ptr<ConsumerTask> consumerTask = std::make_shared<ConsumerTask>(numbers, (N/2), resultVector);
+    std::shared_ptr<ConsumerTask> consumerTask = std::make_shared<ConsumerTask>(numbers, (N/2), resultVector, lock);
 
     Thread<AssertionPolicy> producer(producerTask, AssertionPolicy());
     Thread<AssertionPolicy> consumer1(consumerTask, AssertionPolicy());
@@ -160,12 +213,13 @@ END_TEST
 
 BEGIN_TEST(queue_two_consumers_two_producers)
     constexpr size_t N = 10000000;
-    std::shared_ptr<BlockingBoundedQueue<int, AssertPolicy<int>>> numbers = std::make_shared<BlockingBoundedQueue<int, AssertPolicy<int>>>(N, AssertPolicy<int>());
+    std::shared_ptr<BlockingBoundedQueue<int, AssertPolicy<int>>> numbers = std::make_shared<BlockingBoundedQueue<int, AssertPolicy<int>>>((N/1000), AssertPolicy<int>());
     std::shared_ptr<std::vector<int>> resultVector(new std::vector<int>());
     resultVector->reserve(N);
+    std::mutex lock;
 
     std::shared_ptr<ProducerTask> producerTask = std::make_shared<ProducerTask>(numbers, (N/2));
-    std::shared_ptr<ConsumerTask> consumerTask = std::make_shared<ConsumerTask>(numbers, (N/2), resultVector);
+    std::shared_ptr<ConsumerTask> consumerTask = std::make_shared<ConsumerTask>(numbers, (N/2), resultVector, lock);
 
     Thread<AssertionPolicy> producer1(producerTask, AssertionPolicy());
     Thread<AssertionPolicy> producer2(producerTask, AssertionPolicy());
@@ -185,7 +239,10 @@ END_TEST
 TEST_SUITE(BlockingBoundedQueueTest)
 
     IGNORE_TEST(queue_assert_policy_check)
+    TEST(queue_no_operation_policy_check)
     TEST(queue_clear_policy_check)
+    TEST(queue_save_policy_check)
+    TEST(queue_callback_policy_check)
     TEST(queue_capacity_check)
     TEST(queue_size_check)
     TEST(queue_is_full_check)
