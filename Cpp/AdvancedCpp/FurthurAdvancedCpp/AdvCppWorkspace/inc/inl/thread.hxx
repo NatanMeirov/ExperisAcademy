@@ -38,7 +38,7 @@ void* Thread<DestructionPolicy>::Task(void* a_this)
 
 
 template <typename DestructionPolicy>
-Thread<DestructionPolicy>::Thread(std::shared_ptr<ICallable> a_task, const DestructionPolicy& a_destructionPolicy)
+Thread<DestructionPolicy>::Thread(std::shared_ptr<ICallable> a_task, DestructionPolicy a_destructionPolicy)
 : m_task(a_task)
 , m_destructionPolicy(a_destructionPolicy)
 , m_barrier(Thread::BARRIER_COUNT)

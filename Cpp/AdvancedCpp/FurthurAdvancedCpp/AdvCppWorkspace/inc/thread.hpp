@@ -25,7 +25,7 @@ template <typename DestructionPolicy>
 class Thread {
     friend DestructionPolicy;
 public:
-    Thread(std::shared_ptr<ICallable> a_task, const DestructionPolicy& a_policy);
+    Thread(std::shared_ptr<ICallable> a_task, DestructionPolicy a_policy); // DestructionPolicy is a lightweight object (can get it by value (copy))
     Thread(const Thread& a_other) = delete;
     Thread& operator=(const Thread& a_other) = delete;
     ~Thread();
