@@ -7,25 +7,20 @@
 #include <memory> // std::shared_ptr
 #include <stdexcept> // std::runtime_error
 #include <algorithm> // std::for_each
-#include "thread.hpp"
+#include "../thread.hpp" //!!!
 #include "icallable.hpp"
-#include "thread_group.hpp" //! REMOVE!
 
-
+#include "../thread_group.hpp"
 namespace advcpp
 {
 
 template <typename DestructionPolicy>
-ThreadGroup<DestructionPolicy>::ThreadGroup(std::shared_ptr<ICallable> a_commonTask, const size_t a_threadsCount, const DestructionPolicy& a_destructionPolicy)
+ThreadGroup<DestructionPolicy>::ThreadGroup(std::shared_ptr<ICallable> a_commonTask, size_t a_threadsCount, DestructionPolicy a_destructionPolicy)
 : m_threadsGroup()
 , m_commonTask(a_commonTask)
 , m_destructionPolicy(a_destructionPolicy)
 {
-    m_threadsGroup.reserve(a_threadsCount);
-    for(size_t i = 0; i < a_threadsCount; ++i)
-    {
-        m_threadsGroup.push_back(std::shared_ptr<Thread<DestructionPolicy>>(new Thread<DestructionPolicy>(a_commonTask, a_destructionPolicy)));
-    }
+    AddThreads(a_threadsCount);
 }
 
 
@@ -77,6 +72,87 @@ void ThreadGroup<DestructionPolicy>::Cancel(bool a_ensureCompleteCancelation)
             // Do nothing - lets the rest of the threads to detach
         }
     });
+}
+
+
+template <typename DestructionPolicy>
+void ThreadGroup<DestructionPolicy>::Add(size_t a_threadsToAdd)
+{
+    CleanDoneThreads();
+    AddThreads(a_threadsToAdd);
+}
+
+
+template <typename DestructionPolicy>
+void ThreadGroup<DestructionPolicy>::Remove(size_t a_threadsToRemove)
+{
+    size_t cleanedThreads = CleanDoneThreads();
+    if(cleanedThreads >= a_threadsToRemove)
+    {
+        return;
+    }
+
+    KillThreads(a_threadsToRemove - cleanedThreads);
+}
+
+
+template <typename DestructionPolicy>
+size_t ThreadGroup<DestructionPolicy>::Size() const
+{
+    return m_threadsGroup.size();
+}
+
+
+template <typename DestructionPolicy>
+size_t ThreadGroup<DestructionPolicy>::CleanDoneThreads()
+{
+    size_t removedThreadsCount = 0;
+    auto itr = m_threadsGroup.begin();
+    auto endItr = m_threadsGroup.end();
+
+    while(itr != endItr)
+    {
+        if((*itr)->HasDone())
+        {
+            itr = m_threadsGroup.erase(itr);
+            ++removedThreadsCount;
+        }
+        else
+        {
+            ++itr;
+        }
+    }
+
+    return removedThreadsCount;
+}
+
+
+template <typename DestructionPolicy>
+void ThreadGroup<DestructionPolicy>::AddThreads(size_t a_threadsToAdd)
+{
+    for(size_t i = 0; i < a_threadsToAdd; ++i)
+    {
+        m_threadsGroup.push_back(std::shared_ptr<Thread<DestructionPolicy>>(new Thread<DestructionPolicy>(m_commonTask, m_destructionPolicy)));
+    }
+}
+
+
+template <typename DestructionPolicy>
+void ThreadGroup<DestructionPolicy>::KillThreads(size_t a_threadsToKill)
+{
+    for(size_t i = 0; i < a_threadsToKill; ++i)
+    {
+        try
+        {
+            m_threadsGroup.back()->Cancel();
+        }
+        catch (...)
+        {
+            // Do nothing - the thread might had finished already
+        }
+
+        m_threadsGroup.pop_back();
+    }
 }
 
 } // advcpp

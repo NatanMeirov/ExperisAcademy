@@ -5,12 +5,12 @@
 #include <cstddef> // size_t
 #include <memory> // std::shared_ptr, std::make_shared
 #include <semaphore.h> // sem_t and semaphore functions
-#include <cassert> // assert
 #include <deque>
 #include <mutex>
 #include <stdexcept> // std::runtime_error
+#include <type_traits>
 
-#include "../blocking_bounded_queue.hpp"
+#include "../blocking_bounded_queue.hpp" //! REMOVE AFTER DONE IMPLEMENTING
 namespace advcpp
 {
 
@@ -18,21 +18,18 @@ template <typename T, typename DestructionPolicy>
 BlockingBoundedQueue<T,DestructionPolicy>::BlockingBoundedQueue(size_t a_initialCapacity, DestructionPolicy a_destructionPolicy)
 : m_queue()
 , m_mutex()
-, m_freeSlots()
-, m_occupiedSlots()
+, m_freeSlots(a_initialCapacity)
+, m_occupiedSlots(0)
 , m_destructionPolicy(a_destructionPolicy)
 , m_capacity(a_initialCapacity)
 , m_enqueueWaiters(0)
 , m_dequeueWaiters(0)
 , m_isValid(true)
-, m_areOperationsLocked(false)
 {
-    if(a_initialCapacity < 1)
+    if(!a_initialCapacity)
     {
-        throw std::runtime_error("Initial capacity cannot be negative, nor zero");
+        throw std::runtime_error("Initial capacity cannot be zero");
     }
-
-    InitializeSemaphores(a_initialCapacity);
 }
 
 
@@ -40,9 +37,11 @@ template <typename T, typename DestructionPolicy>
 BlockingBoundedQueue<T,DestructionPolicy>::~BlockingBoundedQueue()
 {
     Close();
-    ReleaseSemaphores();
+    ReleaseAllBlockedWaiters();
+    // Lock the mutex
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     m_destructionPolicy(*this);
-    DestroySemaphores();
 }
 
 
@@ -55,9 +54,10 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::Enqueue(const T& a_item)
     }
 
     ++m_enqueueWaiters;
-    sem_wait(&m_freeSlots); // Down (-1)
+    m_freeSlots.Down(); // -1
     --m_enqueueWaiters;
-    if(ShouldNotOperate()) // Double check lock
+
+    if(IsClosed()) // Double check lock
     {
         return false;
     }
@@ -70,12 +70,12 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::Enqueue(const T& a_item)
         }
         catch(...) // Exception safety: keeping the correct class' invariants
         {
-            sem_post(&m_freeSlots); // Up (+1)
+            m_freeSlots.Up(); // +1
 
             throw; // rethrow
         }
     }
-    sem_post(&m_occupiedSlots); // Up (+1)
+    m_occupiedSlots.Up(); // +1
 
     return true;
 }
@@ -90,9 +90,10 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::Dequeue(T& a_itemToReturnByRef)
     }
 
     ++m_dequeueWaiters;
-    sem_wait(&m_occupiedSlots); // Down (-1)
+    m_occupiedSlots.Down(); // -1
     --m_dequeueWaiters;
-    if(ShouldNotOperate()) // Double check lock
+
+    if(IsClosed()) // Double check lock
     {
         return false;
     }
@@ -106,12 +107,12 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::Dequeue(T& a_itemToReturnByRef)
         }
         catch(...) // Exception safety: keeping the correct class' invariants
         {
-            sem_post(&m_occupiedSlots); // Up (+1)
+            m_occupiedSlots.Up(); // +1
 
             throw; // rethrow
         }
     }
-    sem_post(&m_freeSlots); // Up (+1)
+    m_freeSlots.Up(); // +1
 
     return true;
 }
@@ -170,41 +171,21 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::IsFull() const
 
 
 template <typename T, typename DestructionPolicy>
-void BlockingBoundedQueue<T,DestructionPolicy>::InitializeSemaphores(size_t a_initialCapacity)
+void BlockingBoundedQueue<T,DestructionPolicy>::ReleaseAllBlockedWaiters()
 {
-    int statusCodes = ((sem_init(&m_freeSlots, 0, a_initialCapacity)) || (sem_init(&m_occupiedSlots, 0, 0)));
-    if(statusCodes != 0)
-    {
-        throw std::runtime_error("Failed while tried to initialize a semaphore");
-    }
-}
-
-
-template <typename T, typename DestructionPolicy>
-void BlockingBoundedQueue<T,DestructionPolicy>::ReleaseSemaphores()
-{
-    LockOperations();
-
     // Release Enqueue waiters:
     while(m_enqueueWaiters.Get() > 0)
     {
-        sem_post(&m_freeSlots); // Up (+1)
+        m_freeSlots.Up(); // +1
         // The Enqueue method handles the --m_enqueueWaiters;
     }
 
     // Release Dequeue waiters:
     while(m_dequeueWaiters.Get() > 0)
     {
-        sem_post(&m_occupiedSlots); // Up (+1)
+        m_occupiedSlots.Up(); // +1
         // The Dequeue method handles the --m_dequeueWaiters;
     }
-}
-
-
-template <typename T, typename DestructionPolicy>
-void BlockingBoundedQueue<T,DestructionPolicy>::DestroySemaphores()
-{
-    assert(sem_destroy(&m_freeSlots) == 0 && sem_destroy(&m_occupiedSlots) == 0);
 }
 
 
@@ -223,32 +204,19 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::IsClosed() const
 
 
 template <typename T, typename DestructionPolicy>
-void BlockingBoundedQueue<T,DestructionPolicy>::LockOperations()
-{
-    m_areOperationsLocked.True();
-}
-
-
-template <typename T, typename DestructionPolicy>
-bool BlockingBoundedQueue<T,DestructionPolicy>::ShouldNotOperate() const
-{
-    return m_areOperationsLocked.Check();
-}
-
-
-template <typename T, typename DestructionPolicy>
-T BlockingBoundedQueue<T,DestructionPolicy>::RemoveNext() noexcept
+bool BlockingBoundedQueue<T,DestructionPolicy>::RemoveNext(T& a_itemToReturnByRef) noexcept
 {
     try // Exception safety
     {
-        T itemToRemove = m_queue.front();
+        a_itemToReturnByRef = m_queue.front();
         m_queue.pop_front();
-
-        return itemToRemove;
     }
     catch(...)
     { // Exception safety
+        return false;
     }
+
+    return true;
 }
 
 

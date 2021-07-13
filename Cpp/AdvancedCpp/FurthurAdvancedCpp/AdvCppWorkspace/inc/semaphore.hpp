@@ -4,7 +4,6 @@
 
 #include <cstddef> // size_t
 #include <semaphore.h>
-#include "atomic_value.hpp"
 
 
 namespace advcpp
@@ -29,11 +28,9 @@ public:
     void Down(); // Wait
     void Up(); // Post
     bool TryDown(); // TryWait
-    void Destroy(); // The user must provide that before using Semaphore's Destroy (or d'tor) - NO other threads/processes are using the Semaphore!
 
 private:
     mutable sem_t m_semaphore;
-    AtomicFlag m_isAvailableSemaphore;
 };
 
 } // advcpp

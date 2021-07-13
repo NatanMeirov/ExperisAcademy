@@ -1,7 +1,6 @@
 #include "barrier.hpp"
 #include <pthread.h> // barrier function
 #include <stdexcept> // std::invalid_argument, std::runtime_error
-#include <cassert> // assert
 
 
 advcpp::Barrier::Barrier(const size_t a_count)
@@ -22,7 +21,7 @@ advcpp::Barrier::Barrier(const size_t a_count)
 
 advcpp::Barrier::~Barrier()
 {
-    assert(pthread_barrier_destroy(&m_barrier) == 0);
+    pthread_barrier_destroy(&m_barrier);
 }
 
 

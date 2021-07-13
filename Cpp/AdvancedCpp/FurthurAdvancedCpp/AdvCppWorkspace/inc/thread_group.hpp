@@ -22,7 +22,7 @@ template <typename DestructionPolicy>
 class ThreadGroup
 {
 public:
-    ThreadGroup(std::shared_ptr<ICallable> a_commonTask, const size_t a_threadsCount, const DestructionPolicy& a_destructionPolicy);
+    ThreadGroup(std::shared_ptr<ICallable> a_commonTask, size_t a_threadsCount, DestructionPolicy a_destructionPolicy);
     ThreadGroup(const ThreadGroup& a_other) = delete;
     ThreadGroup& operator=(const ThreadGroup& a_other) = delete;
     ~ThreadGroup() = default; // Each Thread handles its destruction, specified by DestructionPolicy
@@ -31,8 +31,15 @@ public:
     void Detach();
     void Cancel(bool a_ensureCompleteCancelation = false);
 
-    void Add(const size_t a_threadsToAdd);
-    void Remove(const size_t a_threadsToRemove);
+    void Add(size_t a_threadsToAdd);
+    void Remove(size_t a_threadsToRemove);
+
+    size_t Size() const;
+
+private:
+    size_t CleanDoneThreads();
+    void AddThreads(size_t a_threadsToAdd);
+    void KillThreads(size_t a_threadsToKill);
 
 private:
     std::list<std::shared_ptr<Thread<DestructionPolicy>>> m_threadsGroup;

@@ -5,7 +5,7 @@
 #include <cstddef> // size_t
 #include <deque>
 #include <mutex>
-#include <semaphore.h>
+#include "semaphore.hpp"
 #include "atomic_value.hpp"
 
 
@@ -27,7 +27,7 @@ public:
     BlockingBoundedQueue& operator=(const BlockingBoundedQueue& a_other) = delete;
     ~BlockingBoundedQueue();
 
-    // Returns false if the queue is closed and no furthur operations can be done with it
+    // Returns false if the queue is closed and no further operations can be done with it
     bool Enqueue(const T& a_item);
     bool Dequeue(T& a_itemToReturnByRef);
 
@@ -37,30 +37,27 @@ public:
     bool IsFull() const; // Returns false if queue is not valid
 
 private:
-    void InitializeSemaphores(size_t a_initialCapacity);
-    void ReleaseSemaphores();
-    void DestroySemaphores();
+    void ReleaseAllBlockedWaiters();
     void Close();
     bool IsClosed() const;
-    void LockOperations();
+    void LockFurtherOperations();
     bool ShouldNotOperate() const;
 
     // For policy uses (without locking)
-    T RemoveNext() noexcept;
+    bool RemoveNext(T& a_itemToReturnByRef) noexcept; // true if succeed, else false
     bool Empty() const noexcept;
     size_t GetSize() const noexcept;
 
 private:
     std::deque<T> m_queue;
     mutable std::mutex m_mutex;
-    sem_t m_freeSlots;
-    sem_t m_occupiedSlots;
+    Semaphore m_freeSlots;
+    Semaphore m_occupiedSlots;
     DestructionPolicy m_destructionPolicy;
     size_t m_capacity;
     AtomicValue<size_t> m_enqueueWaiters;
     AtomicValue<size_t> m_dequeueWaiters;
     AtomicFlag m_isValid;
-    AtomicFlag m_areOperationsLocked;
 };
 
 } // advcpp

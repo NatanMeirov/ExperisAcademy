@@ -33,7 +33,8 @@ void ClearPolicy<T>::operator()(BlockingBoundedQueue<T,ClearPolicy<T>>& a_queue)
     {
         try
         {
-            a_queue.RemoveNext();
+            T poppedItem;
+            a_queue.RemoveNext(poppedItem);
         }
         catch(...)
         { // Exception safe
@@ -50,7 +51,11 @@ void SavePolicy<T,C>::operator()(BlockingBoundedQueue<T,SavePolicy<T,C>>& a_queu
     {
         try
         {
-            m_containerPtr->push_back(a_queue.RemoveNext());
+            T poppedItem;
+            if(a_queue.RemoveNext(poppedItem)) // If succeed
+            {
+                m_containerPtr->push_back(poppedItem);
+            }
         }
         catch(...)
         { // Exception safe
@@ -67,7 +72,11 @@ void CallbackPolicy<T,Func>::operator()(BlockingBoundedQueue<T,CallbackPolicy<T,
     {
         try
         {
-            m_func(a_queue.RemoveNext());
+            T poppedItem;
+            if(a_queue.RemoveNext(poppedItem)) // If succeed
+            {
+                m_func(poppedItem);
+            }
         }
         catch(...)
         { // Exception safe
