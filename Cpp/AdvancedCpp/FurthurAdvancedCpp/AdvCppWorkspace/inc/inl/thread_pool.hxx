@@ -7,7 +7,7 @@
 #include <stdexcept> // std::runtime_error
 #include <mutex> // std::mutex, std::lock_guard
 #include "blocking_bounded_queue.hpp"
-#include "thread_group.hpp"
+#include "thread.hpp"
 #include "thread_group.hpp"
 #include "thread_destruction_policies.hpp"
 #include "icallable.hpp"
@@ -15,9 +15,9 @@
 #include "blocking_bounded_queue_destruction_policies.hpp"
 #include "atomic_value.hpp"
 #include "two_way_multi_sync_handler.hpp"
-#include "scheduling_work.hpp"
+#include "works_scheduler.hpp"
 #include "suicide_mission.hpp"
-#include "busy_work.hpp"
+#include "works_enqueuer.hpp"
 
 
 namespace advcpp
@@ -28,8 +28,8 @@ ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::ThreadPool(D
 : m_worksQueue(new QueueType(a_worksQueueSize, QueueTypeDestructionPolicy()))
 , m_twoWayMultiSyncHandler(new TwoWayMultiSyncHandler())
 , m_workersLock(new std::mutex())
-, m_mainSchedulingWork(new SchedulingWork<QueueType>(m_worksQueue, m_twoWayMultiSyncHandler, m_workersLock))
-, m_workers(m_mainSchedulingWork, a_workersNumber, CancelPolicy())
+, m_mainWorksScheduler(new WorksScheduler<QueueTypeDestructionPolicy,QueueType>(m_worksQueue, m_twoWayMultiSyncHandler, m_workersLock))
+, m_workers(m_mainWorksScheduler, a_workersNumber, CancelPolicy())
 , m_operationsLock()
 , m_isStopRequired(false)
 , m_destructionPolicy(a_destructionPolicy)
@@ -52,7 +52,7 @@ void ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::SubmitW
         throw std::runtime_error("Failed while tried to submit new work (because of previous Shutdown call)");
     }
 
-    m_worksQueue->Enqueue(a_work);
+    InsertWorkToQueue(a_work);
 }
 
 
@@ -107,7 +107,7 @@ void ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::Shutdow
 
 
 template <typename DestructionPolicy, typename QueueTypeDestructionPolicy, typename QueueType>
-size_t ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::WorkersCount() const
+size_t ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::WorkersCount()
 {
     return m_workers.Size();
 }
@@ -117,6 +117,15 @@ template <typename DestructionPolicy, typename QueueTypeDestructionPolicy, typen
 size_t ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::PendingWorksCount() const
 {
     return m_worksQueue->Size();
+}
+
+
+template <typename DestructionPolicy, typename QueueTypeDestructionPolicy, typename QueueType>
+void ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::InsertWorkToQueue(Work a_workToInsert)
+{
+    Work worksEnqueuer(new WorksEnqueuer<QueueTypeDestructionPolicy,QueueType>(m_worksQueue, a_workToInsert));
+    Thread<DetachPolicy> workEnqueueTask(worksEnqueuer, DetachPolicy());
+    workEnqueueTask.Detach();
 }
 
 
@@ -137,7 +146,7 @@ bool ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::HasStop
 template <typename DestructionPolicy, typename QueueTypeDestructionPolicy, typename QueueType>
 void ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::SoftShutdown()
 {
-    while(!m_worksQueue->IsEmpty()); // Pooling - to make sure that the workers have consumed all the works, and there are ready to be stopped
+    while(!m_worksQueue->IsEmpty() && m_workers.Size() > 0); // Pooling - to make sure that the workers have consumed all the works, and there are ready to be stopped (and make sure that there are workers to consume the works... must make sure to not wait for nothing)
     StopWorkers(m_workers.Size()); // Stop all workers
 }
 
@@ -155,17 +164,10 @@ void ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::StopWor
     m_twoWayMultiSyncHandler->SetWantedSignalsBack(a_workersToStop);
     m_twoWayMultiSyncHandler->Notify(a_workersToStop); // Notify N workers
 
-    std::shared_ptr<ICallable> suicideMission(new SuicideMission()); // Using the suicide mission (that throws) to make sure that N workers are working on something, and NOT waiting on the Dequeue, so they are cancelable
+    Work suicideMission(new SuicideMission()); // Using the suicide mission (that throws) to make sure that N workers are working on something, and NOT waiting on the Dequeue, so they are cancelable
     for(size_t i = 0; i < a_workersToStop; ++i)
     {
-        try
-        {
-            m_worksQueue->Enqueue(suicideMission);
-        }
-        catch(...)
-        {
-            // Do nothing
-        }
+        InsertWorkToQueue(suicideMission);
     }
 
     m_twoWayMultiSyncHandler->WaitForAllSignalsBack(); // A blocking wait (no polling is required)

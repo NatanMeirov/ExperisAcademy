@@ -5,16 +5,14 @@
 #include <memory> // std::shared_ptr
 #include <mutex> // std::mutex, std::lock_guard
 #include "icallable.hpp"
-#include "blocking_bounded_queue.hpp"
-#include "blocking_bounded_queue_destruction_policies.hpp"
 #include "two_way_multi_sync_handler.hpp"
 
 
 namespace advcpp
 {
 
-template <typename QueueType>
-SchedulingWork<QueueType>::SchedulingWork(std::shared_ptr<QueueType> a_worksQueue, std::shared_ptr<TwoWayMultiSyncHandler> a_twoWayMultiSyncHandler, std::shared_ptr<std::mutex> a_workersLock)
+template <typename QueueTypeDestructionPolicy, typename QueueType>
+WorksScheduler<QueueTypeDestructionPolicy,QueueType>::WorksScheduler(std::shared_ptr<QueueType> a_worksQueue, std::shared_ptr<TwoWayMultiSyncHandler> a_twoWayMultiSyncHandler, std::shared_ptr<std::mutex> a_workersLock)
 : m_worksQueue(a_worksQueue)
 , m_twoWayMultiSyncHandler(a_twoWayMultiSyncHandler)
 , m_workersLock(a_workersLock)
@@ -22,8 +20,8 @@ SchedulingWork<QueueType>::SchedulingWork(std::shared_ptr<QueueType> a_worksQueu
 }
 
 
-template <typename QueueType>
-void SchedulingWork<QueueType>::operator()()
+template <typename QueueTypeDestructionPolicy, typename QueueType>
+void WorksScheduler<QueueTypeDestructionPolicy,QueueType>::operator()()
 {
     while(true)
     {
@@ -52,8 +50,8 @@ void SchedulingWork<QueueType>::operator()()
 }
 
 
-template <typename QueueType>
-void SchedulingWork<QueueType>::SafeExecute(std::shared_ptr<ICallable> a_work) const
+template <typename QueueTypeDestructionPolicy, typename QueueType>
+void WorksScheduler<QueueTypeDestructionPolicy,QueueType>::SafeExecute(std::shared_ptr<ICallable> a_work) const
 {
     try
     {

@@ -9,7 +9,7 @@
 #include <cxxabi.h> // abi::__forced_unwind
 #include "icallable.hpp"
 
-        #include <iostream>
+
 namespace advcpp
 {
 
@@ -30,7 +30,6 @@ void* Thread<DestructionPolicy>::Task(void* a_this)
     }
     catch(const abi::__forced_unwind& ex)
     {
-        std::cout<<"In Thread: catch(const abi::__forced_unwind& ex)" << std::endl;
         syncHandler->Signal(); // Post
         throw; // MUST rethrow the stack unwinding handler exception - to handle the destruction of the thread's stack variables on a cancelation
     }

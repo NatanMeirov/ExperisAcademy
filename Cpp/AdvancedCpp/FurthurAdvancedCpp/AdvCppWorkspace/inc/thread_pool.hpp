@@ -12,7 +12,7 @@
 #include "blocking_bounded_queue.hpp"
 #include "blocking_bounded_queue_destruction_policies.hpp"
 #include "atomic_value.hpp"
-#include "scheduling_work.hpp"
+#include "works_scheduler.hpp"
 #include "two_way_multi_sync_handler.hpp"
 
 
@@ -48,10 +48,11 @@ public:
     void Shutdown(); // Executes all pending works, but user cannot add new works
     void ShutdownImmediate(); // Does not accept new works, does not execute any pending work, but complete works that were already started
 
-    size_t WorkersCount() const;
+    size_t WorkersCount();
     size_t PendingWorksCount() const;
 
 private:
+    void InsertWorkToQueue(Work a_workToInsert);
     void Stop();
     bool HasStopped() const;
     void SoftShutdown();
@@ -66,7 +67,7 @@ private: // Order is important!
     std::shared_ptr<QueueType> m_worksQueue;
     std::shared_ptr<TwoWayMultiSyncHandler> m_twoWayMultiSyncHandler;
     std::shared_ptr<std::mutex> m_workersLock;
-    Work m_mainSchedulingWork;
+    Work m_mainWorksScheduler;
     ThreadGroup<CancelPolicy> m_workers;
     std::mutex m_operationsLock;
     AtomicFlag m_isStopRequired;

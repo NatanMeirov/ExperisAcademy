@@ -32,10 +32,10 @@ public:
     void Detach();
     void Cancel(bool a_ensureCompleteCancelation = false);
 
-    void Add(size_t a_threadsToAdd);
-    void Remove(size_t a_threadsToRemove);
+    void Add(size_t a_threadsToAdd); // Cleans the done thread
+    void Remove(size_t a_threadsToRemove); // Cleans the done thread
 
-    size_t Size() const;
+    size_t Size(); // Cleans the done thread for more accuracy
 
 private:
     size_t CleanDoneThreads();

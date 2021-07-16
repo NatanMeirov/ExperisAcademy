@@ -98,8 +98,9 @@ void ThreadGroup<DestructionPolicy>::Remove(size_t a_threadsToRemove)
 
 
 template <typename DestructionPolicy>
-size_t ThreadGroup<DestructionPolicy>::Size() const
+size_t ThreadGroup<DestructionPolicy>::Size()
 {
+    CleanDoneThreads();
     return m_size.Get();
 }
 
