@@ -13,12 +13,17 @@ namespace advcpp
 class Barrier
 {
 public:
-    Barrier(const size_t a_count);
+    Barrier(size_t a_count);
     Barrier(const Barrier& a_other) = delete;
     Barrier& operator=(const Barrier& a_other) = delete;
     ~Barrier();
 
     void Wait();
+    void Reset(size_t a_newCount);
+
+private:
+    void Initialize(size_t a_count);
+    void Destroy();
 
 private:
     pthread_barrier_t m_barrier;

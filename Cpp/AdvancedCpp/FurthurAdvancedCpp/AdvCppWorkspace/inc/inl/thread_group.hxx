@@ -7,10 +7,10 @@
 #include <memory> // std::shared_ptr
 #include <stdexcept> // std::runtime_error
 #include <algorithm> // std::for_each
-#include "../thread.hpp" //!!!
+#include "thread.hpp"
 #include "icallable.hpp"
 
-#include "../thread_group.hpp"
+
 namespace advcpp
 {
 
@@ -18,6 +18,7 @@ template <typename DestructionPolicy>
 ThreadGroup<DestructionPolicy>::ThreadGroup(std::shared_ptr<ICallable> a_commonTask, size_t a_threadsCount, DestructionPolicy a_destructionPolicy)
 : m_threadsGroup()
 , m_commonTask(a_commonTask)
+, m_size(0)
 , m_destructionPolicy(a_destructionPolicy)
 {
     AddThreads(a_threadsCount);
@@ -33,7 +34,7 @@ void ThreadGroup<DestructionPolicy>::Join()
         {
             a_thread->Join();
         }
-        catch(const std::exception& ex)
+        catch(...)
         {
             // Do nothing - let the rest of the threads detach
         }
@@ -50,7 +51,7 @@ void ThreadGroup<DestructionPolicy>::Detach()
         {
             a_thread->Detach();
         }
-        catch(const std::exception& ex)
+        catch(...)
         {
             // Do nothing - lets the rest of the threads to detach
         }
@@ -67,7 +68,7 @@ void ThreadGroup<DestructionPolicy>::Cancel(bool a_ensureCompleteCancelation)
         {
             a_thread->Cancel(a_ensureCompleteCancelation);
         }
-        catch(const std::exception& ex)
+        catch(...)
         {
             // Do nothing - lets the rest of the threads to detach
         }
@@ -99,7 +100,7 @@ void ThreadGroup<DestructionPolicy>::Remove(size_t a_threadsToRemove)
 template <typename DestructionPolicy>
 size_t ThreadGroup<DestructionPolicy>::Size() const
 {
-    return m_threadsGroup.size();
+    return m_size.Get();
 }
 
 
@@ -116,6 +117,7 @@ size_t ThreadGroup<DestructionPolicy>::CleanDoneThreads()
         {
             itr = m_threadsGroup.erase(itr);
             ++removedThreadsCount;
+            --m_size;
         }
         else
         {
@@ -133,6 +135,7 @@ void ThreadGroup<DestructionPolicy>::AddThreads(size_t a_threadsToAdd)
     for(size_t i = 0; i < a_threadsToAdd; ++i)
     {
         m_threadsGroup.push_back(std::shared_ptr<Thread<DestructionPolicy>>(new Thread<DestructionPolicy>(m_commonTask, m_destructionPolicy)));
+        ++m_size;
     }
 }
 
@@ -140,7 +143,8 @@ void ThreadGroup<DestructionPolicy>::AddThreads(size_t a_threadsToAdd)
 template <typename DestructionPolicy>
 void ThreadGroup<DestructionPolicy>::KillThreads(size_t a_threadsToKill)
 {
-    for(size_t i = 0; i < a_threadsToKill; ++i)
+    size_t remainedThreads = m_size.Get();
+    for(size_t i = 0; i < a_threadsToKill && i < remainedThreads; ++i)
     {
         try
         {
@@ -152,6 +156,7 @@ void ThreadGroup<DestructionPolicy>::KillThreads(size_t a_threadsToKill)
         }
 
         m_threadsGroup.pop_back();
+        --m_size;
     }
 }
 

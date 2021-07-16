@@ -21,6 +21,7 @@ BlockingBoundedQueue<T,DestructionPolicy>::BlockingBoundedQueue(size_t a_initial
 , m_freeSlots(a_initialCapacity)
 , m_occupiedSlots(0)
 , m_destructionPolicy(a_destructionPolicy)
+, m_size(0)
 , m_capacity(a_initialCapacity)
 , m_enqueueWaiters(0)
 , m_dequeueWaiters(0)
@@ -40,7 +41,6 @@ BlockingBoundedQueue<T,DestructionPolicy>::~BlockingBoundedQueue()
     ReleaseAllBlockedWaiters();
     // Lock the mutex
     std::lock_guard<std::mutex> lock(m_mutex);
-
     m_destructionPolicy(*this);
 }
 
@@ -67,6 +67,7 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::Enqueue(const T& a_item)
         try
         {
             m_queue.push_back(a_item); // Exception prone code - copy-constructor may fail
+            ++m_size;
         }
         catch(...) // Exception safety: keeping the correct class' invariants
         {
@@ -104,6 +105,7 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::Dequeue(T& a_itemToReturnByRef)
         {
             a_itemToReturnByRef = m_queue.front(); // Exception prone code - copy-assignment may fail
             m_queue.pop_front();
+            --m_size;
         }
         catch(...) // Exception safety: keeping the correct class' invariants
         {
@@ -126,8 +128,7 @@ size_t BlockingBoundedQueue<T,DestructionPolicy>::Size() const
         return 0;
     }
 
-    std::lock_guard<std::mutex> lock(m_mutex); // RAII
-    return m_queue.size();
+    return m_size.Get();
 }
 
 
@@ -139,8 +140,7 @@ size_t BlockingBoundedQueue<T,DestructionPolicy>::Capacity() const
         return 0;
     }
 
-    std::lock_guard<std::mutex> lock(m_mutex); // RAII
-    return m_capacity;
+    return m_capacity; // This value isn't changing - no race condition here (only read operations)
 }
 
 
@@ -152,8 +152,7 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::IsEmpty() const
         return true;
     }
 
-    std::lock_guard<std::mutex> lock(m_mutex); // RAII
-    return m_queue.empty();
+    return m_size.Get() == 0;
 }
 
 
@@ -165,8 +164,7 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::IsFull() const
         return false;
     }
 
-    std::lock_guard<std::mutex> lock(m_mutex); // RAII
-    return m_queue.size() == m_capacity;
+    return m_size.Get() == m_capacity;
 }
 
 
@@ -210,9 +208,10 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::RemoveNext(T& a_itemToReturnByRe
     {
         a_itemToReturnByRef = m_queue.front();
         m_queue.pop_front();
+        --m_size;
     }
     catch(...)
-    { // Exception safety
+    {
         return false;
     }
 
@@ -223,14 +222,14 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::RemoveNext(T& a_itemToReturnByRe
 template <typename T, typename DestructionPolicy>
 bool BlockingBoundedQueue<T,DestructionPolicy>::Empty() const noexcept
 {
-    return m_queue.empty();
+    return m_size.Get() == 0;
 }
 
 
 template <typename T, typename DestructionPolicy>
 size_t BlockingBoundedQueue<T,DestructionPolicy>::GetSize() const noexcept
 {
-    return m_queue.size();
+    return m_size.Get();
 }
 
 }

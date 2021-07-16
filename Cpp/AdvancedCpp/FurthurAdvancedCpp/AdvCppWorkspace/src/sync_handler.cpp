@@ -16,7 +16,7 @@ void advcpp::SyncHandler::Signal()
 }
 
 
-bool advcpp::SyncHandler::Check()
+bool advcpp::SyncHandler::Check() const
 {
     Rethrow();
     return m_hasDone.Check();
@@ -29,7 +29,7 @@ void advcpp::SyncHandler::SetException(std::exception_ptr a_exception)
 }
 
 
-void advcpp::SyncHandler::Rethrow()
+void advcpp::SyncHandler::Rethrow() const
 {
     if(m_caughtException)
     {

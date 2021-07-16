@@ -24,13 +24,13 @@ public:
 
     // Shared-Flag handling:
     void Signal();
-    bool Check();
+    bool Check() const;
 
     // Exception handling:
     void SetException(std::exception_ptr a_exception);
 
 private:
-    void Rethrow();
+    void Rethrow() const;
 
 private:
     std::exception_ptr m_caughtException;

@@ -7,6 +7,7 @@
 #include <memory> // std::shared_ptr
 #include "icallable.hpp"
 #include "thread.hpp"
+#include "atomic_value.hpp"
 
 
 namespace advcpp
@@ -44,6 +45,7 @@ private:
 private:
     std::list<std::shared_ptr<Thread<DestructionPolicy>>> m_threadsGroup;
     std::shared_ptr<ICallable> m_commonTask;
+    AtomicValue<size_t> m_size;
     DestructionPolicy m_destructionPolicy;
 };
 

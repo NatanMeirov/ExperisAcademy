@@ -54,6 +54,7 @@ private:
     Semaphore m_freeSlots;
     Semaphore m_occupiedSlots;
     DestructionPolicy m_destructionPolicy;
+    AtomicValue<size_t> m_size;
     size_t m_capacity;
     AtomicValue<size_t> m_enqueueWaiters;
     AtomicValue<size_t> m_dequeueWaiters;

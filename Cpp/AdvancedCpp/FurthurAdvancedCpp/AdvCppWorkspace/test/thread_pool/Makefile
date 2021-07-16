@@ -21,7 +21,7 @@ check: $(TARGET)
 	./$(TARGET)
 
 
-main: main.cpp $(INC)/thread_pool.hpp $(SRC)/thread_pool.cpp ../src/counter.cpp $(SRC)/thread_destruction_policies.cpp $(SRC)/barrier.cpp $(SRC)/sync_handler.cpp
+main: main.cpp $(INC)/thread_pool.hpp ../src/counter.cpp $(SRC)/thread_destruction_policies.cpp $(SRC)/barrier.cpp $(SRC)/sync_handler.cpp $(SRC)/suicide_mission.cpp $(SRC)/busy_work.cpp $(SRC)/semaphore.cpp $(SRC)/two_way_multi_sync_handler.cpp
 
 
 
