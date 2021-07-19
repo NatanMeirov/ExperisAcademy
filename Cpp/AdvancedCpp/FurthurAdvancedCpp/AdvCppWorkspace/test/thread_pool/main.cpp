@@ -63,15 +63,13 @@ BEGIN_TEST(thread_pool_submit_shutdown_check)
     std::shared_ptr<Counter> counter(new Counter());
     std::shared_ptr<CounterIncrementTask> work(new CounterIncrementTask(counter, N));
 
-    ThreadPool<AssertingPolicy<>> pool(AssertingPolicy<>(), QUEUE_SIZE, 0);
+    ThreadPool<AssertingPolicy<>> pool(AssertingPolicy<>(), QUEUE_SIZE, WORKERS_N);
 
     for(size_t i = 0; i < WORKS_COUNT; ++i)
     {
         pool.SubmitWork(work);
     }
-    sleep(1);
 
-    pool.AddWorkers(WORKERS_N);
     pool.Shutdown();
 
     TRACE(counter->Count());
@@ -211,12 +209,12 @@ END_TEST
 
 BEGIN_SUITE(ThreadPoolTests)
 
-    // TEST(thread_pool_submit_and_add_check)
-    // TEST(thread_pool_submit_shutdown_check)
-    // TEST(thread_pool_shutdown_waiting_on_dequeue_check)
-    // TEST(thread_pool_shutdown_immidiate_waiting_on_dequeue_check)
-    // TEST(thread_pool_shutdown_immidiate_in_middle_of_work)
-    TEST(thread_pool_remove_worker_empty_queue)
-    TEST(thread_pool_remove_while_executing_work)
+    TEST(thread_pool_submit_and_add_check)
+    TEST(thread_pool_submit_shutdown_check)
+    TEST(thread_pool_shutdown_waiting_on_dequeue_check)
+    TEST(thread_pool_shutdown_immidiate_waiting_on_dequeue_check)
+    TEST(thread_pool_shutdown_immidiate_in_middle_of_work)
+    // TEST(thread_pool_remove_worker_empty_queue)
+    // TEST(thread_pool_remove_while_executing_work)
 
 END_SUITE

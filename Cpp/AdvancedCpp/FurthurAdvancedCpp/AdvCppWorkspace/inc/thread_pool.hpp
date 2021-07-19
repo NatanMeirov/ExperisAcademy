@@ -6,8 +6,10 @@
 #include <memory> // std::shared_ptr
 #include <thread> // std::thread::hardware_concurrency()
 #include <mutex> // std::mutex
-#include "thread_group.hpp"
+#include <vector> // std::vector
+#include "thread.hpp"
 #include "thread_destruction_policies.hpp"
+#include "thread_group.hpp"
 #include "icallable.hpp"
 #include "blocking_bounded_queue.hpp"
 #include "blocking_bounded_queue_destruction_policies.hpp"
@@ -52,7 +54,8 @@ public:
     size_t PendingWorksCount() const;
 
 private:
-    void InsertWorkToQueue(Work a_workToInsert);
+    void InsertWorkToQueueAsync(Work a_workToInsert);
+    bool HasDoneEnqueueAllWorksAsync() const;
     void Stop();
     bool HasStopped() const;
     void SoftShutdown();
@@ -69,6 +72,7 @@ private: // Order is important!
     std::shared_ptr<std::mutex> m_workersLock;
     Work m_mainWorksScheduler;
     ThreadGroup<CancelPolicy> m_workers;
+    std::vector<std::shared_ptr<Thread<DetachPolicy>>> m_enqueueWorkThreads;
     std::mutex m_operationsLock;
     AtomicFlag m_isStopRequired;
     DestructionPolicy m_destructionPolicy;

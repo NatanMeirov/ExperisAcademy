@@ -6,6 +6,7 @@
 #include <deque>
 #include <mutex>
 #include "semaphore.hpp"
+#include "barrier.hpp"
 #include "atomic_value.hpp"
 
 
@@ -53,6 +54,8 @@ private:
     mutable std::mutex m_mutex;
     Semaphore m_freeSlots;
     Semaphore m_occupiedSlots;
+    Barrier m_enqueueWaitersBarrier;
+    Barrier m_dequeueWaitersBarrier;
     DestructionPolicy m_destructionPolicy;
     AtomicValue<size_t> m_size;
     size_t m_capacity;

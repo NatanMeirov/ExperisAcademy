@@ -4,13 +4,14 @@
 
 #include <cstddef> // size_t
 #include <memory> // std::shared_ptr, std::make_shared
-#include <semaphore.h> // sem_t and semaphore functions
 #include <deque>
 #include <mutex>
 #include <stdexcept> // std::runtime_error
-#include <type_traits>
+#include "semaphore.hpp"
+#include "barrier.hpp"
+#include "atomic_value.hpp"
 
-#include "../blocking_bounded_queue.hpp" //! REMOVE AFTER DONE IMPLEMENTING
+
 namespace advcpp
 {
 
@@ -20,6 +21,8 @@ BlockingBoundedQueue<T,DestructionPolicy>::BlockingBoundedQueue(size_t a_initial
 , m_mutex()
 , m_freeSlots(a_initialCapacity)
 , m_occupiedSlots(0)
+, m_enqueueWaitersBarrier(1) // Dummy value - should be reset at the destruction
+, m_dequeueWaitersBarrier(1) // Dummy value - should be reset at the destruction
 , m_destructionPolicy(a_destructionPolicy)
 , m_size(0)
 , m_capacity(a_initialCapacity)
@@ -59,6 +62,7 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::Enqueue(const T& a_item)
 
     if(IsClosed()) // Double check lock
     {
+        m_enqueueWaitersBarrier.Wait();
         return false;
     }
 
@@ -96,6 +100,7 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::Dequeue(T& a_itemToReturnByRef)
 
     if(IsClosed()) // Double check lock
     {
+        m_dequeueWaitersBarrier.Wait();
         return false;
     }
 
@@ -171,6 +176,9 @@ bool BlockingBoundedQueue<T,DestructionPolicy>::IsFull() const
 template <typename T, typename DestructionPolicy>
 void BlockingBoundedQueue<T,DestructionPolicy>::ReleaseAllBlockedWaiters()
 {
+    m_enqueueWaitersBarrier.Reset(m_enqueueWaiters.Get() + 1); // +1 stands for the queue itself
+    m_dequeueWaitersBarrier.Reset(m_dequeueWaiters.Get() + 1); // +1 stands for the queue itself
+
     // Release Enqueue waiters:
     while(m_enqueueWaiters.Get() > 0)
     {
@@ -184,6 +192,10 @@ void BlockingBoundedQueue<T,DestructionPolicy>::ReleaseAllBlockedWaiters()
         m_occupiedSlots.Up(); // +1
         // The Dequeue method handles the --m_dequeueWaiters;
     }
+
+    // Waiting for the threads to exit completely (to avoid race condition at the destruction of the queue):
+    m_enqueueWaitersBarrier.Wait();
+    m_dequeueWaitersBarrier.Wait();
 }
 
 

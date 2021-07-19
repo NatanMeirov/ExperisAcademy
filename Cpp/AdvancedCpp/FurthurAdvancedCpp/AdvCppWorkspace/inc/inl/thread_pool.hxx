@@ -6,6 +6,7 @@
 #include <memory> // std::shared_ptr, std::make_shared
 #include <stdexcept> // std::runtime_error
 #include <mutex> // std::mutex, std::lock_guard
+#include <algorithm> // std::for_each
 #include "blocking_bounded_queue.hpp"
 #include "thread.hpp"
 #include "thread_group.hpp"
@@ -30,6 +31,7 @@ ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::ThreadPool(D
 , m_workersLock(new std::mutex())
 , m_mainWorksScheduler(new WorksScheduler<QueueTypeDestructionPolicy,QueueType>(m_worksQueue, m_twoWayMultiSyncHandler, m_workersLock))
 , m_workers(m_mainWorksScheduler, a_workersNumber, CancelPolicy())
+, m_enqueueWorkThreads()
 , m_operationsLock()
 , m_isStopRequired(false)
 , m_destructionPolicy(a_destructionPolicy)
@@ -52,7 +54,7 @@ void ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::SubmitW
         throw std::runtime_error("Failed while tried to submit new work (because of previous Shutdown call)");
     }
 
-    InsertWorkToQueue(a_work);
+    InsertWorkToQueueAsync(a_work);
 }
 
 
@@ -121,11 +123,25 @@ size_t ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::Pendi
 
 
 template <typename DestructionPolicy, typename QueueTypeDestructionPolicy, typename QueueType>
-void ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::InsertWorkToQueue(Work a_workToInsert)
+void ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::InsertWorkToQueueAsync(Work a_workToInsert)
 {
     Work worksEnqueuer(new WorksEnqueuer<QueueTypeDestructionPolicy,QueueType>(m_worksQueue, a_workToInsert));
-    Thread<DetachPolicy> workEnqueueTask(worksEnqueuer, DetachPolicy());
-    workEnqueueTask.Detach();
+    std::shared_ptr<Thread<DetachPolicy>> workEnqueueTask(new Thread<DetachPolicy>(worksEnqueuer, DetachPolicy()));
+    workEnqueueTask->Detach();
+    m_enqueueWorkThreads.push_back(workEnqueueTask);
+}
+
+
+template <typename DestructionPolicy, typename QueueTypeDestructionPolicy, typename QueueType>
+bool ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::HasDoneEnqueueAllWorksAsync() const
+{
+    bool hasDoneAll = true;
+    std::for_each(m_enqueueWorkThreads.begin(), m_enqueueWorkThreads.end(), [&hasDoneAll](std::shared_ptr<Thread<DetachPolicy>> m_enqueueWorkTask)
+    {
+        hasDoneAll = hasDoneAll && m_enqueueWorkTask->HasDone();
+    });
+
+    return hasDoneAll;
 }
 
 
@@ -146,6 +162,7 @@ bool ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::HasStop
 template <typename DestructionPolicy, typename QueueTypeDestructionPolicy, typename QueueType>
 void ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::SoftShutdown()
 {
+    while(!HasDoneEnqueueAllWorksAsync()); // Polling - to make sure that all the WorksEnqueuers have done enqueue the submitted the works successfully
     while(!m_worksQueue->IsEmpty() && m_workers.Size() > 0); // Pooling - to make sure that the workers have consumed all the works, and there are ready to be stopped (and make sure that there are workers to consume the works... must make sure to not wait for nothing)
     StopWorkers(m_workers.Size()); // Stop all workers
 }
@@ -167,7 +184,7 @@ void ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::StopWor
     Work suicideMission(new SuicideMission()); // Using the suicide mission (that throws) to make sure that N workers are working on something, and NOT waiting on the Dequeue, so they are cancelable
     for(size_t i = 0; i < a_workersToStop; ++i)
     {
-        InsertWorkToQueue(suicideMission);
+        InsertWorkToQueueAsync(suicideMission);
     }
 
     m_twoWayMultiSyncHandler->WaitForAllSignalsBack(); // A blocking wait (no polling is required)
