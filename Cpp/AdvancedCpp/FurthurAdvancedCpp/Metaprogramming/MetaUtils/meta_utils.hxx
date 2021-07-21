@@ -74,6 +74,35 @@ public:
 
 
 // ------------------------------------------------------------------------------------------------
+// If/Else conditional statement:
+// FUNC_THEN/FUNC_ELSE should be a callable functor (operator() implemented) or function pointer
+template <bool CONDITION>
+class If
+{
+public:
+    template <typename FUNC_THEN, typename FUNC_ELSE>
+    static inline void evaluate(FUNC_THEN trueDecisionFunc, FUNC_ELSE falseDecisionFunc)
+    {
+        (void)(falseDecisionFunc);
+        trueDecisionFunc();
+    }
+};
+
+
+template <>
+class If<false>
+{
+public:
+    template <typename FUNC_THEN, typename FUNC_ELSE>
+    static inline void evaluate(FUNC_THEN trueDecisionFunc, FUNC_ELSE falseDecisionFunc)
+    {
+        (void)(trueDecisionFunc);
+        falseDecisionFunc();
+    }
+};
+
+
+// ------------------------------------------------------------------------------------------------
 // Bubble Sort:
 
 template <typename T>
