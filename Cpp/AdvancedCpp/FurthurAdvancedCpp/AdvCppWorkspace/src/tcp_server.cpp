@@ -1,4 +1,4 @@
-#include "../inc/tcp_server.hpp" //!
+#include "tcp_server.hpp"
 #include <cstddef> // size_t
 #include <list> // std::list
 #include <memory> // std::shared_ptr
@@ -6,19 +6,19 @@
 #include <vector> // std::vector
 #include <string> // std::string, std::to_string
 #include <stdexcept> // std::runtime_error
+#include <algorithm> // std::for_each
 #include <sys/select.h> /* select, fd_set and its MACROS */
-#include "../inc/tcp_server_socket.hpp" //!
-#include "atomic_value.hpp"
+#include "tcp_server_socket.hpp"
 
 
 namespace infra
 {
 
 template<typename ClientMessageHandler, typename ErrorHandler, typename NewClientConnectionHandler, typename CloseClientConnectionHandler>
-TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::TCPServer(ClientMessageHandler a_onClientMessage, ErrorHandler a_onError, NewClientConnectionHandler a_onNewClientConnection, CloseClientConnectionHandler a_onCloseClientConnection, unsigned int a_listeningPort, unsigned int a_maxWaitingConnections, size_t a_receivedMessagesBufferSize)
+TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::TCPServer(ClientMessageHandler a_onClientMessage, ErrorHandler a_onError, NewClientConnectionHandler a_onNewClientConnection, CloseClientConnectionHandler a_onCloseClientConnection, unsigned int a_listeningPort, unsigned int a_maxWaitingConnections)
 : m_serverSocket(a_listeningPort)
 , m_connectedClients()
-, m_problematicClients()
+, m_connectedClientsInfoTable()
 , m_onClientMessage(a_onClientMessage)
 , m_onError(a_onError)
 , m_onNewClientConnection(a_onNewClientConnection)
@@ -26,7 +26,6 @@ TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClie
 , m_socketsSignalsIndicator()
 , m_maxWaitingConnections(a_maxWaitingConnections)
 , m_maxAmountOfConnectedClientsAtTheSameTime(MAX_CONNECTED_CLIENTS_AT_THE_SAME_TIME_TO_SERVER)
-, m_receivedMessagesBufferSize(a_receivedMessagesBufferSize)
 , m_currentConnectedClientsCount(0)
 , m_isStopServerFromRunningRequired(false)
 {
@@ -38,13 +37,16 @@ TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClie
     {
         throw std::runtime_error("Error: maximum amount of waiting connections cannot be 0");
     }
-    if(a_receivedMessagesBufferSize < MIN_BUFFER_SIZE)
-    {
-        throw std::runtime_error("Error: minimum messages buffer size must be more than " + std::to_string(MIN_BUFFER_SIZE));
-    }
 
     InitializeServerSocket(a_maxWaitingConnections);
     InitializeFDSet();
+}
+
+
+template<typename ClientMessageHandler, typename ErrorHandler, typename NewClientConnectionHandler, typename CloseClientConnectionHandler>
+TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::~TCPServer()
+{
+    CloseAllConnectedClients();
 }
 
 
@@ -69,7 +71,7 @@ void TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,Clos
 {
     fd_set tempSocketsSignalsIndicator;
     StatusCode status;
-    advcpp::AtomicValue<int> socketsSignalsCount;
+    int socketsSignalsCount = 0;
 
     while(true)
     {
@@ -82,7 +84,7 @@ void TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,Clos
         tempSocketsSignalsIndicator = m_socketsSignalsIndicator;
 
         socketsSignalsCount = select(FILE_DESCRIPTORS_LIMIT, &tempSocketsSignalsIndicator, NULL, NULL, NULL);
-        if(socketsSignalsCount.Get() < 0)
+        if(socketsSignalsCount < 0)
         {
             m_isStopServerFromRunningRequired = m_onError(SERVER_INTERNAL_ERROR, MapServerErrorsToMessages(SERVER_INTERNAL_ERROR));
             if(m_isStopServerFromRunningRequired)
@@ -100,7 +102,7 @@ void TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,Clos
                 m_isStopServerFromRunningRequired = m_onError(status, MapServerErrorsToMessages(status));
                 if(m_isStopServerFromRunningRequired)
                 {
-                    break; // The main server loop will stop and the ServerRun function will finish
+                    break; // The main server loop will stop and the Run function will finish
                 }
             }
 
@@ -109,7 +111,26 @@ void TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,Clos
 
         if(socketsSignalsCount > 0) // Check if only the listening socket had a notification -> if true: can continue to be blocked by the OS using the select (so end current loop)
         {
-            HandleExistingClientsRequests(tempSocketsSignalsIndicator, socketsSignalsCount.Get());
+            try
+            {
+                HandleExistingClientsRequests(tempSocketsSignalsIndicator, socketsSignalsCount);
+            }
+            catch(const std::bad_alloc& baex)
+            {
+                m_isStopServerFromRunningRequired = m_onError(MEMORY_ALLOCATION_FAILED, MapServerErrorsToMessages(MEMORY_ALLOCATION_FAILED));
+                if(m_isStopServerFromRunningRequired)
+                {
+                    break; // The main server loop will stop and the Run function will finish
+                }
+            }
+            catch(const std::exception& ex)
+            {
+                m_isStopServerFromRunningRequired = m_onError(SERVER_INTERNAL_ERROR, MapServerErrorsToMessages(SERVER_INTERNAL_ERROR));
+                if(m_isStopServerFromRunningRequired)
+                {
+                    break; // The main server loop will stop and the Run function will finish
+                }
+            }
         }
     }
 }
@@ -161,18 +182,26 @@ typename TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,
     try
     {
         newClient.m_clientID = m_serverSocket.GetLastAcceptedClientSocketID();
+        m_connectedClients.push_back(newClient.m_clientID);
+
         std::pair<std::string,unsigned int> clientIpAndPortInfo = m_serverSocket.GetLastAcceptedClientIpAndPortData();
         newClient.m_clientIPAddress = clientIpAndPortInfo.first;
         newClient.m_clientPort = clientIpAndPortInfo.second;
 
-        m_connectedClients[newClient.m_clientID] = newClient;
+        m_connectedClientsInfoTable[newClient.m_clientID] = newClient;
     }
     catch(const std::bad_alloc& baex)
     {
+        // To keep class' invariants (no throw and does nothing if 0 elements have removed)
+        m_connectedClients.remove(newClient.m_clientID);
+        m_connectedClientsInfoTable.erase(newClient.m_clientID);
         return MEMORY_ALLOCATION_FAILED;
     }
     catch(const std::exception& ex)
     {
+        // To keep class' invariants (no throw and does nothing if 0 elements have removed)
+        m_connectedClients.remove(newClient.m_clientID);
+        m_connectedClientsInfoTable.erase(newClient.m_clientID);
         return SERVER_INTERNAL_ERROR;
     }
 
@@ -182,8 +211,8 @@ typename TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,
     ++m_currentConnectedClientsCount;
 
     // Semi initialization of the response object
-    std::shared_ptr<Response> response(new Response());
-    response->m_clients.push_back(newClient.m_clientID);
+    Response response;
+    response.m_clients.push_back(newClient.m_clientID);
 
     m_onNewClientConnection(newClient, response);
 
@@ -198,24 +227,25 @@ typename TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,
 
 
 template<typename ClientMessageHandler, typename ErrorHandler, typename NewClientConnectionHandler, typename CloseClientConnectionHandler>
-typename TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::HandlingClientResult TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::HandleResponse(std::shared_ptr<Response> a_response)
+typename TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::HandlingClientResult TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::HandleResponse(Response& a_response)
 {
-    if(a_response->m_status == SEND_MESSAGE)
+    if(a_response.m_status == SEND_MESSAGE)
     {
-        size_t clientsCountToSendMessageFor = a_response->m_clients.size();
-        for(size_t i = 0; i < clientsCountToSendMessageFor; ++i)
+        size_t clientsCountToSendMessagesFor = a_response.m_clients.size();
+        for(size_t i = 0; i < clientsCountToSendMessagesFor; ++i)
         {
             try
             {
-                SendMessageTo(a_response->m_clients[i], a_response->m_message);
+                SendMessageTo(a_response.m_clients[i], a_response.m_message);
             }
             catch(...)
             {
-                m_problematicClients.push_back(a_response->m_clients[i]);
+                // Handling problematic client
+                DisconnectAndRemoveClientFromServer(a_response.m_clients[i]);
             }
         }
     }
-    else if(a_response->m_status == DISCONNECT_CLIENT)
+    else if(a_response.m_status == DISCONNECT_CLIENT)
     {
         return CLIENT_FINISH; // Disconnect the client
     }
@@ -236,9 +266,10 @@ size_t TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,Cl
 template<typename ClientMessageHandler, typename ErrorHandler, typename NewClientConnectionHandler, typename CloseClientConnectionHandler>
 void TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::DisconnectAndRemoveClientFromServer(ClientID a_clientID)
 {
-    m_onCloseClientConnection(m_connectedClients.at(a_clientID));
+    m_onCloseClientConnection(m_connectedClientsInfoTable.at(a_clientID));
 
-    m_connectedClients.erase(a_clientID);
+    m_connectedClients.remove(a_clientID);
+    m_connectedClientsInfoTable.erase(a_clientID);
     FD_CLR(a_clientID, &m_socketsSignalsIndicator);
     close(a_clientID);
     --m_currentConnectedClientsCount;
@@ -246,13 +277,103 @@ void TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,Clos
 
 
 template<typename ClientMessageHandler, typename ErrorHandler, typename NewClientConnectionHandler, typename CloseClientConnectionHandler>
-void TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::HandleExistingClientsRequests(fd_set a_socketsSignalsIndicator, int a_clientsSocketSignalsCount)
+void TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::HandleExistingClientsRequests(fd_set a_tempSocketsSignalsIndicator, int a_clientsSocketSignalsCount)
 {
-    advcpp::AtomicValue<int> clientsSocketSignalsCount(a_clientsSocketSignalsCount);
-    bool isServerShouldStopAfterHandlingAllClients = false;
-    HandlingClientResult result;
+    // Using 'break' statement - cannot use std::for_each here...
+    auto itr = m_connectedClients.begin();
+    auto endItr = m_connectedClients.end();
 
-    // TODO!
+    for(; itr != endItr; ++itr)
+    {
+        ClientID clientID = *itr;
+        bool isServerShouldStopAfterHandlingAllClients = false;
+
+        if(FD_ISSET(clientID, &a_tempSocketsSignalsIndicator))
+        {
+            // Handle the client's request
+            Message newMessage;
+            HandlingClientResult result = HandleSingleClientRequest(clientID, newMessage);
+            if(result == CLIENT_FINISH || result == CLIENT_ERROR)
+            {
+                DisconnectAndRemoveClientFromServer(clientID);
+            }
+            else // CLIENT_KEEP - message has successfully received for the client
+            {
+                Response response;
+                response.m_clients.push_back(clientID); // Current client id is the default value of the response
+
+                isServerShouldStopAfterHandlingAllClients = m_onClientMessage(newMessage, clientID, response);
+                if(isServerShouldStopAfterHandlingAllClients)
+                {
+                    m_isStopServerFromRunningRequired = true;
+                }
+
+                // Handle application's response
+                result = HandleResponse(response);
+                if(result == CLIENT_FINISH)
+                {
+                    DisconnectAndRemoveClientFromServer(clientID);
+                }
+
+                // Finished to handle the response from the application
+            }
+
+            --a_clientsSocketSignalsCount;
+            if(a_clientsSocketSignalsCount == 0) // Finished to handle all pending clients
+            {
+                break;
+            }
+        }
+    }
+}
+
+
+template<typename ClientMessageHandler, typename ErrorHandler, typename NewClientConnectionHandler, typename CloseClientConnectionHandler>
+typename TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::HandlingClientResult TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::HandleSingleClientRequest(ClientID a_clientID, Message& a_message)
+{
+    try
+    {
+        a_message = ReceiveMessageFrom(a_clientID);
+    }
+    catch(...)
+    {
+        // Handling problematic client
+        return CLIENT_ERROR;
+    }
+
+    if(a_message.Size() == 0)
+    {
+        return CLIENT_FINISH; // The connection has finished by the client (an empty message had received)
+    }
+
+    return CLIENT_KEEP; // The message had received successfully
+}
+
+
+template<typename ClientMessageHandler, typename ErrorHandler, typename NewClientConnectionHandler, typename CloseClientConnectionHandler>
+typename TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::Message TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::ReceiveMessageFrom(ClientID a_clientID)
+{
+    m_serverSocket.SetClientIDToReceiveMessageFrom(a_clientID);
+
+    Message completeMessage, newBuffer;
+    newBuffer = m_serverSocket.Receive(MESSAGES_BUFFER_SIZE);
+    while(newBuffer.Size() != 0) // A loop to receive the whole new message (the loop would stop when the newBuffer size is equal to 0, so the completeMessage is completed already in the previous iteration)
+    {
+        completeMessage += newBuffer;
+        newBuffer = m_serverSocket.Receive(MESSAGES_BUFFER_SIZE);
+    }
+
+    return completeMessage; // Could be empty message if the first receive attempt returned an empty message
+}
+
+
+template<typename ClientMessageHandler, typename ErrorHandler, typename NewClientConnectionHandler, typename CloseClientConnectionHandler>
+void TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::CloseAllConnectedClients()
+{
+    std::for_each(m_connectedClients.begin(), m_connectedClients.end(), [](ClientID a_clientID)
+    {
+        close(a_clientID);
+    });
 }
 
 } // infra
