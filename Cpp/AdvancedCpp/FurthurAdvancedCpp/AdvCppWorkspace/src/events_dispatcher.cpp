@@ -1,6 +1,5 @@
 #include "events_dispatcher.hpp"
 #include <list> // std::list
-#include <memory> // std::shared_ptr
 #include <stdexcept> // std::runtime_error
 #include <algorithm> // std::for_each
 #include "isubscriber.hpp"
@@ -15,7 +14,7 @@ EventsDispatcher::EventsDispatcher()
 }
 
 
-void EventsDispatcher::Subscribe(std::shared_ptr<ISubscriber> a_toSubscribe)
+void EventsDispatcher::Subscribe(ISubscriber* a_toSubscribe)
 {
     if(!a_toSubscribe)
     {
@@ -26,7 +25,7 @@ void EventsDispatcher::Subscribe(std::shared_ptr<ISubscriber> a_toSubscribe)
 }
 
 
-void EventsDispatcher::Unsubscribe(std::shared_ptr<ISubscriber> a_toUnsubscribe)
+void EventsDispatcher::Unsubscribe(ISubscriber* a_toUnsubscribe)
 {
     if(!a_toUnsubscribe)
     {
@@ -39,7 +38,7 @@ void EventsDispatcher::Unsubscribe(std::shared_ptr<ISubscriber> a_toUnsubscribe)
 
 void EventsDispatcher::Invoke()
 {
-    std::for_each(m_subscribers.begin(), m_subscribers.end(), [](std::shared_ptr<ISubscriber> a_toInvoke)
+    std::for_each(m_subscribers.begin(), m_subscribers.end(), [](ISubscriber* a_toInvoke)
     {
         a_toInvoke->Notify();
     });

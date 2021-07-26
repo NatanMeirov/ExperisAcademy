@@ -3,7 +3,6 @@
 
 
 #include <list> // std::list
-#include <memory> // std::shared_ptr
 #include "isubscriber.hpp"
 #include "isubscribable.hpp"
 
@@ -19,12 +18,12 @@ public:
     EventsDispatcher& operator=(const EventsDispatcher& a_other) = delete;
     ~EventsDispatcher() = default;
 
-    virtual void Subscribe(std::shared_ptr<ISubscriber> a_toSubscribe) override;
-    virtual void Unsubscribe(std::shared_ptr<ISubscriber> a_toUnsubscribe) override;
+    virtual void Subscribe(ISubscriber* a_toSubscribe) override;
+    virtual void Unsubscribe(ISubscriber* a_toUnsubscribe) override;
     void Invoke();
 
 private:
-    std::list<std::shared_ptr<ISubscriber>> m_subscribers;
+    std::list<ISubscriber*> m_subscribers;
 };
 
 } // smartbuilding
