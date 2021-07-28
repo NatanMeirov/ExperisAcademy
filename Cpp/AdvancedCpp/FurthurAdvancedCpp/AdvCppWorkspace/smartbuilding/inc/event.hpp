@@ -2,6 +2,7 @@
 #define NM_EVENT_HPP
 
 
+#include <string> // std::string
 #include "date_time.hpp"
 #include "event_location.hpp"
 #include "tcp_socket.hpp"
@@ -11,14 +12,19 @@ namespace smartbuilding
 {
 
 // An extensible Event class - to represent each incoming event to the mediation server, from the sensors' agents
-// Note: add more event types to the EventType enum, to extend the Event class
 class Event
 {
 public:
-    enum EventType { SMOKE, FIRE, EMPTY_ROOM };
+    using EventType = std::string;
     using DataPayload = infra::TCPSocket::BytesBufferProxy;
 
-    Event();
+    Event(const DataPayload& a_data, const DateTime& a_timestamp, const EventLocation& a_location, const EventType& a_type)
+    : m_data(a_data)
+    , m_timestamp(a_timestamp)
+    , m_location(a_location)
+    , m_type(a_type)
+    {
+    }
     Event(const Event& a_other) = default;
     Event& operator=(const Event& a_other) = default;
     ~Event() = default;

@@ -4,26 +4,23 @@
 
 #include <list> // std::list
 #include "isubscriber.hpp"
-#include "isubscribable.hpp"
+#include "event.hpp"
 
 
 namespace smartbuilding
 {
 
-class EventsDispatcher : public ISubscribable
+class EventsDispatcher
 {
 public:
-    EventsDispatcher();
+    EventsDispatcher() = default;
     EventsDispatcher(const EventsDispatcher& a_other) = delete;
     EventsDispatcher& operator=(const EventsDispatcher& a_other) = delete;
     ~EventsDispatcher() = default;
 
-    virtual void Subscribe(ISubscriber* a_toSubscribe) override;
-    virtual void Unsubscribe(ISubscriber* a_toUnsubscribe) override;
-    void Invoke();
-
-private:
-    std::list<ISubscriber*> m_subscribers;
+    // Concept of C: C must be an iterable container (implement begin() and end()), must have value_type info (typedef), and C::value_type must be ISubscriber*
+    template <typename C>
+    void Invoke(C a_subscribersCollection, const Event& a_event);
 };
 
 } // smartbuilding

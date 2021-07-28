@@ -1,2 +1,4 @@
 -Iinc
 -Itest/inc
+-Ismartbuilding/inc
+-Ismartbuilding/test/inc

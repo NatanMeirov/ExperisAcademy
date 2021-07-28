@@ -3,6 +3,7 @@
 
 
 #include "isubscriber.hpp"
+#include "event.hpp"
 
 
 namespace smartbuilding
@@ -12,8 +13,8 @@ class ISubscribable
 {
 public:
     virtual ~ISubscribable() = default;
-    virtual void Subscribe(ISubscriber* a_toSubscribe) = 0;
-    virtual void Unsubscribe(ISubscriber* a_toUnsubscribe) = 0;
+    virtual void Subscribe(ISubscriber* a_toSubscribe, const Event::EventType& a_type) = 0;
+    virtual void Unsubscribe(ISubscriber* a_toUnsubscribe, const Event::EventType& a_type) = 0;
 };
 
 } // smartbuilding
