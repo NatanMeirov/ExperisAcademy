@@ -18,12 +18,13 @@ namespace smartbuilding
 {
 
 // An extensible lazy initialization events subscription organizer
+// Used as the internal Smart Building System's controllers database
+// This DB is initialized completely at initialization part of the system, and should not be modified at the runtime
 // Note: each pre-configured EventType (through the config file) - would be added to the DB as a key, so the system should be as extensible as possible
 class EventsSubscriptionOrganizer : public ISubscribable
 {
 public:
     using SubscribersCollection = std::deque<ISubscriber*>;
-    using SubscribersToIntrestedLocationsPair = std::pair<ISubscriber*, SubscriptionLocation>;
 
     EventsSubscriptionOrganizer() = default;
     EventsSubscriptionOrganizer(const EventsSubscriptionOrganizer& a_other) = delete;
@@ -36,6 +37,9 @@ public:
     // An important data fetching on run-time method - exception safety guaranteed (no throws even if the event is not found -> in this case: true would be returned, and the container would be empty [container is in valid state])
     // [returns true if the container is fully valid, else returns false]
     bool FetchRelevantSubscribers(const Event::EventType& a_type, const EventLocation& a_location, SubscribersCollection& a_relevantSubscribersContainer) noexcept;
+
+private:
+    using SubscribersToIntrestedLocationsPair = std::pair<ISubscriber*, SubscriptionLocation>;
 
 private:
     void CreateEventEntry(const Event::EventType& a_type);
