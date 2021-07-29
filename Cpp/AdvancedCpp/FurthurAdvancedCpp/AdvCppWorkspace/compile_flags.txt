@@ -1,4 +1,6 @@
 -Iinc
 -Itest/inc
--Ismartbuilding/inc
--Ismartbuilding/test/inc
+-Ismartbuilding/smartbuilding_server/inc
+-Ismartbuilding/smartbuilding_server/test/inc
+-Ismartbuilding/smartbuilding_client/inc
+-Ismartbuilding/smartbuilding_client/test/inc
