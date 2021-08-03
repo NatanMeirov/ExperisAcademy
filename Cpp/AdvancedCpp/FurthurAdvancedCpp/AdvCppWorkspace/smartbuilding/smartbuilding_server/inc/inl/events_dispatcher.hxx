@@ -1,7 +1,12 @@
-#include "events_dispatcher.hpp"
+#ifndef NM_EVENTS_DISPATCHER_HXX
+#define NM_EVENTS_DISPATCHER_HXX
+
+
 #include <algorithm> // std::for_each
 #include <type_traits> // std::is_same
 #include <memory> // std::shared_ptr
+#include "blocking_bounded_queue.hpp"
+#include "blocking_bounded_queue_destruction_policies.hpp"
 #include "isubscriber.hpp"
 #include "invoker_work.hpp"
 
@@ -22,7 +27,7 @@ EventsDispatcher::~EventsDispatcher()
 
 
 template <typename C>
-void EventsDispatcher::Invoke(C a_subscribersCollection, const Event& a_event) noexcept
+void EventsDispatcher::Invoke(C a_subscribersCollection, const Event& a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<infra::TCPSocket::BytesBufferProxy, advcpp::NoOperationPolicy<infra::TCPSocket::BytesBufferProxy>>> a_handledBuffersQueue) noexcept
 {
     static_assert(std::is_same<typename C::value_type, ISubscriber*>::value, "C::value_type must be of type ISubscriber*");
 
@@ -30,7 +35,7 @@ void EventsDispatcher::Invoke(C a_subscribersCollection, const Event& a_event) n
     {
         try
         {
-            std::shared_ptr<InvokerWork> invokeTask(new InvokerWork(a_subscriber, a_event));
+            std::shared_ptr<InvokerWork> invokeTask(new InvokerWork(a_subscriber, a_event, a_handledBuffersQueue));
             m_invokers.SubmitWork(invokeTask);
         }
         catch(...)
@@ -41,3 +46,6 @@ void EventsDispatcher::Invoke(C a_subscribersCollection, const Event& a_event) n
 }
 
 } // smartbuilding
+
+
+#endif // NM_EVENTS_DISPATCHER_HXX

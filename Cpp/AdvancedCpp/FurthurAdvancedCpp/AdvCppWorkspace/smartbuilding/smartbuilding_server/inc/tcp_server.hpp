@@ -101,4 +101,7 @@ private:
 } // infra
 
 
+#include "inl/tcp_server.hxx"
+
+
 #endif // NM_TCP_SERVER_HPP

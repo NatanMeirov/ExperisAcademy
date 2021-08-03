@@ -1,4 +1,7 @@
-#include "tcp_server.hpp"
+#ifndef NM_TCP_SERVER_HXX
+#define NM_TCP_SERVER_HXX
+
+
 #include <cstddef> // size_t
 #include <list> // std::list
 #include <memory> // std::shared_ptr
@@ -369,3 +372,6 @@ void TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,Clos
 }
 
 } // infra
+
+
+#endif // NM_TCP_SERVER_HXX

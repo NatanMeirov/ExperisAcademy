@@ -18,7 +18,7 @@ void smartbuilding::FileLogger::Log(const std::string &a_message, LogLevel a_log
 {
     // Open the file resource only on demand (and not keeping it open when no using it [the file])
     std::ofstream log(m_logFileName);
-    DateTime timeNowSnapshot;
+    DateTime timeNowSnapshot = DateTime::Now();
 
     log << timeNowSnapshot.ToString() + MapLogLevelToString(a_logLevel) + a_message;
 }

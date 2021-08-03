@@ -8,7 +8,6 @@
 #include "isubscriber.hpp"
 #include "isubscribable.hpp"
 #include "event.hpp"
-#include "event_location.hpp"
 #include "subscription_location.hpp"
 
 
@@ -47,7 +46,7 @@ void EventsSubscriptionOrganizer::Unsubscribe(ISubscriber* a_toUnsubscribe, cons
 }
 
 
-bool EventsSubscriptionOrganizer::FetchRelevantSubscribers(const Event::EventType& a_type, const EventLocation& a_location, SubscribersCollection& a_relevantSubscribersContainer) noexcept
+bool EventsSubscriptionOrganizer::FetchRelevantSubscribers(const Event::EventType& a_type, const Event::EventLocation& a_location, SubscribersContainer& a_relevantSubscribersContainer) noexcept
 {
     if(m_eventsSubscribersTable.find(a_type) == m_eventsSubscribersTable.end()) // Event not found
     {
@@ -99,7 +98,7 @@ void EventsSubscriptionOrganizer::RemoveSubscriberFromEventList(std::list<Subscr
 }
 
 
-bool EventsSubscriptionOrganizer::IsIntrestedLocationBySubscriber(const EventLocation& a_eventLocation, const SubscriptionLocation& a_intrestedLocation) const noexcept
+bool EventsSubscriptionOrganizer::IsIntrestedLocationBySubscriber(const Event::EventLocation& a_eventLocation, const SubscriptionLocation& a_intrestedLocation) const noexcept
 {
     if(a_intrestedLocation.IsAllFloors())
     {

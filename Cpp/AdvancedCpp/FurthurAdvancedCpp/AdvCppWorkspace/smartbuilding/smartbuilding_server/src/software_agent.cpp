@@ -4,13 +4,20 @@
 #include "ilogger.hpp"
 
 
-smartbuilding::RemoteHardwareDeviceAgent::RemoteHardwareDeviceAgent(std::shared_ptr<ILogger> a_logger, const std::string& a_logFileName, const std::string& a_remoteDeviceID, const std::string& a_remoteDeviceIP, unsigned int a_remoteDevicePort)
-: m_logger(a_logger)
+smartbuilding::RemoteHardwareDeviceAgent::RemoteHardwareDeviceAgent(const std::string& a_configurations, std::shared_ptr<ILogger> a_logger, const std::string& a_logFileName, const std::string& a_remoteDeviceID, const std::string& a_remoteDeviceIP, unsigned int a_remoteDevicePort)
+: m_configurations(a_configurations)
+, m_logger(a_logger)
 , m_logFileName(a_logFileName)
 , m_remoteDeviceID(a_remoteDeviceID)
 , m_remoteDeviceIP(a_remoteDeviceIP)
 , m_remoteDevicePort(a_remoteDevicePort)
 {
+}
+
+
+std::string smartbuilding::RemoteHardwareDeviceAgent::Configurations() const
+{
+    return m_configurations;
 }
 
 
