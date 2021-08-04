@@ -1,8 +1,9 @@
 #include "events_subscription_organizer.hpp"
+#include <memory> // std::shared_ptr
 #include <stdexcept> // std::runtime_error, std::invalid_argument
 #include <list>
 #include <unordered_map>
-#include <deque>
+#include <set>
 #include <utility> // std::make_pair
 #include <algorithm> // std::for_each, std::find
 #include "isubscriber.hpp"
@@ -14,7 +15,7 @@
 namespace smartbuilding
 {
 
-void EventsSubscriptionOrganizer::Subscribe(ISubscriber* a_toSubscribe, const Event::EventType& a_type, const SubscriptionLocation& a_intrestedLocation)
+void EventsSubscriptionOrganizer::Subscribe(std::shared_ptr<ISubscriber> a_toSubscribe, const Event::EventType& a_type, const SubscriptionLocation& a_intrestedLocation)
 {
     if(!a_toSubscribe)
     {
@@ -30,7 +31,7 @@ void EventsSubscriptionOrganizer::Subscribe(ISubscriber* a_toSubscribe, const Ev
 }
 
 
-void EventsSubscriptionOrganizer::Unsubscribe(ISubscriber* a_toUnsubscribe, const Event::EventType& a_type)
+void EventsSubscriptionOrganizer::Unsubscribe(std::shared_ptr<ISubscriber> a_toUnsubscribe, const Event::EventType& a_type)
 {
     if(!a_toUnsubscribe)
     {
@@ -60,7 +61,7 @@ bool EventsSubscriptionOrganizer::FetchRelevantSubscribers(const Event::EventTyp
         {
             if(IsIntrestedLocationBySubscriber(a_location, a_subscriberToIntrestedLocations.second))
             {
-                a_relevantSubscribersContainer.push_back(a_subscriberToIntrestedLocations.first);
+                a_relevantSubscribersContainer.insert(a_subscriberToIntrestedLocations.first);
             }
         });
     }
@@ -80,7 +81,7 @@ void EventsSubscriptionOrganizer::CreateEventEntry(const Event::EventType& a_typ
 }
 
 
-void EventsSubscriptionOrganizer::RemoveSubscriberFromEventList(std::list<SubscribersToIntrestedLocationsPair>& a_list, ISubscriber* a_toRemove)
+void EventsSubscriptionOrganizer::RemoveSubscriberFromEventList(std::list<SubscribersToIntrestedLocationsPair>& a_list, std::shared_ptr<ISubscriber> a_toRemove)
 {
     auto itr = a_list.begin();
     auto endItr = a_list.end();

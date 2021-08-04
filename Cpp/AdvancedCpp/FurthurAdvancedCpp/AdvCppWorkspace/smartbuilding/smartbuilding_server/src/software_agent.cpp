@@ -1,51 +1,37 @@
-#include "remote_hardware_device_agent.hpp"
+#include "software_agent.hpp"
 #include <memory> // std::shared_ptr
 #include <string> // std::string
 #include "ilogger.hpp"
 
 
-smartbuilding::RemoteHardwareDeviceAgent::RemoteHardwareDeviceAgent(const std::string& a_configurations, std::shared_ptr<ILogger> a_logger, const std::string& a_logFileName, const std::string& a_remoteDeviceID, const std::string& a_remoteDeviceIP, unsigned int a_remoteDevicePort)
+smartbuilding::SoftwareAgent::SoftwareAgent(const std::string& a_configurations, std::shared_ptr<ILogger> a_logger, const std::string& a_remoteDeviceID, const Location& a_location)
 : m_configurations(a_configurations)
 , m_logger(a_logger)
-, m_logFileName(a_logFileName)
 , m_remoteDeviceID(a_remoteDeviceID)
-, m_remoteDeviceIP(a_remoteDeviceIP)
-, m_remoteDevicePort(a_remoteDevicePort)
+, m_location(a_location)
 {
 }
 
 
-std::string smartbuilding::RemoteHardwareDeviceAgent::Configurations() const
+std::string smartbuilding::SoftwareAgent::Configurations() const
 {
     return m_configurations;
 }
 
 
-std::string smartbuilding::RemoteHardwareDeviceAgent::LogFileName() const
-{
-    return m_logFileName;
-}
-
-
-std::string smartbuilding::RemoteHardwareDeviceAgent::RemoteDeviceID() const
+std::string smartbuilding::SoftwareAgent::RemoteDeviceID() const
 {
     return m_remoteDeviceID;
 }
 
 
-std::string smartbuilding::RemoteHardwareDeviceAgent::RemoteDeviceIP() const
+smartbuilding::Location smartbuilding::SoftwareAgent::Loc() const
 {
-    return m_remoteDeviceIP;
+    return m_location;
 }
 
 
-unsigned int smartbuilding::RemoteHardwareDeviceAgent::RemoteDevicePort() const
-{
-    return m_remoteDevicePort;
-}
-
-
-void smartbuilding::RemoteHardwareDeviceAgent::Log(const std::string& a_message, ILogger::LogLevel a_logLevel)
+void smartbuilding::SoftwareAgent::Log(const std::string& a_message, ILogger::LogLevel a_logLevel)
 {
     m_logger->Log(a_message, a_logLevel);
 }

@@ -5,6 +5,7 @@
 #include <memory> // std::shared_ptr
 #include <string> // std::string
 #include "ilogger.hpp"
+#include "location.hpp"
 
 
 namespace smartbuilding
@@ -17,20 +18,20 @@ public:
     virtual ~SoftwareAgent() = default;
 
     std::string Configurations() const;
-    std::string LogFileName() const;
     std::string RemoteDeviceID() const;
+    Location Loc() const;
 
 protected:
     // Protected c'tor - to provide the correct using of this class as an abstract base class
-    SoftwareAgent(const std::string& a_configurations, std::shared_ptr<ILogger> a_logger, const std::string& a_logFileName, const std::string& a_remoteDeviceID);
+    SoftwareAgent(const std::string& a_configurations, std::shared_ptr<ILogger> a_logger, const std::string& a_remoteDeviceID, const Location& a_location);
 
     void Log(const std::string& a_message, ILogger::LogLevel a_logLevel);
 
 private:
     std::string m_configurations;
     std::shared_ptr<ILogger> m_logger;
-    std::string m_logFileName; // FIXME: check if this attribute should be removed (passing a pointer to the logger pre-initialized with the correct log file stream)
     std::string m_remoteDeviceID;
+    Location m_location;
 };
 
 } // smartbuilding

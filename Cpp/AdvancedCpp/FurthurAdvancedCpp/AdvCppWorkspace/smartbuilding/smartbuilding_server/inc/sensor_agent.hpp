@@ -17,13 +17,11 @@ namespace smartbuilding
 class SensorAgent : public SoftwareAgent, public IPublisher
 {
 public:
-    SensorAgent(const Location& a_location, std::shared_ptr<IDecoder> a_decoder, const std::string& a_configurations, std::shared_ptr<ILogger> a_logger, const std::string& a_logFileName, const std::string& a_remoteDeviceID);
+    SensorAgent(std::shared_ptr<IDecoder> a_decoder, const std::string& a_configurations, std::shared_ptr<ILogger> a_logger, const std::string& a_logFileName, const std::string& a_remoteDeviceID);
 
-    Location Loc() const { return m_location; }
     virtual void Publish(infra::TCPSocket::BytesBufferProxy a_bytesBuffer, std::shared_ptr<advcpp::BlockingBoundedQueue<Event, advcpp::NoOperationPolicy<Event>>> a_publishedEventsQueue) override;
 
 private:
-    Location m_location;
     std::shared_ptr<IDecoder> m_decoder;
 };
 
