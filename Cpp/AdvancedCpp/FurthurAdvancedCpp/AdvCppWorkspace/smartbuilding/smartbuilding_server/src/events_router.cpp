@@ -23,7 +23,7 @@ void EventsRouter::UpdateSubscribersOrganizer(std::shared_ptr<EventsSubscription
 }
 
 
-void EventsRouter::RouteEvent(Event a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<infra::TCPSocket::BytesBufferProxy, advcpp::NoOperationPolicy<infra::TCPSocket::BytesBufferProxy>>> a_handledBuffersQueue)
+void EventsRouter::RouteEvent(Event a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>, advcpp::NoOperationPolicy<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>>>> a_handledBuffersQueue)
 {
     EventsSubscriptionOrganizer::SubscribersContainer subscribersToAlert;
     bool isValidCollection = m_subscribersOrganizer->FetchRelevantSubscribers(a_event.Type(), a_event.Location(), subscribersToAlert);
@@ -36,7 +36,7 @@ void EventsRouter::RouteEvent(Event a_event, std::shared_ptr<advcpp::BlockingBou
 }
 
 
-void EventsRouter::Alert(EventsSubscriptionOrganizer::SubscribersContainer& a_subscribersToAlert, const Event& a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<infra::TCPSocket::BytesBufferProxy, advcpp::NoOperationPolicy<infra::TCPSocket::BytesBufferProxy>>> a_handledBuffersQueue)
+void EventsRouter::Alert(EventsSubscriptionOrganizer::SubscribersContainer& a_subscribersToAlert, const Event& a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>, advcpp::NoOperationPolicy<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>>>> a_handledBuffersQueue)
 {
     m_eventsNotifier.Invoke(a_subscribersToAlert, a_event, a_handledBuffersQueue);
 }

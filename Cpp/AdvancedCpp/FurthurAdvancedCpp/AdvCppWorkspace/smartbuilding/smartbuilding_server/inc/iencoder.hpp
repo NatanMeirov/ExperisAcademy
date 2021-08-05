@@ -9,6 +9,7 @@
 namespace smartbuilding
 {
 
+// An interface of a encoder class that the VENDOR of the HW device should supply to its related SoftwareAgent that would use it, to encode an Event object to a bytes data buffer
 class IEncoder
 {
 public:

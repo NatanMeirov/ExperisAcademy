@@ -9,6 +9,7 @@
 namespace smartbuilding
 {
 
+// An interface of a decoder class that the VENDOR of the HW device should supply to its related SoftwareAgent that would use it, to decode a bytes data buffer to a new Event object
 class IDecoder
 {
 public:

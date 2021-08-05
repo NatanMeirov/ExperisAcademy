@@ -24,10 +24,10 @@ public:
     ~EventsRouter() = default;
 
     void UpdateSubscribersOrganizer(std::shared_ptr<EventsSubscriptionOrganizer> a_newSubscribersOrganizer);
-    void RouteEvent(Event a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<infra::TCPSocket::BytesBufferProxy, advcpp::NoOperationPolicy<infra::TCPSocket::BytesBufferProxy>>> a_handledBuffersQueue); // Passes the event by copy (cannot ensure that the reference to the event is still valid)
+    void RouteEvent(Event a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>, advcpp::NoOperationPolicy<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>>>> a_handledBuffersQueue); // Passes the event by copy (cannot ensure that the reference to the event is still valid)
 
 private:
-    void Alert(EventsSubscriptionOrganizer::SubscribersContainer& a_subscribersToAlert, const Event& a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<infra::TCPSocket::BytesBufferProxy, advcpp::NoOperationPolicy<infra::TCPSocket::BytesBufferProxy>>> a_handledBuffersQueue);
+    void Alert(EventsSubscriptionOrganizer::SubscribersContainer& a_subscribersToAlert, const Event& a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>, advcpp::NoOperationPolicy<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>>>> a_handledBuffersQueue);
 
 private:
     EventsDispatcher m_eventsNotifier;

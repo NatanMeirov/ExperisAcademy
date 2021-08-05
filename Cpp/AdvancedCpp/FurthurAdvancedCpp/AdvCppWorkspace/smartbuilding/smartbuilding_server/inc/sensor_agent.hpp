@@ -14,10 +14,11 @@
 namespace smartbuilding
 {
 
+// A concrete class of a software sensor agent, that the VENDOR of the related HW device should create and initialize
 class SensorAgent : public SoftwareAgent, public IPublisher
 {
 public:
-    SensorAgent(std::shared_ptr<IDecoder> a_decoder, const std::string& a_configurations, std::shared_ptr<ILogger> a_logger, const std::string& a_logFileName, const std::string& a_remoteDeviceID);
+    SensorAgent(std::shared_ptr<IDecoder> a_decoder, const std::string& a_configurations, std::shared_ptr<ILogger> a_logger, const std::string& a_remoteDeviceID, const Location& a_location);
 
     virtual void Publish(infra::TCPSocket::BytesBufferProxy a_bytesBuffer, std::shared_ptr<advcpp::BlockingBoundedQueue<Event, advcpp::NoOperationPolicy<Event>>> a_publishedEventsQueue) override;
 

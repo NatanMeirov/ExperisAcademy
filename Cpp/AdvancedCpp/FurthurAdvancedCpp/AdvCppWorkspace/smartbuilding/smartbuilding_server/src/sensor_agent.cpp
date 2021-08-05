@@ -8,9 +8,8 @@
 #include "blocking_bounded_queue_destruction_policies.hpp"
 
 
-smartbuilding::SensorAgent::SensorAgent(const Location& a_location, std::shared_ptr<IDecoder> a_decoder, const std::string& a_configurations, std::shared_ptr<ILogger> a_logger, const std::string& a_logFileName, const std::string& a_remoteDeviceID)
-: SoftwareAgent(a_configurations, a_logger, a_logFileName, a_remoteDeviceID)
-, m_location(a_location)
+smartbuilding::SensorAgent::SensorAgent(std::shared_ptr<IDecoder> a_decoder, const std::string& a_configurations, std::shared_ptr<ILogger> a_logger, const std::string& a_remoteDeviceID, const Location& a_location)
+: SoftwareAgent(a_configurations, a_logger, a_remoteDeviceID, a_location)
 , m_decoder(a_decoder)
 {
 }

@@ -27,7 +27,7 @@ EventsDispatcher::~EventsDispatcher()
 
 
 template <typename C>
-void EventsDispatcher::Invoke(C a_subscribersCollection, const Event& a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<infra::TCPSocket::BytesBufferProxy, advcpp::NoOperationPolicy<infra::TCPSocket::BytesBufferProxy>>> a_handledBuffersQueue) noexcept
+void EventsDispatcher::Invoke(C a_subscribersCollection, const Event& a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>, advcpp::NoOperationPolicy<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>>>> a_handledBuffersQueue) noexcept
 {
     static_assert(std::is_same<typename C::value_type, std::shared_ptr<ISubscriber>>::value, "C::value_type must be of type ISubscriber*");
 
