@@ -5,6 +5,7 @@
 #include <cstddef> // size_t
 #include <list> // std::list
 #include <memory> // std::shared_ptr
+#include <utility> // std::pair, std::make_pair
 #include <unistd.h> // close
 #include <vector> // std::vector
 #include <string> // std::string, std::to_string
@@ -20,8 +21,7 @@ namespace infra
 template<typename ClientMessageHandler, typename ErrorHandler, typename NewClientConnectionHandler, typename CloseClientConnectionHandler>
 TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::TCPServer(ClientMessageHandler a_onClientMessage, ErrorHandler a_onError, NewClientConnectionHandler a_onNewClientConnection, CloseClientConnectionHandler a_onCloseClientConnection, unsigned int a_listeningPort, unsigned int a_maxWaitingConnections)
 : m_serverSocket(a_listeningPort)
-, m_connectedClients()
-, m_connectedClientsInfoTable()
+, m_connectedClientsTable()
 , m_onClientMessage(a_onClientMessage)
 , m_onError(a_onError)
 , m_onNewClientConnection(a_onNewClientConnection)
@@ -43,13 +43,6 @@ TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClie
 
     InitializeFDSet();
     m_serverSocket.Listen(a_maxWaitingConnections);
-}
-
-
-template<typename ClientMessageHandler, typename ErrorHandler, typename NewClientConnectionHandler, typename CloseClientConnectionHandler>
-TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::~TCPServer()
-{
-    CloseAllConnectedClients();
 }
 
 
@@ -160,7 +153,7 @@ typename TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,
 
     if(m_currentConnectedClientsCount == m_maxAmountOfConnectedClientsAtTheSameTime)
     {
-        return SUCCESS; /* Cannot add more clients, for now */
+        return SUCCESS; /* Cannot add more clients for now */
     }
 
     try
@@ -172,49 +165,41 @@ typename TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,
         return ACCEPTING_CLIENT_FAILED;
     }
 
-    ClientInfo newClient;
 
+    ClientID newClientID = m_serverSocket.GetLastAcceptedClientSocketID();
     try
     {
-        newClient.m_clientID = m_serverSocket.GetLastAcceptedClientSocketID();
-        m_connectedClients.push_back(newClient.m_clientID);
-
-        std::pair<std::string,unsigned int> clientIpAndPortInfo = m_serverSocket.GetLastAcceptedClientIpAndPortData();
-        newClient.m_clientIPAddress = clientIpAndPortInfo.first;
-        newClient.m_clientPort = clientIpAndPortInfo.second;
-
-        m_connectedClientsInfoTable[newClient.m_clientID] = newClient;
+        std::shared_ptr<TCPSocket> m_newClientSocket = m_serverSocket.GetLastAcceptedClientSocket();
+        m_connectedClientsTable.insert({newClientID, m_newClientSocket});
     }
     catch(const std::bad_alloc& baex)
     {
         // To keep class' invariants (no throw and does nothing if 0 elements have removed)
-        m_connectedClients.remove(newClient.m_clientID);
-        m_connectedClientsInfoTable.erase(newClient.m_clientID);
+        m_connectedClientsTable.erase(newClientID);
         return MEMORY_ALLOCATION_FAILED;
     }
     catch(const std::exception& ex)
     {
         // To keep class' invariants (no throw and does nothing if 0 elements have removed)
-        m_connectedClients.remove(newClient.m_clientID);
-        m_connectedClientsInfoTable.erase(newClient.m_clientID);
+        m_connectedClientsTable.erase(newClientID);
         return SERVER_INTERNAL_ERROR;
     }
 
     // Set the new client to notify the sockets signals indicator
-    FD_SET(newClient.m_clientID, &m_socketsSignalsIndicator);
+    FD_SET(newClientID, &m_socketsSignalsIndicator);
 
     ++m_currentConnectedClientsCount;
 
     // Semi initialization of the response object
     Response response;
-    response.m_clients.push_back(newClient.m_clientID);
+    response.m_clients.push_back(newClientID);
 
-    m_onNewClientConnection(newClient, response);
+    m_onNewClientConnection(std::make_pair(newClientID, m_connectedClientsTable[newClientID]), response);
 
     result = HandleResponse(response);
     if(result == CLIENT_FINISH)
     {
-        DisconnectAndRemoveClientFromServer(newClient.m_clientID);
+        DisconnectAndRemoveClientFromServer(newClientID);
     }
 
     return SUCCESS;
@@ -253,18 +238,21 @@ typename TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,
 template<typename ClientMessageHandler, typename ErrorHandler, typename NewClientConnectionHandler, typename CloseClientConnectionHandler>
 size_t TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::SendMessageTo(ClientID a_clientID, Message a_message)
 {
-    m_serverSocket.SetClientIDToSendMessageTo(a_clientID);
-    return m_serverSocket.Send(a_message);
+    // Sync SendMessageTo version:
+    // m_serverSocket.SetClientIDToSendMessageTo(a_clientID);
+    // return m_serverSocket.Send(a_message);
+
+    // Async SendMessageTo version:
+    return m_connectedClientsTable[a_clientID]->Send(a_message);
 }
 
 
 template<typename ClientMessageHandler, typename ErrorHandler, typename NewClientConnectionHandler, typename CloseClientConnectionHandler>
 void TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::DisconnectAndRemoveClientFromServer(ClientID a_clientID)
 {
-    m_onCloseClientConnection(m_connectedClientsInfoTable.at(a_clientID));
+    m_onCloseClientConnection(a_clientID);
 
-    m_connectedClients.remove(a_clientID);
-    m_connectedClientsInfoTable.erase(a_clientID);
+    m_connectedClientsTable.erase(a_clientID); // The std::shared_ptr destruction would close the FD of the TCPSocket, if there are no additional references to that TCPSocket
     FD_CLR(a_clientID, &m_socketsSignalsIndicator);
     close(a_clientID);
     --m_currentConnectedClientsCount;
@@ -275,12 +263,12 @@ template<typename ClientMessageHandler, typename ErrorHandler, typename NewClien
 void TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::HandleExistingClientsRequests(fd_set a_tempSocketsSignalsIndicator, int a_clientsSocketSignalsCount)
 {
     // Using 'break' statement - cannot use std::for_each here...
-    auto itr = m_connectedClients.begin();
-    auto endItr = m_connectedClients.end();
+    auto itr = m_connectedClientsTable.begin();
+    auto endItr = m_connectedClientsTable.end();
 
     for(; itr != endItr; ++itr)
     {
-        ClientID clientID = *itr;
+        ClientID clientID = (*itr).first;
         bool isServerShouldStopAfterHandlingAllClients = false;
 
         if(FD_ISSET(clientID, &a_tempSocketsSignalsIndicator))
@@ -297,7 +285,7 @@ void TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,Clos
                 Response response;
                 response.m_clients.push_back(clientID); // Current client id is the default value of the response
 
-                isServerShouldStopAfterHandlingAllClients = m_onClientMessage(newMessage, clientID, response);
+                isServerShouldStopAfterHandlingAllClients = m_onClientMessage(newMessage, std::make_pair((*itr).first, (*itr).second), response);
                 if(isServerShouldStopAfterHandlingAllClients)
                 {
                     m_isStopServerFromRunningRequired = true;
@@ -361,15 +349,6 @@ typename TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,
     return completeMessage; // Could be empty message if the first receive attempt returned an empty message
 }
 
-
-template<typename ClientMessageHandler, typename ErrorHandler, typename NewClientConnectionHandler, typename CloseClientConnectionHandler>
-void TCPServer<ClientMessageHandler,ErrorHandler,NewClientConnectionHandler,CloseClientConnectionHandler>::CloseAllConnectedClients()
-{
-    std::for_each(m_connectedClients.begin(), m_connectedClients.end(), [](ClientID a_clientID)
-    {
-        close(a_clientID);
-    });
-}
 
 } // infra
 

@@ -1,11 +1,26 @@
 #include "tcp_socket.hpp"
 #include <cstddef> // size_t
+#include <string> // std::string, std::to_string
 #include <string.h> // memset, memcpy
 #include <sys/socket.h> // C standard socket lib
-#include <arpa/inet.h> // htons
-#include <netinet/in.h> // inet_addr
+#include <arpa/inet.h> // htons, ntohs
+#include <netinet/in.h> // inet_addr, inet_ntoa
 #include <stdexcept> // std::runtime_error
 #include <unistd.h> // close
+
+
+infra::TCPSocket::TCPSocket::SocketAddressData infra::TCPSocket::CreateSocketAddressDataFromFileDescriptorSocket(SocketID a_fileDescriptorSocket)
+{
+    struct sockaddr_in socketAddress;
+    unsigned int length = sizeof(socketAddress);
+    if(getpeername(a_fileDescriptorSocket, reinterpret_cast<struct sockaddr*>(&socketAddress), &length) < 0)
+    {
+        throw std::runtime_error("Failed to create a socket from File Descriptor Socket: { " + std::to_string(a_fileDescriptorSocket) + " }");
+    }
+
+
+    return SocketAddressData(std::string(inet_ntoa(socketAddress.sin_addr)), ntohs(socketAddress.sin_port));
+}
 
 
 infra::TCPSocket::TCPSocket::SocketAddressData::SocketAddressData(const std::string& a_ipAddress, unsigned int a_portNumber)
@@ -26,8 +41,15 @@ infra::TCPSocket::TCPSocket(const std::string& a_ipAddress, unsigned int a_portN
 {
     if(m_socketID < 0)
     {
-        throw std::runtime_error("Failed to create a socket...");
+        throw std::runtime_error("Failed to create a socket to { Ip: " + a_ipAddress + ", Port: " + std::to_string(a_portNumber) + " }");
     }
+}
+
+
+infra::TCPSocket::TCPSocket(SocketID a_fileDescriptorSocket)
+: m_socketAddressData(CreateSocketAddressDataFromFileDescriptorSocket(a_fileDescriptorSocket))
+, m_socketID(a_fileDescriptorSocket)
+{
 }
 
 

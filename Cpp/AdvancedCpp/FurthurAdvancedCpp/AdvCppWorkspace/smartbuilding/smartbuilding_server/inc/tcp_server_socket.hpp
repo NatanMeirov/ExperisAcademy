@@ -19,7 +19,7 @@ public:
     // An addition to the listening socket - enables to handle multiple clients at the same time (and not only the last accepted client!)
     void SetClientIDToSendMessageTo(SocketID a_clientID) { m_clientIDToSendMessageTo = a_clientID; }
     void SetClientIDToReceiveMessageFrom(SocketID a_clientID) { m_clientIDToReceiveMessageFrom = a_clientID; }
-    SocketID InnerSocketID() const { return GetSocketID(); }
+    SocketID InnerSocketID() const { return GetSelfSocketID(); }
 
 protected:
     virtual SocketID GetSocketIDToSendTheMessageTo() const override { return m_clientIDToSendMessageTo; }

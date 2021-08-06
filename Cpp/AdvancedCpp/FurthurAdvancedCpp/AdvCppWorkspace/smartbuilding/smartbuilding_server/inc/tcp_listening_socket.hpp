@@ -3,7 +3,7 @@
 
 
 #include <cstddef> // size_t
-#include <utility> // std::pair
+#include <memory> // std::shared_ptr
 #include "tcp_socket.hpp"
 
 
@@ -22,7 +22,7 @@ public:
     bool Accept(); // true if new connection has arrived (more useful for No Blocking listening socket), else false [WARNING: if socket is set to support No Blocking option, the Accept would return false. If you use Receive while NO new connections has arrived - an exception will be thrown (error of receiving a message)]
     virtual BytesBufferProxy Receive(size_t a_bytesToReceive) override; // Returns the received buffer (or 0 if no blocking and didn't receive anything), Throws on failure [Receives from the last accepted client]
     SocketID GetLastAcceptedClientSocketID() const { return m_lastAcceptedClientSocketID; }
-    std::pair<std::string,unsigned int> GetLastAcceptedClientIpAndPortData() const { return m_lastAcceptedClientSocketAddressData.GetIpAndPort(); }
+    std::shared_ptr<TCPSocket> GetLastAcceptedClientSocket() const { return m_lastAcceptedClientSocket; }
 
 protected:
     virtual SocketID GetSocketIDToSendTheMessageTo() const override { return m_lastAcceptedClientSocketID; }
@@ -35,8 +35,8 @@ private:
     void Configure();
 
 private:
+    std::shared_ptr<TCPSocket> m_lastAcceptedClientSocket;
     SocketID m_lastAcceptedClientSocketID;
-    SocketAddressData m_lastAcceptedClientSocketAddressData;
     bool m_isNoBlockingRequired;
 };
 

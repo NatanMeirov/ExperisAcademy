@@ -59,6 +59,7 @@ public:
     };
 
     TCPSocket(const std::string& a_ipAddress, unsigned int a_portNumber); // Validation of an IP addresses is a user responsability!
+    TCPSocket(SocketID a_fileDescriptorSocket); // Validation of a valid file descriptor number is a user responsability! To be able to use Connect() method of the new TCPSocket wrapper, make sure that the created TCPSocket of FD, is a FD of a tcp socket!
     TCPSocket(const TCPSocket& a_other) = delete;
     TCPSocket& operator=(const TCPSocket& a_other) = delete;
     virtual ~TCPSocket();
@@ -70,9 +71,12 @@ public:
     virtual BytesBufferProxy Receive(size_t a_bytesToReceive); // Returns the received buffer, Throws on failure
 
 protected:
-    SocketAddressData& GetSocketAddressData() { return m_socketAddressData; }
-    SocketID GetSocketID() const { return m_socketID; }
+    SocketAddressData& GetSelfSocketAddressData() { return m_socketAddressData; }
+    SocketID GetSelfSocketID() const { return m_socketID; }
     virtual SocketID GetSocketIDToSendTheMessageTo() const { return m_socketID; }
+
+private:
+    static SocketAddressData CreateSocketAddressDataFromFileDescriptorSocket(SocketID a_fileDescriptorSocket);
 
 private:
     SocketAddressData m_socketAddressData;

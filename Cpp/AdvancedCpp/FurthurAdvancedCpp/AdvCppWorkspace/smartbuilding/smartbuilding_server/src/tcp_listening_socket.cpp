@@ -1,4 +1,5 @@
 #include "tcp_listening_socket.hpp"
+#include <memory> // std::make_shared
 #include <arpa/inet.h> // inet_ntoa, ntohs
 #include <stdexcept> // std::runtime_error
 #include <sys/socket.h>
@@ -27,7 +28,7 @@ static void ChangeToNoBlockingSocket(int a_socketID)
 infra::TCPListeningSocket::TCPListeningSocket(unsigned int a_listeningPortNumber, bool a_isNoBlockingRequired)
 : TCPSocket("0.0.0.0" , a_listeningPortNumber) // 0.0.0.0 => listening to any ip address
 , m_lastAcceptedClientSocketID(-1)
-, m_lastAcceptedClientSocketAddressData()
+, m_lastAcceptedClientSocket(nullptr)
 , m_isNoBlockingRequired(a_isNoBlockingRequired)
 {
     Configure();
@@ -38,7 +39,7 @@ bool infra::TCPListeningSocket::Accept()
 {
     struct sockaddr_in clientSocketAddress;
     unsigned int clientSocketAddressSize = sizeof(clientSocketAddress);
-    m_lastAcceptedClientSocketID = accept(GetSocketID(), reinterpret_cast<struct sockaddr*>(&clientSocketAddress), &clientSocketAddressSize);
+    m_lastAcceptedClientSocketID = accept(GetSelfSocketID(), reinterpret_cast<struct sockaddr*>(&clientSocketAddress), &clientSocketAddressSize);
     if(m_lastAcceptedClientSocketID < 0)
     {
         if(!m_isNoBlockingRequired)
@@ -55,7 +56,8 @@ bool infra::TCPListeningSocket::Accept()
         return false;
     }
 
-    m_lastAcceptedClientSocketAddressData = TCPSocket::SocketAddressData(std::string(inet_ntoa(clientSocketAddress.sin_addr)), ntohs(clientSocketAddress.sin_port));
+    // Wraps the new accepted SocketID as a shared_ptr to TCPSocket object -> provides a closing of the previous accepted SocketID, but ONLY if the prev socket if NOT in use any more (0 refs count of the std::shared_ptr => close(SocketID) in the destruction)
+    m_lastAcceptedClientSocket = std::make_shared<TCPSocket>(m_lastAcceptedClientSocketID);
 
     if(m_isNoBlockingRequired)
     {
@@ -80,7 +82,7 @@ void infra::TCPListeningSocket::Configure()
 void infra::TCPListeningSocket::SetSocketReuseOption()
 {
     int optionValue = 1;
-    int statusResult = setsockopt(GetSocketID(), SOL_SOCKET, SO_REUSEADDR, &optionValue, sizeof(optionValue));
+    int statusResult = setsockopt(GetSelfSocketID(), SOL_SOCKET, SO_REUSEADDR, &optionValue, sizeof(optionValue));
     if(statusResult < 0)
     {
         throw std::runtime_error("Failed to set socket reuse option...");
@@ -90,13 +92,13 @@ void infra::TCPListeningSocket::SetSocketReuseOption()
 
 void infra::TCPListeningSocket::SetAsNoBlocking()
 {
-    ChangeToNoBlockingSocket(GetSocketID());
+    ChangeToNoBlockingSocket(GetSelfSocketID());
 }
 
 
 void infra::TCPListeningSocket::Bind()
 {
-    int statusResult = bind(GetSocketID(), reinterpret_cast<struct sockaddr*>(&GetSocketAddressData().GetInnerSocketAddress()), sizeof(GetSocketAddressData().GetInnerSocketAddress()));
+    int statusResult = bind(GetSelfSocketID(), reinterpret_cast<struct sockaddr*>(&GetSelfSocketAddressData().GetInnerSocketAddress()), sizeof(GetSelfSocketAddressData().GetInnerSocketAddress()));
     if(statusResult < 0)
     {
         throw std::runtime_error("Failed to bind the socket to the port...");
@@ -106,7 +108,7 @@ void infra::TCPListeningSocket::Bind()
 
 void infra::TCPListeningSocket::Listen(unsigned int a_connectionsWaitingQueueSize)
 {
-    int statusResult = listen(GetSocketID(), a_connectionsWaitingQueueSize);
+    int statusResult = listen(GetSelfSocketID(), a_connectionsWaitingQueueSize);
     if(statusResult < 0)
     {
         throw std::runtime_error("Failed to make the socket as listening socket...");
