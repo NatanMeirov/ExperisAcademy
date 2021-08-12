@@ -14,13 +14,13 @@
 namespace smartbuilding
 {
 
-EventsDispatcher::EventsDispatcher()
+inline EventsDispatcher::EventsDispatcher()
 : m_invokers(advcpp::ShutdownPolicy<>(), WORKERS_QUEUE_SIZE)
 {
 }
 
 
-EventsDispatcher::~EventsDispatcher()
+inline EventsDispatcher::~EventsDispatcher()
 {
     m_invokers.Shutdown();
 }
