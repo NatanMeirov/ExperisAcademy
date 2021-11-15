@@ -27,7 +27,7 @@ public:
     void Invoke(C a_subscribersCollection, const Event& a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>, advcpp::NoOperationPolicy<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>>>> a_handledBuffersQueue) noexcept;
 
 private:
-    static const unsigned int WORKS_QUEUE_SIZE = 100; // TODO: in version 2, read this constant from a configuration file
+    static const unsigned int WORKERS_QUEUE_SIZE = 100; // TODO: in version 2, read this constant from a configuration file
 
 private:
     advcpp::ThreadPool<advcpp::ShutdownPolicy<>> m_invokers;
