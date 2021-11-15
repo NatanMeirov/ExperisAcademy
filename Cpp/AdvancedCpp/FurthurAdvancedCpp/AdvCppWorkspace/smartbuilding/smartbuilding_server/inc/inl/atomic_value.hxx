@@ -3,23 +3,23 @@
 
 
 #include <type_traits> // std::is_integral
-#include "../atomic_value.hpp"
+
 
 namespace advcpp
 {
 
 template <typename T>
 AtomicValue<T>::AtomicValue()
-: m_atomicValue()
+: m_atomicValue() // The default value of type T (usually 0)
 {
-    static_assert(std::is_integral<T>::value, "T must be of an integral value");
+    static_assert(std::is_integral<T>::value, "T must be of an integral type");
 }
 
 
 template <typename T>
 AtomicValue<T>::AtomicValue(T a_startingValue)
 {
-    static_assert(std::is_integral<T>::value, "T must be of an integral value");
+    static_assert(std::is_integral<T>::value, "T must be of an integral type");
     Set(a_startingValue);
 }
 
@@ -83,14 +83,14 @@ AtomicValue<T>::operator T() const
 template <typename T>
 void AtomicValue<T>::Set(T a_value)
 {
-    while(!(__sync_bool_compare_and_swap(&m_atomicValue, m_atomicValue, a_value))); // Polling - to make sure that the new value has stored successfully (that way is thread-safety)
+    while(!(__sync_bool_compare_and_swap(&m_atomicValue, m_atomicValue, a_value))); // Polling - to make sure that the new value has stored successfully (that way is multithreaded-safe)
 }
 
 
 template <typename T>
 T AtomicValue<T>::Get() const
 {
-    return __sync_add_and_fetch(&m_atomicValue, T()); // Not modifing m_atomicValue
+    return __sync_add_and_fetch(&m_atomicValue, T()); // Not modifing m_atomicValue at all (adding default value (usually 0) to it)
 }
 
 
@@ -137,7 +137,7 @@ inline void AtomicValue<bool>::operator=(bool a_otherValue)
 
 inline void AtomicValue<bool>::Set(bool a_otherValue)
 {
-    while(!(__sync_bool_compare_and_swap(&m_atomicBool, m_atomicBool, Byte(a_otherValue)))); // Polling - to make sure that the new value has stored successfully (that way is thread-safety)
+    while(!(__sync_bool_compare_and_swap(&m_atomicBool, m_atomicBool, Byte(a_otherValue)))); // Polling - to make sure that the new value has stored successfully (that way is multithreaded-safe)
 }
 
 
@@ -149,13 +149,13 @@ inline bool AtomicValue<bool>::SetIf(bool a_conditionalValue, bool a_newValue)
 
 inline void AtomicValue<bool>::True()
 {
-    while(!(__sync_bool_compare_and_swap(&m_atomicBool, m_atomicBool, 1))); // Polling - to make sure that the new value has stored successfully (that way is thread-safety)
+    while(!(__sync_bool_compare_and_swap(&m_atomicBool, m_atomicBool, 1))); // Polling - to make sure that the new value has stored successfully (that way is multithreaded-safe)
 }
 
 
 inline void AtomicValue<bool>::False()
 {
-    while(!(__sync_bool_compare_and_swap(&m_atomicBool, m_atomicBool, 0))); // Polling - to make sure that the new value has stored successfully (that way is thread-safety)
+    while(!(__sync_bool_compare_and_swap(&m_atomicBool, m_atomicBool, 0))); // Polling - to make sure that the new value has stored successfully (that way is multithreaded-safe)
 }
 
 

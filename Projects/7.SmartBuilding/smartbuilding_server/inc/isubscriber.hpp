@@ -16,7 +16,7 @@ class ISubscriber
 {
 public:
     virtual ~ISubscriber() = default;
-    virtual void Notify(Event a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>, advcpp::NoOperationPolicy<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>>>> a_handledBuffersQueue) = 0; // TODO: check if should enqueue pair<> of buffer + id indicator to know to which HW controller send the buffer
+    virtual void Notify(Event a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>, advcpp::NoOperationPolicy<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>>>> a_handledBuffersQueue) = 0;
 };
 
 } // smartbuilding

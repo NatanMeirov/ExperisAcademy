@@ -10,7 +10,7 @@
 namespace smartbuilding
 {
 
-SoLoader::SoLoader(const std::string& a_module)
+inline SoLoader::SoLoader(const std::string& a_module)
 : m_soModuleHandler(dlopen(a_module.c_str(), RTLD_LAZY))
 {
     if(!m_soModuleHandler)
@@ -20,7 +20,7 @@ SoLoader::SoLoader(const std::string& a_module)
 }
 
 
-SoLoader::~SoLoader()
+inline SoLoader::~SoLoader()
 {
     dlclose(m_soModuleHandler);
 }

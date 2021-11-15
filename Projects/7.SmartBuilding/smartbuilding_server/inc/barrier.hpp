@@ -13,7 +13,7 @@ namespace advcpp
 class Barrier
 {
 public:
-    Barrier(size_t a_count);
+    explicit Barrier(size_t a_count);
     Barrier(const Barrier& a_other) = delete;
     Barrier& operator=(const Barrier& a_other) = delete;
     ~Barrier();

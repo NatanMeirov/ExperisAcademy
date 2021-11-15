@@ -31,7 +31,7 @@ void WorksScheduler<QueueTypeDestructionPolicy,QueueType>::operator()()
             std::lock_guard<std::mutex> guard(*m_workersLock);
             if(m_twoWayMultiSyncHandler->NotificationsCount() > 0)
             {
-                m_twoWayMultiSyncHandler->AcceptNotification();
+                m_twoWayMultiSyncHandler->OneNotificationAccept();
                 break;
             }
 

@@ -8,7 +8,7 @@ namespace advcpp
 
 /**
  * An atomic value class, that does operations on value of type T (protected by supported compiler atomic operations (for sync) - that uses the CPU)
- * The atomic value SHOULD be global for all the threads that want to read/write the value T
+ * The atomic value SHOULD be used as a global value shared for all the threads that want to read/write that value of type T
  * Concept of T: T MUST be a numeric type
  */
 template <typename T>
@@ -50,7 +50,7 @@ private:
 
 
 // A specialization of AtomicValue as a bool flag
-// The atomic value SHOULD be global for all the threads that want to read/write the flag
+// The boolean atomic value SHOULD be used as a global value shared for all the threads that want to read/write that flag
 template <>
 class AtomicValue<bool>
 {

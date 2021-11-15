@@ -1,9 +1,11 @@
 #include "two_way_multi_sync_handler.hpp"
+#include "atomic_value.hpp"
+#include "barrier.hpp"
 
 
 advcpp::TwoWayMultiSyncHandler::TwoWayMultiSyncHandler()
 : m_firstDirectionNotifications(0)
-, m_secondDirectionSignals(1) // Dummy init
+, m_secondDirectionSignals(1) // Dummy initialization
 {
 }
 
@@ -20,13 +22,13 @@ size_t advcpp::TwoWayMultiSyncHandler::NotificationsCount() const
 }
 
 
-void advcpp::TwoWayMultiSyncHandler::ResetNotifications()
+void advcpp::TwoWayMultiSyncHandler::ResetAllNotifications()
 {
     m_firstDirectionNotifications.Set(0);
 }
 
 
-void advcpp::TwoWayMultiSyncHandler::AcceptNotification()
+void advcpp::TwoWayMultiSyncHandler::OneNotificationAccept()
 {
     --m_firstDirectionNotifications;
 }

@@ -22,10 +22,10 @@ public:
     // First direction:
     void Notify(size_t a_toNotify);
     size_t NotificationsCount() const;
-    void ResetNotifications();
+    void ResetAllNotifications();
 
     // Second direction:
-    void AcceptNotification();
+    void OneNotificationAccept();
     void SignalBack();
     bool WaitForAllSignalsBack(); // Blocking wait, without polling
     void SetWantedSignalsBack(size_t a_signalsToWaitFor);

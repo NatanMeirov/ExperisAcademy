@@ -188,7 +188,7 @@ void ThreadPool<DestructionPolicy,QueueTypeDestructionPolicy,QueueType>::StopWor
     }
 
     m_twoWayMultiSyncHandler->WaitForAllSignalsBack(); // A blocking wait (no polling is required)
-    m_twoWayMultiSyncHandler->ResetNotifications();
+    m_twoWayMultiSyncHandler->ResetAllNotifications();
 }
 
 

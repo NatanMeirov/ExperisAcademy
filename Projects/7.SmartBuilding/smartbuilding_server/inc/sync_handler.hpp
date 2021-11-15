@@ -13,7 +13,7 @@ namespace advcpp
 // Use Signal - to notify that the task has done (updates the flag)
 // Use Check - to check if the task has done (checks the flag)
 // Note: after a successful Check attempt - the flag will always be true (sync has done successfully)
-// Warning: if an exception has been caught, Check would throw
+// Warning: if an exception has been caught, Check would throw the previously caught exception
 class SyncHandler
 {
 public:

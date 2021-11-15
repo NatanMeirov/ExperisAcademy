@@ -1,7 +1,6 @@
 #include "semaphore.hpp"
-#include <semaphore.h> // semaphore functions
+#include <semaphore.h> // Linux OS semaphore functions
 #include <stdexcept> // std::runtime_error
-#include "atomic_value.hpp"
 
 
 advcpp::Semaphore::Semaphore(unsigned int a_initialValue, int a_sharedOption)
@@ -51,5 +50,5 @@ void advcpp::Semaphore::Down() {
 
 bool advcpp::Semaphore::TryDown()
 {
-    return (sem_trywait(&m_semaphore) == 0) ? true : false;
+    return sem_trywait(&m_semaphore) == 0;
 }

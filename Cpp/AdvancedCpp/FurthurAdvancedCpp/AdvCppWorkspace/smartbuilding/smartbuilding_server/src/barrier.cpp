@@ -1,5 +1,5 @@
 #include "barrier.hpp"
-#include <pthread.h> // barrier function
+#include <pthread.h> // POSIX pthread's barrier function
 #include <stdexcept> // std::invalid_argument, std::runtime_error
 
 

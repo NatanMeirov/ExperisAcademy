@@ -1,7 +1,7 @@
 #ifndef NM_EVENTS_DISPATCHER_HXX
 #define NM_EVENTS_DISPATCHER_HXX
 
-
+#include "events_dispatcher.hpp"
 #include <algorithm> // std::for_each
 #include <type_traits> // std::is_same
 #include <memory> // std::shared_ptr
@@ -14,13 +14,13 @@
 namespace smartbuilding
 {
 
-EventsDispatcher::EventsDispatcher()
-: m_invokers(advcpp::ShutdownPolicy<>(), WORKERS_QUEUE_SIZE)
+inline EventsDispatcher::EventsDispatcher()
+: m_invokers(advcpp::ShutdownPolicy<>(), WORKS_QUEUE_SIZE)
 {
 }
 
 
-EventsDispatcher::~EventsDispatcher()
+inline EventsDispatcher::~EventsDispatcher()
 {
     m_invokers.Shutdown();
 }
@@ -29,7 +29,7 @@ EventsDispatcher::~EventsDispatcher()
 template <typename C>
 void EventsDispatcher::Invoke(C a_subscribersCollection, const Event& a_event, std::shared_ptr<advcpp::BlockingBoundedQueue<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>, advcpp::NoOperationPolicy<std::pair<std::string,infra::TCPSocket::BytesBufferProxy>>>> a_handledBuffersQueue) noexcept
 {
-    static_assert(std::is_same<typename C::value_type, std::shared_ptr<ISubscriber>>::value, "C::value_type must be of type ISubscriber*");
+    static_assert(std::is_same<typename C::value_type, std::shared_ptr<ISubscriber>>::value, "C::value_type (Container's value_type) must be of type: std::shared_ptr<ISubscriber>");
 
     std::for_each(a_subscribersCollection.begin(), a_subscribersCollection.end(), [&](std::shared_ptr<ISubscriber> a_subscriber)
     {
