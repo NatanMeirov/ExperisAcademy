@@ -15,7 +15,7 @@ namespace smartbuilding
 {
 
 inline EventsDispatcher::EventsDispatcher()
-: m_invokers(advcpp::ShutdownPolicy<>(), WORKS_QUEUE_SIZE)
+: m_invokers(advcpp::ShutdownPolicy<>(), WORKERS_QUEUE_SIZE)
 {
 }
 
