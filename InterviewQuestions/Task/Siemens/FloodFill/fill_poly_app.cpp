@@ -89,7 +89,7 @@ void translatePolygon(std::vector<Point>& poly, const Point& basePoint)
 
 void drawScene()
 {
-    drawPolygon({{30, 30}, {100,70}, {60, 60}, {60, 200}}, Green);
+    drawPolygon({{30, 30}, {100,70}, {60, 60}, {60, 200}}, LightGreen);
     drawPolygon({
         {209,195},
         {268,385},
@@ -105,7 +105,7 @@ void drawScene()
         {518,54},
         {581,8},
         {54,249}
-        }, White);
+        }, DarkGray);
 
     int step = 20;
     std::vector<Point> poly{
@@ -135,24 +135,25 @@ void drawScene()
         { 0, -2*step},
     };
     translatePolygon(poly, {500,300});
-    drawPolygon(poly, Yellow);
+    drawPolygon(poly, Blue);
 
      // A rectangle added by Natan Meirov for testing:
-    //drawPolygon({
-    //    {(Width / 2) - 12, (Height / 2) - 12},
-    //    {(Width / 2) + 12, (Height / 2) - 12 },
-    //    {(Width / 2) + 12, (Height / 2) + 12 },
-    //    {(Width / 2) - 12, (Height / 2) + 12 }
-    //    }, Blue);
+    drawPolygon({
+        {(Width / 4) - 20, (Height / 4) - 20},
+        {(Width / 4) + 20, (Height / 4) - 20 },
+        {(Width / 4) + 20, (Height / 4) + 20 },
+        {(Width / 4) - 20, (Height / 4) + 20 }
+        }, LightMagenta);
 }
 
 int main()
 {
     drawScene();
-    //floodFill(212, 200, MakeColor(255, 0, 175));
-    //floodFill(35, 35, MakeColor(255, 0, 175));
-    //floodFill(510, 310, MakeColor(255, 0, 175));
-    floodFill((Width/2) - 5, (Height/2) + 10, MakeColor(255, 0, 175)); // Added minor offset from the middle - to ensure correctly filled rectangle
+    floodFill((Width / 2) - 5, (Height / 2) + 10, MakeColor(255, 0, 175));
+    floodFill((Width / 4) - 11, (Height / 4) + 19, Blue);
+    floodFill(212, 200, Green);
+    floodFill(35, 35, Cyan);
+    floodFill(510, 310, White);
 
     return 0;
 }
