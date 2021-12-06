@@ -80,26 +80,26 @@ Matrix<T,R,C>::~Matrix()
 
 
 template <typename T, size_t R, size_t C>
-RowProxy<T> Matrix<T,R,C>::operator[](size_t a_index)
+RowProxy<T> Matrix<T,R,C>::operator[](size_t a_rowIndex)
 {
-    if(a_index >= R)
+    if(a_rowIndex >= R)
     {
-        throw std::overflow_error("Index out of bounds error");
+        throw std::overflow_error("Row index out of bounds error");
     }
 
-    return RowProxy<T>(m_underlyingArray + (a_index * C), C);
+    return RowProxy<T>(m_underlyingArray + (a_rowIndex * C), C);
 }
 
 
 template <typename T, size_t R, size_t C>
-ConstRowProxy<T> Matrix<T,R,C>::operator[](size_t a_index) const
+ConstRowProxy<T> Matrix<T,R,C>::operator[](size_t a_rowIndex) const
 {
-    if(a_index >= R)
+    if(a_rowIndex >= R)
     {
-        throw std::overflow_error("Index out of bounds error");
+        throw std::overflow_error("Row index out of bounds error");
     }
 
-    return ConstRowProxy<T>(m_underlyingArray + (a_index * C), C);
+    return ConstRowProxy<T>(m_underlyingArray + (a_rowIndex * C), C);
 }
 
 
