@@ -18,14 +18,14 @@ public:
     RowProxy& operator=(const RowProxy& a_other) = default;
     ~RowProxy() = default;
 
-    T& operator[](size_t a_index)
+    T& operator[](size_t a_columnIndex)
     {
-        if(a_index >= m_rowSize)
+        if(a_columnIndex >= m_rowSize)
         {
-            throw std::overflow_error("Index out of bounds error");
+            throw std::overflow_error("Column index out of bounds error");
         }
 
-        return m_row[a_index];
+        return m_row[a_columnIndex];
     }
 
 private:
@@ -43,14 +43,14 @@ public:
     ConstRowProxy& operator=(const ConstRowProxy& a_other) = default;
     ~ConstRowProxy() = default;
 
-    const T& operator[](size_t a_index) const
+    const T& operator[](size_t a_columnIndex) const
     {
-        if(a_index >= m_rowSize)
+        if(a_columnIndex >= m_rowSize)
         {
-            throw std::overflow_error("Index out of bounds error");
+            throw std::overflow_error("Column index out of bounds error");
         }
 
-        return m_row[a_index];
+        return m_row[a_columnIndex];
     }
 
 private:
