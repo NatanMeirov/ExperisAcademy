@@ -8,9 +8,6 @@
 namespace nm
 {
 
-namespace compiletime
-{
-
 template<typename T>
 MatrixIteratorImpl<T>& MatrixIteratorImpl<T>::operator++()
 {
@@ -326,8 +323,6 @@ const T& ConstMatrixIterator<T>::operator*() const
 {
     return *(m_itr.MatrixElement());
 }
-
-} // compiletime
 
 } // nm
 

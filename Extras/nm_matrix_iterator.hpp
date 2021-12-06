@@ -8,11 +8,7 @@
 namespace nm
 {
 
-namespace compiletime
-{
-
 // The MatrixIterator and ConstMatrixIterator iterators are stable bidirectional iterators
-
 template<typename T>
 class MatrixIteratorImpl
 {
@@ -103,9 +99,6 @@ public:
 private:
     MatrixIteratorImpl<T> m_itr;
 };
-
-
-} // compiletime
 
 } // nm
 

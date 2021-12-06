@@ -13,9 +13,9 @@ namespace nm
 namespace compiletime
 {
 
-// Concept of T: T must be copy-assignable, copy-constructable, and default-constructable,
-// Concept of R (rows) and C (columns): must be greater than 0,
-// To be able to use the most of the operations of the Matrix - T must implement overload operators:
+// Concept of T: T must be copy-assignable, copy-constructable, and default-constructable.
+// Concept of R (rows) and C (columns): must be greater than 0.
+// To be able to use the most of the operations of the Matrix - T must implement (overload) some operators:
 // +, +=, -, -=, *, *=, /, /=, and etc...
 template <typename T, size_t R, size_t C>
 class Matrix
@@ -28,6 +28,8 @@ public:
     Matrix<T,R,C>();
     Matrix<T,R,C>(const Matrix<T,R,C>& a_other);
     Matrix<T,R,C>& operator=(const Matrix<T,R,C>& a_other);
+    Matrix<T,R,C>(Matrix<T,R,C>&& a_rvalue) noexcept; // Move semantics
+    Matrix<T,R,C>& operator=(Matrix<T,R,C>&& a_rvalue) noexcept; // Move semantics
     ~Matrix<T,R,C>();
 
     iterator begin() { return iterator(m_underlyingArray); }
@@ -44,6 +46,7 @@ public:
     Matrix<T,R,C> operator-() const;
     Matrix<T,R,C> operator+(const Matrix<T,R,C>& a_other) const;
     Matrix<T,R,C> operator-(const Matrix<T,R,C>& a_other) const;
+
     Matrix<T,R,C> operator+(const T& a_value) const; // In numeric terms - a_value is equal to scalar
     Matrix<T,R,C> operator-(const T& a_value) const; // In numeric terms - a_value is equal to scalar
     Matrix<T,R,C> operator*(const T& a_value) const; // In numeric terms - a_value is equal to scalar
@@ -54,6 +57,8 @@ public:
 
     Matrix<T,R,C>& operator+=(const Matrix<T,R,C>& a_other) const;
     Matrix<T,R,C>& operator-=(const Matrix<T,R,C>& a_other) const;
+    Matrix<T,R,C>& operator*=(const Matrix<T,R,C>& a_other) const;
+
     Matrix<T,R,C>& operator+=(const T& a_value) const; // In numeric terms - a_value is equal to scalar
     Matrix<T,R,C>& operator-=(const T& a_value) const; // In numeric terms - a_value is equal to scalar
     Matrix<T,R,C>& operator*=(const T& a_value) const; // In numeric terms - a_value is equal to scalar
@@ -61,6 +66,7 @@ public:
 
     bool operator==(const Matrix<T,R,C>& a_other) const;
     bool operator!=(const Matrix<T,R,C>& a_other) const;
+
 
 private:
     T* m_underlyingArray;

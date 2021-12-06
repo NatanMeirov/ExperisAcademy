@@ -9,9 +9,6 @@
 namespace nm
 {
 
-namespace compiletime
-{
-
 template<typename T>
 class RowProxy
 {
@@ -41,7 +38,7 @@ template<typename T>
 class ConstRowProxy
 {
 public:
-    ConstRowProxy(T* a_row, size_t a_rowSize) : m_row(a_row), m_rowSize(a_rowSize) {}
+    ConstRowProxy(const T* a_row, size_t a_rowSize) : m_row(a_row), m_rowSize(a_rowSize) {}
     ConstRowProxy(const ConstRowProxy& a_other) = default;
     ConstRowProxy& operator=(const ConstRowProxy& a_other) = default;
     ~ConstRowProxy() = default;
@@ -60,8 +57,6 @@ private:
     const T* m_row;
     size_t m_rowSize;
 };
-
-} // compiletime
 
 } // nm
 
