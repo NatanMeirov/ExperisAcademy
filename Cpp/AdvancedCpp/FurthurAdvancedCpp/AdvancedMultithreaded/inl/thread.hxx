@@ -7,7 +7,7 @@
 #include <tuple> // std::tuple, std::make_tuple
 #include <utility> // std::move
 #include "tuple_unpack.hxx"
-
+#include "../thread.hpp"//! remove
 
 namespace nm
 {
@@ -29,7 +29,6 @@ struct ThreadFuncInvoker<void, Func, Args...>
     void* operator()(Func a_func, std::tuple<Args...> a_tuple)
     {
         nm::meta::UnpackTupleAndCallFunc<void>(a_func, a_tuple);
-
         return nullptr;
     }
 };
@@ -49,9 +48,8 @@ struct ThreadJoinReturnHandler
 template <>
 struct ThreadJoinReturnHandler<void>
 {
-    void operator()(void* a_notUsedReturnValue)
+    void operator()(void*)
     {
-        (void)(a_notUsedReturnValue); // Unused
         return;
     }
 };
