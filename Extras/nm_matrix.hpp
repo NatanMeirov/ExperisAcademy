@@ -40,8 +40,8 @@ public:
     size_t Rows() const { return R; }
     size_t Columns() const { return C; }
 
-    RowProxy<T> operator[](size_t a_index);
-    ConstRowProxy<T> operator[](size_t a_index) const;
+    RowProxy<T> operator[](size_t a_rowIndex);
+    ConstRowProxy<T> operator[](size_t a_rowIndex) const;
 
     Matrix<T,R,C> operator-() const;
     Matrix<T,R,C> operator+(const Matrix<T,R,C>& a_other) const;
