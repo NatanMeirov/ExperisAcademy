@@ -3,7 +3,7 @@
 
 
 #include <cstddef> // size_t
-#include <algorithm> // std::copy
+#include <algorithm> // std::copy, std::equal, std::transform
 #include <stdexcept> // std::overflow_error
 #include "nm_row_proxy.hpp"
 #include "nm_matrix.hpp" //! remove
@@ -26,7 +26,7 @@ template <typename T, size_t R, size_t C>
 Matrix<T,R,C>::Matrix(const Matrix<T,R,C>& a_other)
 : m_underlyingArray(new T[R * C])
 {
-    std::copy(a_other.m_underlyingArray, a_other.m_underlyingArray + (R * C), m_underlyingArray);
+    std::copy(a_other.Begin(), a_other.End(), Begin());
 }
 
 
@@ -39,7 +39,7 @@ Matrix<T,R,C>& Matrix<T,R,C>::operator=(const Matrix<T,R,C>& a_other)
     }
 
     T* newUnderlyingArray = new T[R * C]; // For exception safety
-    std::copy(a_other.m_underlyingArray, a_other.m_underlyingArray + (R * C), newUnderlyingArray);
+    std::copy(a_other.Begin(), a_other.End(), newUnderlyingArray);
 
     delete[] m_underlyingArray;
     m_underlyingArray = newUnderlyingArray;
@@ -106,120 +106,139 @@ ConstRowProxy<T> Matrix<T,R,C>::operator[](size_t a_rowIndex) const
 template <typename T, size_t R, size_t C>
 Matrix<T,R,C> Matrix<T,R,C>::operator-() const
 {
-
+    Matrix<T,R,C> matrix;
+    std::transform(Begin(), End(), matrix.Begin(), [](const T& a_value){ return -a_value; });
+    return matrix;
 }
 
 
 template <typename T, size_t R, size_t C>
 Matrix<T,R,C> Matrix<T,R,C>::operator+(const Matrix<T,R,C>& a_other) const
 {
-
+    Matrix<T,R,C> matrix;
+    std::transform(Begin(), End(), a_other.Begin(), matrix.Begin(), [](const T& a_firstVal, const T& a_secondVal){ return a_firstVal + a_secondVal; });
+    return matrix;
 }
 
 
 template <typename T, size_t R, size_t C>
 Matrix<T,R,C> Matrix<T,R,C>::operator-(const Matrix<T,R,C>& a_other) const
 {
-
-}
-
-
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C> Matrix<T,R,C>::operator+(const T& a_value) const
-{
-
-}
-
-
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C> Matrix<T,R,C>::operator-(const T& a_value) const
-{
-
-}
-
-
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C> Matrix<T,R,C>::operator*(const T& a_value) const
-{
-
-}
-
-
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C> Matrix<T,R,C>::operator/(const T& a_value) const
-{
-
+    Matrix<T,R,C> matrix;
+    std::transform(Begin(), End(), a_other.Begin(), matrix.Begin(), [](const T& a_firstVal, const T& a_secondVal){ return a_firstVal - a_secondVal; });
+    return matrix;
 }
 
 
 template <typename T, size_t R, size_t C>
 template<T, size_t ROWS, size_t COLUMNS>
-Matrix<T, R, COLUMNS> Matrix<T,R,C>::operator*(const Matrix<T,ROWS,COLUMNS>& a_other) const
+Matrix<T,R,COLUMNS> Matrix<T,R,C>::operator*(const Matrix<T,ROWS,COLUMNS>& a_other) const
 {
+    static_assert(C == ROWS, "C (columns) of the first matrix must be equal to the ROWS of the second matrix, in matrix multiplication");
 
+    Matrix<T,R,COLUMNS> matrix;
+
+    // TODO: write the matrix multiplication's code here
+
+    return matrix;
 }
 
 
 template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator+=(const Matrix<T,R,C>& a_other) const
+Matrix<T,R,C> Matrix<T,R,C>::operator+(const T& a_scalar) const
 {
-
+    Matrix<T,R,C> matrix;
+    std::transform(Begin(), End(), matrix.Begin(), [a_scalar](const T& a_value){ return a_value + a_scalar; });
+    return matrix;
 }
 
 
 template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator-=(const Matrix<T,R,C>& a_other) const
+Matrix<T,R,C> Matrix<T,R,C>::operator-(const T& a_scalar) const
 {
-
+    Matrix<T,R,C> matrix;
+    std::transform(Begin(), End(), matrix.Begin(), [a_scalar](const T& a_value){ return a_value - a_scalar; });
+    return matrix;
 }
 
 
 template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator*=(const Matrix<T,R,C>& a_other) const
+Matrix<T,R,C> Matrix<T,R,C>::operator*(const T& a_scalar) const
 {
-
+    Matrix<T,R,C> matrix;
+    std::transform(Begin(), End(), matrix.Begin(), [a_scalar](const T& a_value){ return a_value * a_scalar; });
+    return matrix;
 }
 
 
 template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator+=(const T& a_value) const
+Matrix<T,R,C> Matrix<T,R,C>::operator/(const T& a_scalar) const
 {
-
+    Matrix<T,R,C> matrix;
+    std::transform(Begin(), End(), matrix.Begin(), [a_scalar](const T& a_value){ return a_value / a_scalar; });
+    return matrix;
 }
 
 
 template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator-=(const T& a_value) const
+Matrix<T,R,C>& Matrix<T,R,C>::operator+=(const Matrix<T,R,C>& a_other)
 {
-
+    std::transform(Begin(), End(), a_other.Begin(), Begin(), [](const T& a_firstVal, const T& a_secondVal){ return a_firstVal + a_secondVal; });
+    return *this;
 }
 
 
 template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator*=(const T& a_value) const
+Matrix<T,R,C>& Matrix<T,R,C>::operator-=(const Matrix<T,R,C>& a_other)
 {
-
+    std::transform(Begin(), End(), a_other.Begin(), Begin(), [](const T& a_firstVal, const T& a_secondVal){ return a_firstVal - a_secondVal; });
+    return *this;
 }
 
 
 template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator/=(const T& a_value) const
+Matrix<T,R,C>& Matrix<T,R,C>::operator+=(const T& a_scalar)
 {
+    std::transform(Begin(), End(), Begin(), [a_scalar](const T& a_value){ return a_value + a_scalar; });
+    return *this;
+}
 
+
+template <typename T, size_t R, size_t C>
+Matrix<T,R,C>& Matrix<T,R,C>::operator-=(const T& a_scalar)
+{
+    std::transform(Begin(), End(), Begin(), [a_scalar](const T& a_value){ return a_value - a_scalar; });
+    return *this;
+}
+
+
+template <typename T, size_t R, size_t C>
+Matrix<T,R,C>& Matrix<T,R,C>::operator*=(const T& a_scalar)
+{
+    std::transform(Begin(), End(), Begin(), [a_scalar](const T& a_value){ return a_value * a_scalar; });
+    return *this;
+}
+
+
+template <typename T, size_t R, size_t C>
+Matrix<T,R,C>& Matrix<T,R,C>::operator/=(const T& a_scalar)
+{
+    std::transform(Begin(), End(), Begin(), [a_scalar](const T& a_value){ return a_value / a_scalar; });
+    return *this;
 }
 
 
 template <typename T, size_t R, size_t C>
 bool Matrix<T,R,C>::operator==(const Matrix<T,R,C>& a_other) const
 {
-
+    return std::equal(Begin(), End(), a_other.Begin());
 }
 
 
 template <typename T, size_t R, size_t C>
 bool Matrix<T,R,C>::operator!=(const Matrix<T,R,C>& a_other) const
 {
-
+    return !std::equal(Begin(), End(), a_other.Begin());
 }
 
 } // compiletime

@@ -32,10 +32,10 @@ public:
     Matrix<T,R,C>& operator=(Matrix<T,R,C>&& a_rvalue) noexcept; // Move semantics
     ~Matrix<T,R,C>();
 
-    iterator begin() { return iterator(m_underlyingArray); }
-    iterator end() { return iterator(m_underlyingArray + (R * C)); }
-    const_iterator begin() const { return const_iterator(m_underlyingArray); }
-    const_iterator end() const { return const_iterator(m_underlyingArray + (R * C)); }
+    iterator begin() { return iterator(Begin()); }
+    iterator end() { return iterator(End()); }
+    const_iterator begin() const { return const_iterator(Begin()); }
+    const_iterator end() const { return const_iterator(End()); }
 
     size_t Rows() const { return R; }
     size_t Columns() const { return C; }
@@ -47,26 +47,27 @@ public:
     Matrix<T,R,C> operator+(const Matrix<T,R,C>& a_other) const;
     Matrix<T,R,C> operator-(const Matrix<T,R,C>& a_other) const;
 
-    Matrix<T,R,C> operator+(const T& a_value) const; // In numeric terms - a_value is equal to scalar
-    Matrix<T,R,C> operator-(const T& a_value) const; // In numeric terms - a_value is equal to scalar
-    Matrix<T,R,C> operator*(const T& a_value) const; // In numeric terms - a_value is equal to scalar
-    Matrix<T,R,C> operator/(const T& a_value) const; // In numeric terms - a_value is equal to scalar
-
     template<T, size_t ROWS, size_t COLUMNS>
-    Matrix<T, R, COLUMNS> operator*(const Matrix<T,ROWS,COLUMNS>& a_other) const;
+    Matrix<T,R,COLUMNS> operator*(const Matrix<T,ROWS,COLUMNS>& a_other) const;
 
-    Matrix<T,R,C>& operator+=(const Matrix<T,R,C>& a_other) const;
-    Matrix<T,R,C>& operator-=(const Matrix<T,R,C>& a_other) const;
-    Matrix<T,R,C>& operator*=(const Matrix<T,R,C>& a_other) const;
+    Matrix<T,R,C> operator+(const T& a_scalar) const;
+    Matrix<T,R,C> operator-(const T& a_scalar) const;
+    Matrix<T,R,C> operator*(const T& a_scalar) const;
+    Matrix<T,R,C> operator/(const T& a_scalar) const;
 
-    Matrix<T,R,C>& operator+=(const T& a_value) const; // In numeric terms - a_value is equal to scalar
-    Matrix<T,R,C>& operator-=(const T& a_value) const; // In numeric terms - a_value is equal to scalar
-    Matrix<T,R,C>& operator*=(const T& a_value) const; // In numeric terms - a_value is equal to scalar
-    Matrix<T,R,C>& operator/=(const T& a_value) const; // In numeric terms - a_value is equal to scalar
+    Matrix<T,R,C>& operator+=(const Matrix<T,R,C>& a_other);
+    Matrix<T,R,C>& operator-=(const Matrix<T,R,C>& a_other);
+    Matrix<T,R,C>& operator+=(const T& a_scalar);
+    Matrix<T,R,C>& operator-=(const T& a_scalar);
+    Matrix<T,R,C>& operator*=(const T& a_scalar);
+    Matrix<T,R,C>& operator/=(const T& a_scalar);
 
     bool operator==(const Matrix<T,R,C>& a_other) const;
     bool operator!=(const Matrix<T,R,C>& a_other) const;
 
+private:
+    T* Begin() { return m_underlyingArray; }
+    T* End() { return m_underlyingArray + (R * C); }
 
 private:
     T* m_underlyingArray;
