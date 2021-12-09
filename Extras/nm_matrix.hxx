@@ -3,7 +3,7 @@
 
 
 #include <cstddef> // size_t
-#include <algorithm> // std::copy, std::equal, std::transform
+#include <algorithm> // std::copy, std::equal, std::transform, std::fill
 #include <stdexcept> // std::overflow_error
 #include "nm_row_proxy.hpp"
 #include "nm_matrix.hpp" //! remove
@@ -19,6 +19,14 @@ Matrix<T,R,C>::Matrix()
 : m_underlyingArray(new T[R * C])
 {
     static_assert(R != 0 && C != 0, "R (rows) and C (columns) must be greater than 0");
+}
+
+
+template <typename T, size_t R, size_t C>
+Matrix<T,R,C>::Matrix(const T& a_initialValue)
+: Matrix()
+{
+    Fill(a_initialValue);
 }
 
 
@@ -239,6 +247,13 @@ template <typename T, size_t R, size_t C>
 bool Matrix<T,R,C>::operator!=(const Matrix<T,R,C>& a_other) const
 {
     return !std::equal(Begin(), End(), a_other.Begin());
+}
+
+
+template <typename T, size_t R, size_t C>
+void Matrix<T,R,C>::Fill(const T& a_value)
+{
+    std::fill(Begin(), End(), a_value);
 }
 
 } // compiletime

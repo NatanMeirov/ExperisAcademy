@@ -3,6 +3,7 @@
 
 
 #include <cstddef> // size_t
+#include <ostream> // std::ostream
 #include "nm_matrix_iterator.hpp"
 #include "nm_row_proxy.hpp"
 
@@ -26,6 +27,7 @@ public:
 
 public:
     Matrix<T,R,C>();
+    explicit Matrix<T,R,C>(const T& a_initialValue);
     Matrix<T,R,C>(const Matrix<T,R,C>& a_other);
     Matrix<T,R,C>& operator=(const Matrix<T,R,C>& a_other);
     Matrix<T,R,C>(Matrix<T,R,C>&& a_rvalue) noexcept; // Move semantics
@@ -35,7 +37,7 @@ public:
     iterator begin() { return iterator(Begin()); }
     iterator end() { return iterator(End()); }
     const_iterator begin() const { return const_iterator(Begin()); }
-    const_iterator end() const { return const_iterator(End()); }
+    const_iterator end() const { return const_iterator (End()); }
 
     size_t Rows() const { return R; }
     size_t Columns() const { return C; }
@@ -64,6 +66,8 @@ public:
 
     bool operator==(const Matrix<T,R,C>& a_other) const;
     bool operator!=(const Matrix<T,R,C>& a_other) const;
+
+    void Fill(const T& a_value);
 
 private:
     T* Begin() { return m_underlyingArray; }
