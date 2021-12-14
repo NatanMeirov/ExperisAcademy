@@ -3,7 +3,6 @@
 
 
 #include <cstddef> // size_t
-#include <ostream> // std::ostream
 #include "nm_matrix_iterator.hpp"
 #include "nm_row_proxy.hpp"
 
