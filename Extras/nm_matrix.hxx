@@ -146,7 +146,16 @@ Matrix<T,R,COLUMNS> Matrix<T,R,C>::operator*(const Matrix<T,ROWS,COLUMNS>& a_oth
 
     Matrix<T,R,COLUMNS> matrix;
 
-    // TODO: write the matrix multiplication's code here
+    for(size_t i = 0; i < R; ++i)
+    {
+        for(size_t j = 0; j < COLUMNS; ++j)
+        {
+            for(size_t k = 0; k < C; ++k)
+            {
+                matrix.m_underlyingArray[(i * COLUMNS) + j] += m_underlyingArray[(i * C) + k] * a_other.m_underlyingArray[(k * COLUMNS) + j];
+            }
+        }
+    }
 
     return matrix;
 }
