@@ -6,7 +6,7 @@
 #include <algorithm> // std::copy, std::equal, std::transform, std::fill
 #include <stdexcept> // std::overflow_error
 #include "nm_row_proxy.hpp"
-#include "nm_matrix.hpp" //! remove
+
 
 namespace nm
 {
