@@ -3,8 +3,9 @@
 
 
 #include <cstddef> // size_t
-#include <stdexcept> // std::runtime_error, std::overflow_error
+#include <type_traits> // std::enable_if, std::is_arithmetic
 #include <algorithm> // std::copy, std::equal, std::transform, std::fill
+#include <stdexcept> // std::overflow_error
 
 
 namespace nm
@@ -19,15 +20,8 @@ public:
     RowProxy& operator=(const RowProxy& a_other) = default;
     ~RowProxy() = default;
 
-    T& operator[](size_t a_columnIndex)
-    {
-        if(a_columnIndex >= m_rowSize)
-        {
-            throw std::overflow_error("Column index out of bounds error");
-        }
-
-        return m_row[a_columnIndex];
-    }
+    T& operator[](size_t a_columnIndex);
+    void Fill(const T& a_value);
 
 private:
     T* m_row;
@@ -44,15 +38,7 @@ public:
     ConstRowProxy& operator=(const ConstRowProxy& a_other) = default;
     ~ConstRowProxy() = default;
 
-    const T& operator[](size_t a_columnIndex) const
-    {
-        if(a_columnIndex >= m_rowSize)
-        {
-            throw std::overflow_error("Column index out of bounds error");
-        }
-
-        return m_row[a_columnIndex];
-    }
+    const T& operator[](size_t a_columnIndex) const;
 
 private:
     const T* m_row;
@@ -470,28 +456,25 @@ const T& ConstMatrixIterator<T>::operator*() const
 }
 
 
-namespace compiletime
-{
-
-// Concept of T: T must be copy-assignable, copy-constructable, and default-constructable.
+// Concept of Ty: Ty must be copy-assignable, copy-constructable, and default-constructable.
 // Concept of R (rows) and C (columns): must be greater than 0.
-// To be able to use the most of the operations of the Matrix - T must implement (overload) some operators:
+// Tyo be able to use the most of the operations of the Matrix - Ty must implement (overload) some operators:
 // +, +=, -, -=, *, *=, /, /=, and etc...
-template <typename T, size_t R, size_t C>
+template <typename Ty, size_t R, size_t C>
 class Matrix
 {
 public:
-    typedef MatrixIterator<T> iterator;
-    typedef ConstMatrixIterator<T> const_iterator;
+    typedef MatrixIterator<Ty> iterator;
+    typedef ConstMatrixIterator<Ty> const_iterator;
 
 public:
-    Matrix<T,R,C>();
-    explicit Matrix<T,R,C>(const T& a_initialValue);
-    Matrix<T,R,C>(const Matrix<T,R,C>& a_other);
-    Matrix<T,R,C>& operator=(const Matrix<T,R,C>& a_other);
-    Matrix<T,R,C>(Matrix<T,R,C>&& a_rvalue) noexcept; // Move semantics
-    Matrix<T,R,C>& operator=(Matrix<T,R,C>&& a_rvalue) noexcept; // Move semantics
-    ~Matrix<T,R,C>();
+    Matrix<Ty,R,C>();
+    explicit Matrix<Ty,R,C>(const Ty& a_initialValue);
+    Matrix<Ty,R,C>(const Matrix<Ty,R,C>& a_other);
+    Matrix<Ty,R,C>& operator=(const Matrix<Ty,R,C>& a_other);
+    Matrix<Ty,R,C>(Matrix<Ty,R,C>&& a_rvalue) noexcept; // Move semantics
+    Matrix<Ty,R,C>& operator=(Matrix<Ty,R,C>&& a_rvalue) noexcept; // Move semantics
+    ~Matrix<Ty,R,C>();
 
     iterator begin() { return iterator(Begin()); }
     iterator end() { return iterator(End()); }
@@ -501,75 +484,90 @@ public:
     size_t Rows() const { return R; }
     size_t Columns() const { return C; }
 
-    RowProxy<T> operator[](size_t a_rowIndex);
-    ConstRowProxy<T> operator[](size_t a_rowIndex) const;
+    RowProxy<Ty> operator[](size_t a_rowIndex);
+    ConstRowProxy<Ty> operator[](size_t a_rowIndex) const;
 
-    Matrix<T,R,C> operator-() const;
-    Matrix<T,R,C> operator+(const Matrix<T,R,C>& a_other) const;
-    Matrix<T,R,C> operator-(const Matrix<T,R,C>& a_other) const;
+    Matrix<Ty,R,C> operator-() const;
+    Matrix<Ty,R,C> operator+(const Matrix<Ty,R,C>& a_other) const;
+    Matrix<Ty,R,C> operator-(const Matrix<Ty,R,C>& a_other) const;
 
-    template<T, size_t ROWS, size_t COLUMNS>
-    Matrix<T,R,COLUMNS> operator*(const Matrix<T,ROWS,COLUMNS>& a_other) const;
+    template<Ty, size_t ROWS, size_t COLUMNS>
+    Matrix<Ty,R,COLUMNS> operator*(const Matrix<Ty,ROWS,COLUMNS>& a_other) const;
 
-    Matrix<T,R,C> operator+(const T& a_scalar) const;
-    Matrix<T,R,C> operator-(const T& a_scalar) const;
-    Matrix<T,R,C> operator*(const T& a_scalar) const;
-    Matrix<T,R,C> operator/(const T& a_scalar) const;
+    Matrix<Ty,R,C> operator+(const Ty& a_scalar) const;
+    Matrix<Ty,R,C> operator-(const Ty& a_scalar) const;
+    Matrix<Ty,R,C> operator*(const Ty& a_scalar) const;
+    Matrix<Ty,R,C> operator/(const Ty& a_scalar) const;
 
-    Matrix<T,R,C>& operator+=(const Matrix<T,R,C>& a_other);
-    Matrix<T,R,C>& operator-=(const Matrix<T,R,C>& a_other);
-    Matrix<T,R,C>& operator+=(const T& a_scalar);
-    Matrix<T,R,C>& operator-=(const T& a_scalar);
-    Matrix<T,R,C>& operator*=(const T& a_scalar);
-    Matrix<T,R,C>& operator/=(const T& a_scalar);
+    Matrix<Ty,R,C>& operator+=(const Matrix<Ty,R,C>& a_other);
+    Matrix<Ty,R,C>& operator-=(const Matrix<Ty,R,C>& a_other);
+    Matrix<Ty,R,C>& operator+=(const Ty& a_scalar);
+    Matrix<Ty,R,C>& operator-=(const Ty& a_scalar);
+    Matrix<Ty,R,C>& operator*=(const Ty& a_scalar);
+    Matrix<Ty,R,C>& operator/=(const Ty& a_scalar);
 
-    bool operator==(const Matrix<T,R,C>& a_other) const;
-    bool operator!=(const Matrix<T,R,C>& a_other) const;
+    bool operator==(const Matrix<Ty,R,C>& a_other) const;
+    bool operator!=(const Matrix<Ty,R,C>& a_other) const;
 
-    void Fill(const T& a_value);
+    void Fill(const Ty& a_value);
+    Matrix<Ty,C,R> RotateLeft() const;
+    Matrix<Ty,C,R> RotateRight() const;
+
+    // Math:
+    Matrix<Ty,C,R> T() const; // Transpose matrix (Mathematical term)
+    Matrix<Ty,C,R> Transpose() const; // Transpose matrix
+
+    template <typename std::enable_if<std::is_arithmetic<Ty>::value, bool>::type = true>
+    Matrix<Ty,R,C> O() const; // Zero matrix (Mathematical term)
+    template <typename std::enable_if<std::is_arithmetic<Ty>::value, bool>::type = true>
+    Matrix<Ty,R,C> Zero() const; // Zero matrix
+    template <typename std::enable_if<R == C && std::is_arithmetic<Ty>::value, bool>::type = true> // Enable only on square matrix
+    Matrix<Ty,R,R> I() const; // Identity matrix (Mathematical term)
+    template <typename std::enable_if<R == C && std::is_arithmetic<Ty>::value, bool>::type = true> // Enable only on square matrix
+    Matrix<Ty,R,R> Identity() const; // Identity matrix
 
 private:
-    T* Begin() { return m_underlyingArray; }
-    T* End() { return m_underlyingArray + (R * C); }
+    Ty* Begin() { return m_underlyingArray; }
+    Ty* End() { return m_underlyingArray + (R * C); }
 
 private:
-    T* m_underlyingArray;
+    Ty* m_underlyingArray;
 };
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C>::Matrix()
-: m_underlyingArray(new T[R * C])
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C>::Matrix()
+: m_underlyingArray(new Ty[R * C])
 {
     static_assert(R != 0 && C != 0, "R (rows) and C (columns) must be greater than 0");
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C>::Matrix(const T& a_initialValue)
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C>::Matrix(const Ty& a_initialValue)
 : Matrix()
 {
     Fill(a_initialValue);
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C>::Matrix(const Matrix<T,R,C>& a_other)
-: m_underlyingArray(new T[R * C])
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C>::Matrix(const Matrix<Ty,R,C>& a_other)
+: m_underlyingArray(new Ty[R * C])
 {
     std::copy(a_other.Begin(), a_other.End(), Begin());
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator=(const Matrix<T,R,C>& a_other)
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C>& Matrix<Ty,R,C>::operator=(const Matrix<Ty,R,C>& a_other)
 {
     if(*this == a_other)
     {
         return *this;
     }
 
-    T* newUnderlyingArray = new T[R * C]; // For exception safety
+    Ty* newUnderlyingArray = new Ty[R * C]; // For exception safety
     std::copy(a_other.Begin(), a_other.End(), newUnderlyingArray);
 
     delete[] m_underlyingArray;
@@ -579,16 +577,16 @@ Matrix<T,R,C>& Matrix<T,R,C>::operator=(const Matrix<T,R,C>& a_other)
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C>::Matrix(Matrix<T,R,C>&& a_rvalue) noexcept
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C>::Matrix(Matrix<Ty,R,C>&& a_rvalue) noexcept
 : m_underlyingArray(a_rvalue.m_underlyingArray)
 {
     a_rvalue.m_underlyingArray = nullptr;
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator=(Matrix<T,R,C>&& a_rvalue) noexcept
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C>& Matrix<Ty,R,C>::operator=(Matrix<Ty,R,C>&& a_rvalue) noexcept
 {
     if(*this == a_rvalue)
     {
@@ -603,71 +601,71 @@ Matrix<T,R,C>& Matrix<T,R,C>::operator=(Matrix<T,R,C>&& a_rvalue) noexcept
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C>::~Matrix()
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C>::~Matrix()
 {
     delete[] m_underlyingArray;
 }
 
 
-template <typename T, size_t R, size_t C>
-RowProxy<T> Matrix<T,R,C>::operator[](size_t a_rowIndex)
+template <typename Ty, size_t R, size_t C>
+RowProxy<Ty> Matrix<Ty,R,C>::operator[](size_t a_rowIndex)
 {
     if(a_rowIndex >= R)
     {
         throw std::overflow_error("Row index out of bounds error");
     }
 
-    return RowProxy<T>(m_underlyingArray + (a_rowIndex * C), C);
+    return RowProxy<Ty>(m_underlyingArray + (a_rowIndex * C), C);
 }
 
 
-template <typename T, size_t R, size_t C>
-ConstRowProxy<T> Matrix<T,R,C>::operator[](size_t a_rowIndex) const
+template <typename Ty, size_t R, size_t C>
+ConstRowProxy<Ty> Matrix<Ty,R,C>::operator[](size_t a_rowIndex) const
 {
     if(a_rowIndex >= R)
     {
         throw std::overflow_error("Row index out of bounds error");
     }
 
-    return ConstRowProxy<T>(m_underlyingArray + (a_rowIndex * C), C);
+    return ConstRowProxy<Ty>(m_underlyingArray + (a_rowIndex * C), C);
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C> Matrix<T,R,C>::operator-() const
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C> Matrix<Ty,R,C>::operator-() const
 {
-    Matrix<T,R,C> matrix;
-    std::transform(Begin(), End(), matrix.Begin(), [](const T& a_value){ return -a_value; });
+    Matrix<Ty,R,C> matrix;
+    std::transform(Begin(), End(), matrix.Begin(), [](const Ty& a_value){ return -a_value; });
     return matrix;
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C> Matrix<T,R,C>::operator+(const Matrix<T,R,C>& a_other) const
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C> Matrix<Ty,R,C>::operator+(const Matrix<Ty,R,C>& a_other) const
 {
-    Matrix<T,R,C> matrix;
-    std::transform(Begin(), End(), a_other.Begin(), matrix.Begin(), [](const T& a_firstVal, const T& a_secondVal){ return a_firstVal + a_secondVal; });
+    Matrix<Ty,R,C> matrix;
+    std::transform(Begin(), End(), a_other.Begin(), matrix.Begin(), [](const Ty& a_firstVal, const Ty& a_secondVal){ return a_firstVal + a_secondVal; });
     return matrix;
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C> Matrix<T,R,C>::operator-(const Matrix<T,R,C>& a_other) const
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C> Matrix<Ty,R,C>::operator-(const Matrix<Ty,R,C>& a_other) const
 {
-    Matrix<T,R,C> matrix;
-    std::transform(Begin(), End(), a_other.Begin(), matrix.Begin(), [](const T& a_firstVal, const T& a_secondVal){ return a_firstVal - a_secondVal; });
+    Matrix<Ty,R,C> matrix;
+    std::transform(Begin(), End(), a_other.Begin(), matrix.Begin(), [](const Ty& a_firstVal, const Ty& a_secondVal){ return a_firstVal - a_secondVal; });
     return matrix;
 }
 
 
-template <typename T, size_t R, size_t C>
-template<T, size_t ROWS, size_t COLUMNS>
-Matrix<T,R,COLUMNS> Matrix<T,R,C>::operator*(const Matrix<T,ROWS,COLUMNS>& a_other) const
+template <typename Ty, size_t R, size_t C>
+template<Ty, size_t ROWS, size_t COLUMNS>
+Matrix<Ty,R,COLUMNS> Matrix<Ty,R,C>::operator*(const Matrix<Ty,ROWS,COLUMNS>& a_other) const
 {
     static_assert(C == ROWS, "C (columns) of the first matrix must be equal to the ROWS of the second matrix, in matrix multiplication");
 
-    Matrix<T,R,COLUMNS> matrix;
+    Matrix<Ty,R,COLUMNS> matrix;
 
     for(size_t i = 0; i < R; ++i)
     {
@@ -684,113 +682,218 @@ Matrix<T,R,COLUMNS> Matrix<T,R,C>::operator*(const Matrix<T,ROWS,COLUMNS>& a_oth
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C> Matrix<T,R,C>::operator+(const T& a_scalar) const
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C> Matrix<Ty,R,C>::operator+(const Ty& a_scalar) const
 {
-    Matrix<T,R,C> matrix;
-    std::transform(Begin(), End(), matrix.Begin(), [a_scalar](const T& a_value){ return a_value + a_scalar; });
+    Matrix<Ty,R,C> matrix;
+    std::transform(Begin(), End(), matrix.Begin(), [a_scalar](const Ty& a_value){ return a_value + a_scalar; });
     return matrix;
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C> Matrix<T,R,C>::operator-(const T& a_scalar) const
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C> Matrix<Ty,R,C>::operator-(const Ty& a_scalar) const
 {
-    Matrix<T,R,C> matrix;
-    std::transform(Begin(), End(), matrix.Begin(), [a_scalar](const T& a_value){ return a_value - a_scalar; });
+    Matrix<Ty,R,C> matrix;
+    std::transform(Begin(), End(), matrix.Begin(), [a_scalar](const Ty& a_value){ return a_value - a_scalar; });
     return matrix;
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C> Matrix<T,R,C>::operator*(const T& a_scalar) const
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C> Matrix<Ty,R,C>::operator*(const Ty& a_scalar) const
 {
-    Matrix<T,R,C> matrix;
-    std::transform(Begin(), End(), matrix.Begin(), [a_scalar](const T& a_value){ return a_value * a_scalar; });
+    Matrix<Ty,R,C> matrix;
+    std::transform(Begin(), End(), matrix.Begin(), [a_scalar](const Ty& a_value){ return a_value * a_scalar; });
     return matrix;
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C> Matrix<T,R,C>::operator/(const T& a_scalar) const
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C> Matrix<Ty,R,C>::operator/(const Ty& a_scalar) const
 {
-    Matrix<T,R,C> matrix;
-    std::transform(Begin(), End(), matrix.Begin(), [a_scalar](const T& a_value){ return a_value / a_scalar; });
+    Matrix<Ty,R,C> matrix;
+    std::transform(Begin(), End(), matrix.Begin(), [a_scalar](const Ty& a_value){ return a_value / a_scalar; });
     return matrix;
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator+=(const Matrix<T,R,C>& a_other)
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C>& Matrix<Ty,R,C>::operator+=(const Matrix<Ty,R,C>& a_other)
 {
-    std::transform(Begin(), End(), a_other.Begin(), Begin(), [](const T& a_firstVal, const T& a_secondVal){ return a_firstVal + a_secondVal; });
+    std::transform(Begin(), End(), a_other.Begin(), Begin(), [](const Ty& a_firstVal, const Ty& a_secondVal){ return a_firstVal + a_secondVal; });
     return *this;
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator-=(const Matrix<T,R,C>& a_other)
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C>& Matrix<Ty,R,C>::operator-=(const Matrix<Ty,R,C>& a_other)
 {
-    std::transform(Begin(), End(), a_other.Begin(), Begin(), [](const T& a_firstVal, const T& a_secondVal){ return a_firstVal - a_secondVal; });
+    std::transform(Begin(), End(), a_other.Begin(), Begin(), [](const Ty& a_firstVal, const Ty& a_secondVal){ return a_firstVal - a_secondVal; });
     return *this;
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator+=(const T& a_scalar)
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C>& Matrix<Ty,R,C>::operator+=(const Ty& a_scalar)
 {
-    std::transform(Begin(), End(), Begin(), [a_scalar](const T& a_value){ return a_value + a_scalar; });
+    std::transform(Begin(), End(), Begin(), [a_scalar](const Ty& a_value){ return a_value + a_scalar; });
     return *this;
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator-=(const T& a_scalar)
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C>& Matrix<Ty,R,C>::operator-=(const Ty& a_scalar)
 {
-    std::transform(Begin(), End(), Begin(), [a_scalar](const T& a_value){ return a_value - a_scalar; });
+    std::transform(Begin(), End(), Begin(), [a_scalar](const Ty& a_value){ return a_value - a_scalar; });
     return *this;
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator*=(const T& a_scalar)
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C>& Matrix<Ty,R,C>::operator*=(const Ty& a_scalar)
 {
-    std::transform(Begin(), End(), Begin(), [a_scalar](const T& a_value){ return a_value * a_scalar; });
+    std::transform(Begin(), End(), Begin(), [a_scalar](const Ty& a_value){ return a_value * a_scalar; });
     return *this;
 }
 
 
-template <typename T, size_t R, size_t C>
-Matrix<T,R,C>& Matrix<T,R,C>::operator/=(const T& a_scalar)
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,R,C>& Matrix<Ty,R,C>::operator/=(const Ty& a_scalar)
 {
-    std::transform(Begin(), End(), Begin(), [a_scalar](const T& a_value){ return a_value / a_scalar; });
+    std::transform(Begin(), End(), Begin(), [a_scalar](const Ty& a_value){ return a_value / a_scalar; });
     return *this;
 }
 
 
-template <typename T, size_t R, size_t C>
-bool Matrix<T,R,C>::operator==(const Matrix<T,R,C>& a_other) const
+template <typename Ty, size_t R, size_t C>
+bool Matrix<Ty,R,C>::operator==(const Matrix<Ty,R,C>& a_other) const
 {
     return std::equal(Begin(), End(), a_other.Begin());
 }
 
 
-template <typename T, size_t R, size_t C>
-bool Matrix<T,R,C>::operator!=(const Matrix<T,R,C>& a_other) const
+template <typename Ty, size_t R, size_t C>
+bool Matrix<Ty,R,C>::operator!=(const Matrix<Ty,R,C>& a_other) const
 {
     return !std::equal(Begin(), End(), a_other.Begin());
 }
 
 
-template <typename T, size_t R, size_t C>
-void Matrix<T,R,C>::Fill(const T& a_value)
+template <typename Ty, size_t R, size_t C>
+void Matrix<Ty,R,C>::Fill(const Ty& a_value)
 {
     std::fill(Begin(), End(), a_value);
 }
 
-} // compiletime
+
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,C,R> Matrix<Ty,R,C>::Transpose() const
+{
+    Matrix<Ty,C,R> matrix;
+
+    for(size_t i = 0; i < R; ++i)
+    {
+        for(size_t j = 0; j < C; ++j)
+        {
+            matrix.m_underlyingArray[(j * R) + i] = m_underlyingArray[(i * C) + j];
+        }
+    }
+
+    return matrix;
+}
+
+
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,C,R> Matrix<Ty,R,C>::T() const
+{
+    return Transpose();
+}
+
+
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,C,R> Matrix<Ty,R,C>::RotateLeft() const
+{
+    // TODO
+}
+
+
+template <typename Ty, size_t R, size_t C>
+Matrix<Ty,C,R> Matrix<Ty,R,C>::RotateRight() const
+{
+    // TODO
+}
+
+
+template <typename Ty, size_t R, size_t C>
+template <typename std::enable_if<std::is_arithmetic<Ty>::value, bool>::type>
+Matrix<Ty,R,C> Matrix<Ty,R,C>::O() const
+{
+    return Zero();
+}
+
+
+template <typename Ty, size_t R, size_t C>
+template <typename std::enable_if<std::is_arithmetic<Ty>::value, bool>::type>
+Matrix<Ty,R,C> Matrix<Ty,R,C>::Zero() const
+{
+    return Matrix<Ty,R,C>();
+}
+
+
+template <typename Ty, size_t R, size_t C>
+template <typename std::enable_if<R == C && std::is_arithmetic<Ty>::value, bool>::type>
+Matrix<Ty,R,R> Matrix<Ty,R,C>::Identity() const
+{
+    Matrix<Ty,R,R> identityMatrix;
+
+    for(size_t i = 0; i < R; ++i)
+    {
+        identityMatrix.m_underlyingArray[(i * R) + i] = 1;
+    }
+
+    return identityMatrix;
+}
+
+
+template <typename Ty, size_t R, size_t C>
+template <typename std::enable_if<R == C && std::is_arithmetic<Ty>::value, bool>::type>
+Matrix<Ty,R,R> Matrix<Ty,R,C>::I() const
+{
+    return Identity();
+}
 
 } // nm
+
+
+// Global Matrix Operators:
+
+template <typename T, size_t R, size_t C>
+nm::Matrix<T,R,C> operator+(const T& a_scalar, nm::Matrix<T,R,C>& a_matrix)
+{
+    return a_matrix + a_scalar;
+}
+
+
+template <typename T, size_t R, size_t C>
+nm::Matrix<T,R,C> operator-(const T& a_scalar, nm::Matrix<T,R,C>& a_matrix)
+{
+    return a_matrix - a_scalar;
+}
+
+
+template <typename T, size_t R, size_t C>
+nm::Matrix<T,R,C> operator*(const T& a_scalar, nm::Matrix<T,R,C>& a_matrix)
+{
+    return a_matrix * a_scalar;
+}
+
+
+template <typename T, size_t R, size_t C>
+nm::Matrix<T,R,C> operator/(const T& a_scalar, nm::Matrix<T,R,C>& a_matrix)
+{
+    return a_matrix / a_scalar;
+}
 
 
 #endif // NM_MATRIX_HPP
