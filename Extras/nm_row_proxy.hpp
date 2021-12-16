@@ -3,7 +3,6 @@
 
 
 #include <cstddef> // size_t
-#include <stdexcept> // std::runtime_error
 
 
 namespace nm
@@ -18,15 +17,8 @@ public:
     RowProxy& operator=(const RowProxy& a_other) = default;
     ~RowProxy() = default;
 
-    T& operator[](size_t a_columnIndex)
-    {
-        if(a_columnIndex >= m_rowSize)
-        {
-            throw std::overflow_error("Column index out of bounds error");
-        }
-
-        return m_row[a_columnIndex];
-    }
+    T& operator[](size_t a_columnIndex);
+    void Fill(const T& a_value);
 
 private:
     T* m_row;
@@ -43,15 +35,7 @@ public:
     ConstRowProxy& operator=(const ConstRowProxy& a_other) = default;
     ~ConstRowProxy() = default;
 
-    const T& operator[](size_t a_columnIndex) const
-    {
-        if(a_columnIndex >= m_rowSize)
-        {
-            throw std::overflow_error("Column index out of bounds error");
-        }
-
-        return m_row[a_columnIndex];
-    }
+    const T& operator[](size_t a_columnIndex) const;
 
 private:
     const T* m_row;
@@ -59,6 +43,9 @@ private:
 };
 
 } // nm
+
+
+#include "nm_row_proxy.hxx"
 
 
 #endif // NM_ROW_PROXY_HPP
