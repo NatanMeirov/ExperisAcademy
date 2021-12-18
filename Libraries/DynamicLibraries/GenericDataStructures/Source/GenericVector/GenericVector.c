@@ -57,7 +57,7 @@ Vector* VectorCreate(size_t _initialCapacity, size_t _extensionBlockSize)
 {
 	Vector* newVector = NULL;
 
-    if(_initialCapacity == 0 && _extensionBlockSize == 0)
+    	if(_initialCapacity == 0 && _extensionBlockSize == 0)
 	{
 		return NULL;
 	}
@@ -81,7 +81,7 @@ Vector* VectorCreate(size_t _initialCapacity, size_t _extensionBlockSize)
 
 void VectorDestroy(Vector** _vector, void (*_elementDestroy)(void* _item))
 {
-    size_t i;
+    	size_t i;
 
 	if(_vector && *_vector)
 	{
@@ -89,24 +89,24 @@ void VectorDestroy(Vector** _vector, void (*_elementDestroy)(void* _item))
 		{
 			if(_elementDestroy) /* Pointer function is not NULL - destroy is needed for every item in the Vector */
 			{
-            	for(i = 0; i < (*_vector)->m_sizeOfVector; i++)
-            	{
+            			for(i = 0; i < (*_vector)->m_sizeOfVector; i++)
+            			{
 					_elementDestroy((*_vector)->m_vectorItems[i]);
-            	}
+            			}
 			}
 
 			free((*_vector)->m_vectorItems);
 		}
 
 		free(*_vector);
-        *_vector = NULL;
+        	*_vector = NULL;
 	}
 }
 
 
 VectorResult VectorAppend(Vector* _vector, void* _item)
 {
-    VectorResult statusCode;
+    	VectorResult statusCode;
 
 	if(!_vector)
 	{
@@ -155,7 +155,7 @@ VectorResult VectorRemove(Vector* _vector, void** _pItem)
 
 VectorResult VectorGet(const Vector* _vector, size_t _index, void** _pItem)
 {
-    VectorResult statusCode;
+    	VectorResult statusCode;
 
 	if(!_vector || !_pItem)
 	{
@@ -175,7 +175,7 @@ VectorResult VectorGet(const Vector* _vector, size_t _index, void** _pItem)
 
 VectorResult VectorSet(Vector* _vector, size_t _index, void*  _itemToSet)
 {
-    VectorResult statusCode;
+    	VectorResult statusCode;
 
 	if(!_vector)
 	{
