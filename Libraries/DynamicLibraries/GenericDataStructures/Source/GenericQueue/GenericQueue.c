@@ -24,7 +24,7 @@
 
 struct Queue
 {
-    void** m_queueItems;
+	void** m_queueItems;
 	size_t m_sizeOfQueue;
 	size_t m_headIndex;
 	size_t m_tailIndex;
@@ -68,25 +68,25 @@ Queue* QueueCreate(size_t _initialSizeOfQueue)
 
 void QueueDestroy(Queue** _queue, DestroyItemFunc _destroyItemFunc)
 {
-    size_t i, currentItemIndex;
+	size_t i, currentItemIndex;
 
 	if(_queue && *_queue)
 	{
 		if((*_queue)->m_queueItems)
 		{
-            if(_destroyItemFunc) /* Pointer function is not NULL - destroy is needed for every item in the Queue */
+            		if(_destroyItemFunc) /* Pointer function is not NULL - destroy is needed for every item in the Queue */
 			{
-            	for(currentItemIndex = (*_queue)->m_headIndex ,i = 0; i < (*_queue)->m_itemsNumInQueue; i++, currentItemIndex = (currentItemIndex + 1) % (*_queue)->m_sizeOfQueue)
-            	{
+            			for(currentItemIndex = (*_queue)->m_headIndex ,i = 0; i < (*_queue)->m_itemsNumInQueue; i++, currentItemIndex = (currentItemIndex + 1) % (*_queue)->m_sizeOfQueue)
+            			{
 					_destroyItemFunc((*_queue)->m_queueItems[currentItemIndex]);
-            	}
+            			}
 			}
 
 			free((*_queue)->m_queueItems);
 		}
 
 		free(*_queue);
-        *_queue = NULL;
+        	*_queue = NULL;
 	}
 }
 

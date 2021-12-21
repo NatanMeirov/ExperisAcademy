@@ -144,7 +144,7 @@ static int InnerCountIfProccessing(int _userFunctionResult, void* _counter)
 {
     if(_userFunctionResult)
     {
-        *((int*)_counter) += 1;
+        *((size_t*)_counter) += 1;
     }
 
     return KEEP_PROCCESSING;
