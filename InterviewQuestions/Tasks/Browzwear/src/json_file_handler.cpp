@@ -6,7 +6,7 @@ namespace ser_fw
 
 Types::ParsedLinesCollection JsonFileHandler::ReadJsonFile(const std::string& a_jsonFile) const
 {
-    // TODO: implement the parsing process
+    // TODO: implement the reading and parsing process of json file
 }
 
 

@@ -7,7 +7,7 @@
 #include "sf_base.hpp"
 
 
-namespace ser_fw
+namespace ser_fw_test
 {
 
 class Point : public Base
@@ -16,8 +16,8 @@ public:
     Point() = default;
     Point(const std::string& a_name, double a_x, double a_y);
 
-    virtual Types::ParamsMap TransformTo() const override;
-    virtual void TransformFrom(const Types::ParamsMap& a_paramsMap) override;
+    virtual ser_fw::Types::ParamsMap TransformTo() const override;
+    virtual void TransformFrom(const ser_fw::Types::ParamsMap& a_paramsMap) override;
     virtual std::string TypeName() const override { return "Point"; }
 
 private:
@@ -25,7 +25,7 @@ private:
     double m_y;
 };
 
-} // ser_fw
+} // ser_fw_test
 
 
 #endif // SF_POINT_HPP

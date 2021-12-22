@@ -6,10 +6,10 @@
 #include "ser_fw_obj.hpp"
 
 
-namespace ser_fw
+namespace ser_fw_test
 {
 
-class Base : public infra::SerFwObj
+class Base : public ser_fw::infra::SerFwObj
 {
 protected:
     Base() = default;
@@ -19,7 +19,7 @@ protected:
     std::string m_name;
 };
 
-} // ser_fw
+} // ser_fw_test
 
 
 #endif // SF_BASE_HPP

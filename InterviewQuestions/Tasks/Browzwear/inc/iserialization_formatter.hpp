@@ -14,14 +14,13 @@ namespace infra
 
 // An interface for all Serialization Formatters.
 // A concrete Serialization Formatter should handle an encoding process
-// of a Types::ParamsMap, to its unique format representation.
-// Note: A concrete Serialization Formatters must require that Types::ParamsMap will contain "type" field,
-// and include it in the formatted string
+// of a Types::TypedParamsMap, to its unique format representation.
+// Note: A concrete Serialization Formatters must use the type info and contain it in the formatted string.
 class ISerializationFormatter
 {
 public:
     virtual ~ISerializationFormatter() = default;
-    virtual std::string Encode(const Types::ParamsMap& a_mappedParams) const = 0;
+    virtual std::string Serialize(const Types::TypedParamsMap& a_typedMappedParams) const = 0;
 };
 
 } // infra

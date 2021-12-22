@@ -18,12 +18,12 @@ public:
 
 public:
     virtual ~XMLFormatter() = default;
-    virtual std::string Encode(const Types::ParamsMap& a_mappedParams) const override { return ToXml(a_mappedParams); }
-    virtual Types::ParamsMap Decode(const std::string& a_formattedStr) const override { return FromXml(a_formattedStr); }
+    virtual std::string Serialize(const Types::TypedParamsMap& a_typedMappedParams) const override { return ToXml(a_typedMappedParams); }
+    virtual Types::TypedParamsMap Deserialize(const std::string& a_formattedStr) const override { return FromXml(a_formattedStr); }
 
 private:
-    XMLFormatString ToXml(const Types::ParamsMap& a_mappedParams) const;
-    Types::ParamsMap FromXml(const XMLFormatString& a_xmlStr) const;
+    XMLFormatString ToXml(const Types::TypedParamsMap& a_typedMappedParams) const;
+    Types::TypedParamsMap FromXml(const XMLFormatString& a_xmlStr) const;
 };
 
 } // ser_fw

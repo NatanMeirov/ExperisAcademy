@@ -27,12 +27,7 @@ namespace infra
 class SerFwObj : public infra::ITransformable<Types::ParamsMap>
 {
 public:
-    using FormattedString = std::string;
-
-public:
     virtual ~SerFwObj() = default;
-    FormattedString Serialize(std::shared_ptr<ISerializationFormatter> a_formatter);
-    void Deserialize(std::shared_ptr<IDeserializationFormatter> a_formatter, const SerFwObj::FormattedString& a_formattedStr);
     virtual std::string TypeName() const = 0;
 };
 

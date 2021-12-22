@@ -6,7 +6,7 @@ namespace ser_fw
 
 Types::ParsedLinesCollection XMLFileHandler::ReadXmlFile(const std::string& a_xmlFile) const
 {
-    // TODO: implement the parsing process
+    // TODO: implement the reading and parsing process of xml file
 }
 
 

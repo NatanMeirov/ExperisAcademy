@@ -3,7 +3,7 @@
 #include "sf_point.hpp"
 
 
-namespace ser_fw
+namespace ser_fw_test
 {
 
 Circle::Circle(const std::string& a_name, double a_x, double a_y, unsigned int a_radius)
@@ -13,18 +13,18 @@ Circle::Circle(const std::string& a_name, double a_x, double a_y, unsigned int a
 }
 
 
-Types::ParamsMap Circle::TransformTo() const
+ser_fw::Types::ParamsMap Circle::TransformTo() const
 {
-    Types::ParamsMap map = Point::TransformTo();
+    ser_fw::Types::ParamsMap map = Point::TransformTo();
     map.insert({"radius", std::to_string(m_radius)});
 
     return map;
 }
 
 
-void Circle::TransformFrom(const Types::ParamsMap& a_paramsMap)
+void Circle::TransformFrom(const ser_fw::Types::ParamsMap& a_paramsMap)
 {
     *this = Circle(a_paramsMap.at("name"), std::stof(a_paramsMap.at("x")), std::stof(a_paramsMap.at("y")), std::stoul(a_paramsMap.at("radius")));
 }
 
-} // ser_fw
+} // ser_fw_test

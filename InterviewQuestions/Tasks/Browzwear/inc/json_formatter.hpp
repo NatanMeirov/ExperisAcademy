@@ -18,12 +18,12 @@ public:
 
 public:
     virtual ~JsonFormatter() = default;
-    virtual std::string Encode(const Types::ParamsMap& a_mappedParams) const override { return ToJson(a_mappedParams); }
-    virtual Types::ParamsMap Decode(const std::string& a_formattedStr) const override { return FromJson(a_formattedStr); }
+    virtual std::string Serialize(const Types::TypedParamsMap& a_typedMappedParams) const override { return ToJson(a_typedMappedParams); }
+    virtual Types::TypedParamsMap Deserialize(const std::string& a_formattedStr) const override { return FromJson(a_formattedStr); }
 
 private:
-    JsonFormatString ToJson(const Types::ParamsMap& a_mappedParams) const;
-    Types::ParamsMap FromJson(const JsonFormatString& a_jsonStr) const;
+    JsonFormatString ToJson(const Types::TypedParamsMap& a_typedMappedParams) const;
+    Types::TypedParamsMap FromJson(const JsonFormatString& a_jsonStr) const;
 };
 
 } // ser_fw
