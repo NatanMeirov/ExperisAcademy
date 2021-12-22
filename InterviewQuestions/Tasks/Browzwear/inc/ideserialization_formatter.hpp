@@ -15,6 +15,8 @@ namespace infra
 // An interface for all Deserialization Formatters.
 // A concrete Deserialization Formatter should handle a decoding process
 // of its unique format representation, to Types::ParamsMap.
+// Note: A concrete Deserialization Formatters must require that the formatted string will contain "type" field,
+// and insert it to the returned Types::ParamsMap
 class IDeserializationFormatter
 {
 public:

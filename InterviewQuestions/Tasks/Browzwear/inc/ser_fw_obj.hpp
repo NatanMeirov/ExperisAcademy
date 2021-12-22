@@ -18,7 +18,7 @@ namespace infra
 
 // The base class of all Serializeable/Deserializeable objects of the Serialization Framework.
 // Each derived CONCRETE class must be default-constructable, copy-constructable and copy-assignable
-// (used in a stl container), and must implement TransformFrom() - from ParamsMap type
+// (used in a stl container), and must implement: TypeName() as string (similar to its class name), TransformFrom() - from ParamsMap type
 // and TransformTo() - to ParamsMap type, to be able to be serialized/deserialized without any dependency in a concrete datafile format.
 // [The derived class should use insert() method to insert each key-value std::pair
 // in the implementation of TransformTo(), and should use at() method on each key, to extract its matched value in the implementation of TransformFrom()].
@@ -33,6 +33,7 @@ public:
     virtual ~SerFwObj() = default;
     FormattedString Serialize(std::shared_ptr<ISerializationFormatter> a_formatter);
     void Deserialize(std::shared_ptr<IDeserializationFormatter> a_formatter, const SerFwObj::FormattedString& a_formattedStr);
+    virtual std::string TypeName() const = 0;
 };
 
 } // infra

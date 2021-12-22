@@ -17,6 +17,7 @@ public:
 
     virtual Types::ParamsMap TransformTo() const override;
     virtual void TransformFrom(const Types::ParamsMap& a_paramsMap) override;
+    virtual std::string TypeName() const override { return "Circle"; }
 
 private:
     unsigned int m_radius;

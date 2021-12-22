@@ -15,6 +15,8 @@ namespace infra
 // An interface for all Serialization Formatters.
 // A concrete Serialization Formatter should handle an encoding process
 // of a Types::ParamsMap, to its unique format representation.
+// Note: A concrete Serialization Formatters must require that Types::ParamsMap will contain "type" field,
+// and include it in the formatted string
 class ISerializationFormatter
 {
 public:

@@ -11,13 +11,17 @@ namespace infra
 
 SerFwObj::FormattedString SerFwObj::Serialize(std::shared_ptr<ISerializationFormatter> a_formatter)
 {
-    return a_formatter->Encode(TransformTo());
+    Types::ParamsMap map = TransformTo();
+    map.insert({"type", TypeName()});
+    return a_formatter->Encode(map);
 }
 
 
 void SerFwObj::Deserialize(std::shared_ptr<IDeserializationFormatter> a_formatter, const SerFwObj::FormattedString& a_formattedStr)
 {
-    TransformFrom(a_formatter->Decode(a_formattedStr));
+    Types::ParamsMap map = a_formatter->Decode(a_formattedStr);
+    map.erase("type");
+    TransformFrom(map);
 }
 
 } // infra
