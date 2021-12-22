@@ -13,7 +13,7 @@ class Base : public ser_fw::infra::SerFwObj
 {
 protected:
     Base() = default;
-    Base(const std::string& a_name);
+    Base(const std::string& a_name) : m_name(a_name) {}
 
 protected:
     std::string m_name;

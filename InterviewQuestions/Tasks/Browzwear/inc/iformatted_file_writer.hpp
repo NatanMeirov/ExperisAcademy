@@ -19,7 +19,7 @@ class IFormattedFileWriter
 {
 public:
     virtual ~IFormattedFileWriter() = default;
-    virtual void WriteFile(const Types::ParsedLinesCollection& a_parsedFormatLines, const std::string& a_datafile) const;
+    virtual void WriteFile(const Types::ParsedLinesCollection& a_parsedFormatLines, const std::string& a_datafile) const = 0;
 };
 
 } // infra

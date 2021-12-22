@@ -19,7 +19,7 @@ class IFormattedFileReader
 {
 public:
     virtual ~IFormattedFileReader() = default;
-    virtual Types::ParsedLinesCollection ReadFile(const std::string& a_datafile) const;
+    virtual Types::ParsedLinesCollection ReadFile(const std::string& a_datafile) const = 0;
 };
 
 } // infra

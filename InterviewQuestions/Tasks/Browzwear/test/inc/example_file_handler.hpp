@@ -9,7 +9,7 @@
 namespace ser_fw_test
 {
 
-// A test class of a file reader/writer that builds a file with CSV line in form: {type:...,param|val...}, from a TypedParamsMap
+// A test class of a file reader/writer that builds a file with lines in form: {type|param1,val1|param2,val2|...}, from a TypedParamsMap
 class ExampleFileHandler
     : public ser_fw::infra::IFormattedFileReader, public ser_fw::infra::IFormattedFileWriter
 {
