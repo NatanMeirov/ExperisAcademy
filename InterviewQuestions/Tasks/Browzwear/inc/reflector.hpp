@@ -16,6 +16,21 @@ namespace ser_fw
 // The Reflector "maps" a string (representing a type name) to a pointer to a Factory Method, that creates a concrete SerFwObj object at Run-Time.
 class Reflector
 {
+private:
+    class ReflectionProxy
+    {
+    public:
+        explicit ReflectionProxy(std::shared_ptr<infra::SerFwObjFactory> a_reflectedFactoryMethod)
+        : m_reflectedFactoryMethod(a_reflectedFactoryMethod)
+        {
+        }
+
+        std::shared_ptr<infra::SerFwObj> Invoke();
+
+    private:
+        std::shared_ptr<infra::SerFwObjFactory> m_reflectedFactoryMethod;
+    };
+
 public:
     Reflector() = default;
     Reflector(const Reflector& a_other) = default;
@@ -24,7 +39,7 @@ public:
 
     void AddReflection(const std::string& a_typeAsString, std::shared_ptr<infra::SerFwObjFactory> a_relatedTypeFactoryMethod);
     void AddReflection(std::pair<std::string, std::shared_ptr<infra::SerFwObjFactory>> a_typeToFactoryPair);
-    std::shared_ptr<infra::SerFwObjFactory> Reflect(const std::string& a_typeAsString) const;
+    ReflectionProxy Reflect(const std::string& a_typeAsString) const;
 
 private:
     std::unordered_map<std::string, std::shared_ptr<infra::SerFwObjFactory>> m_reflectionMap;

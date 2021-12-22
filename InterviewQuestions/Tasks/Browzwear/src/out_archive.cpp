@@ -8,7 +8,6 @@ OutArchive::OutArchive(const std::string& a_datafile, std::shared_ptr<infra::IFo
 : m_datafile(a_datafile)
 , m_formattedFileWriter(a_formattedFileWriter)
 , m_formatter(a_formatter)
-, m_serializer()
 {
 }
 

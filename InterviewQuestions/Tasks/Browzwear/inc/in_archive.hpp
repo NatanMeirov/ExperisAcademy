@@ -54,7 +54,7 @@ void InArchive::Read(C& a_serFwObjects, const Reflector& a_reflector) const
         Types::TypedParamsMap paramsWithTypeIndication = m_formatter->Deserialize(a_formattedStr);
         std::string type = paramsWithTypeIndication.first; // For readability
 
-        std::shared_ptr<infra::SerFwObj> serFwObjPtr = a_reflector.Reflect(type)->Create();
+        std::shared_ptr<infra::SerFwObj> serFwObjPtr = a_reflector.Reflect(type).Invoke();
         serFwObjPtr->TransformFrom(paramsWithTypeIndication.second); // paramsWithTypeIndication.second == ParamsMap
         a_serFwObjects.push_back(serFwObjPtr);
     });

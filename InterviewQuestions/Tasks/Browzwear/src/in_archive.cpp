@@ -8,7 +8,6 @@ InArchive::InArchive(const std::string& a_datafile, std::shared_ptr<infra::IForm
 : m_datafile(a_datafile)
 , m_formattedFileReader(a_formattedFileReader)
 , m_formatter(a_formatter)
-, m_deserializer()
 {
 }
 

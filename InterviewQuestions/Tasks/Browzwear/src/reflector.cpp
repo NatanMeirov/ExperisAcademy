@@ -16,9 +16,15 @@ void Reflector::AddReflection(std::pair<std::string, std::shared_ptr<infra::SerF
 }
 
 
-std::shared_ptr<infra::SerFwObjFactory> Reflector::Reflect(const std::string& a_typeAsString) const
+Reflector::ReflectionProxy Reflector::Reflect(const std::string& a_typeAsString) const
 {
-    return m_reflectionMap.at(a_typeAsString);
+    return ReflectionProxy(m_reflectionMap.at(a_typeAsString));
+}
+
+
+std::shared_ptr<infra::SerFwObj> Reflector::ReflectionProxy::Invoke()
+{
+    return m_reflectedFactoryMethod->Create();
 }
 
 } // ser_fw
