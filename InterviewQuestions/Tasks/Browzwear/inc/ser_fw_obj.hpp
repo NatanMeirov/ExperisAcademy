@@ -17,10 +17,12 @@ namespace infra
 {
 
 // The base class of all Serializeable/Deserializeable objects of the Serialization Framework.
-// Each CONCRETE class must be default-constructable, copy-constructable and copy-assignable
-// (to be able to be used in a container), and must implement TransformFrom() - ParamsMap and TransformTo() - ParamsMap,
-// to be able to be serialized / deserialized without any dependency in a concrete datafile format.
-// ParamsMap type: represents a {param:value} mapping (represented as {string:string} map) -
+// Each derived CONCRETE class must be default-constructable, copy-constructable and copy-assignable
+// (used in a stl container), and must implement TransformFrom() - from ParamsMap type
+// and TransformTo() - to ParamsMap type, to be able to be serialized/deserialized without any dependency in a concrete datafile format.
+// [The derived class should use insert() method to insert each key-value std::pair
+// in the implementation of TransformTo(), and should use at() method on each key, to extract its matched value in the implementation of TransformFrom()].
+// ParamsMap type: represents a {param:value} mapping (stored as {string:string} unordered_map) -
 // while each key is a specific concrete param name, and the value is its matched concrete param's value.
 class SerFwObj : public infra::ITransformable<Types::ParamsMap>
 {

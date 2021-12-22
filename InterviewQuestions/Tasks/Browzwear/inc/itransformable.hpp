@@ -12,7 +12,7 @@ namespace infra
 // A generic interface of a transferable T object (from / to) concrete object.
 // From: used to initialize the concrete object from T object.
 // To: used to create a T object from the concrete object.
-// Concept of T: T MUST be default-constructable, copy-constructable and copy-assignable.
+// Concept of T: T MUST be copy-constructable and copy-assignable.
 template <typename T>
 class ITransformable
 {
