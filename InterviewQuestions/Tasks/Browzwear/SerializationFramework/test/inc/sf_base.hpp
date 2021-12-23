@@ -3,13 +3,13 @@
 
 
 #include <string>
-#include "ser_fw_obj.hpp"
+#include "iser_fw_obj.hpp"
 
 
 namespace ser_fw_test
 {
 
-class Base : public ser_fw::infra::SerFwObj
+class Base : public ser_fw::infra::ISerFwObj
 {
 protected:
     Base() = default;

@@ -5,7 +5,7 @@
 #include <algorithm> // std::for_each
 #include "iformatted_file_writer.hpp"
 #include "reflector.hpp"
-#include "ser_fw_obj.hpp"
+#include "iser_fw_obj.hpp"
 #include "sf_point.hpp"
 #include "sf_circle.hpp"
 #include "sf_point_factory.hpp"
@@ -25,13 +25,13 @@ using namespace ser_fw_test;
 
 bool ExampleFormatTest_SharedPtr();
 bool ExampleFormatTest_RawPtr();
-void PrintSerFwObjsCollection_SharedPtr(std::vector<std::shared_ptr<infra::SerFwObj>> a_container);
-void PrintSerFwObjsCollection_RawPtr(std::vector<infra::SerFwObj*> a_container);
+void PrintISerFwObjsCollection_SharedPtr(std::vector<std::shared_ptr<infra::ISerFwObj>> a_container);
+void PrintISerFwObjsCollection_RawPtr(std::vector<infra::ISerFwObj*> a_container);
 
 
-// FOR BOTH TEST CASES - NO VALIDATION ABOUT THE PTR TYPE! (PTR SHOULD BE SerFwObj (raw or shared_ptr))
-template <typename SerFwObjPtrT>
-inline bool AreEqualSerFwObjsCollection(std::vector<SerFwObjPtrT> a_first, std::vector<SerFwObjPtrT> a_second)
+// FOR BOTH TEST CASES - NO VALIDATION ABOUT THE PTR TYPE! (PTR SHOULD BE ISerFwObj (raw or shared_ptr))
+template <typename ISerFwObjPtrT>
+inline bool AreEqualISerFwObjsCollection(std::vector<ISerFwObjPtrT> a_first, std::vector<ISerFwObjPtrT> a_second)
 {
     auto itrFirst = a_first.begin();
     auto itrSecond = a_second.begin();
@@ -55,9 +55,9 @@ inline bool AreEqualSerFwObjsCollection(std::vector<SerFwObjPtrT> a_first, std::
 
 int main()
 {
-    std::cout << "Example Format test (shared_ptr): " << (ExampleFormatTest_SharedPtr() ? "Shared_Ptr - Passed!" : "Failed...") << std::endl;
+    std::cout << "Example Format test (shared_ptr):\n" << (ExampleFormatTest_SharedPtr() ? "Shared_Ptr - Passed!" : "Failed...") << std::endl;
     std::cout << std::endl;
-    std::cout << "Example Format test (raw_ptr): " << (ExampleFormatTest_RawPtr() ? "Raw_Ptr - Passed!" : "Failed...") << std::endl;
+    std::cout << "Example Format test (raw pointer):\n" << (ExampleFormatTest_RawPtr() ? "Raw_Ptr - Passed!" : "Failed...") << std::endl;
 
     return 0;
 }
@@ -65,7 +65,7 @@ int main()
 
 bool ExampleFormatTest_SharedPtr()
 {
-    std::vector<std::shared_ptr<infra::SerFwObj>> objects;
+    std::vector<std::shared_ptr<infra::ISerFwObj>> objects;
     objects.push_back(std::make_shared<Point>("p1", 1, 2));
     objects.push_back(std::make_shared<Point>("p2", 50, 12));
     objects.push_back(std::make_shared<Circle>("c1", 0, 0, 10));
@@ -77,7 +77,7 @@ bool ExampleFormatTest_SharedPtr()
         write_archive.Write(objects);
     }
 
-    std::vector<std::shared_ptr<infra::SerFwObj>> loaded_objects;
+    std::vector<std::shared_ptr<infra::ISerFwObj>> loaded_objects;
     Reflector<> reflector;
     reflector.AddReflection("Point", std::make_shared<PointFactory>());
     reflector.AddReflection("Circle", std::make_shared<CircleFactory>());
@@ -87,18 +87,18 @@ bool ExampleFormatTest_SharedPtr()
 
     // loaded_objects should contain the same objects as in objects
     std::cout << "objects content:" << std::endl;
-    PrintSerFwObjsCollection_SharedPtr(objects);
+    PrintISerFwObjsCollection_SharedPtr(objects);
     std::cout << "loaded_objects content:" << std::endl;
-    PrintSerFwObjsCollection_SharedPtr(loaded_objects);
+    PrintISerFwObjsCollection_SharedPtr(loaded_objects);
 
-    return AreEqualSerFwObjsCollection(objects, loaded_objects);
+    return AreEqualISerFwObjsCollection(objects, loaded_objects);
 }
 
 
 bool ExampleFormatTest_RawPtr()
 {
     // Important Note: I am NOT deleting the raw pointers in this test case.
-    std::vector<infra::SerFwObj*> objects;
+    std::vector<infra::ISerFwObj*> objects;
     objects.push_back(new Point("p1", 1, 2));
     objects.push_back(new Point("p2", 50, 12));
     objects.push_back(new Circle("c1", 0, 0, 10));
@@ -110,8 +110,8 @@ bool ExampleFormatTest_RawPtr()
         write_archive.Write(objects);
     }
 
-    std::vector<infra::SerFwObj*> loaded_objects;
-    Reflector<infra::SerFwObjFactory<infra::SerFwObj*>*, infra::SerFwObj*> reflector;
+    std::vector<infra::ISerFwObj*> loaded_objects;
+    Reflector<infra::ISerFwObjFactory<infra::ISerFwObj*>*, infra::ISerFwObj*> reflector;
     reflector.AddReflection("Point", new RawPointFactory());
     reflector.AddReflection("Circle", new RawCircleFactory());
 
@@ -120,19 +120,19 @@ bool ExampleFormatTest_RawPtr()
 
     // loaded_objects should contain the same objects as in objects
     std::cout << "objects content:" << std::endl;
-    PrintSerFwObjsCollection_RawPtr(objects);
+    PrintISerFwObjsCollection_RawPtr(objects);
     std::cout << "loaded_objects content:" << std::endl;
-    PrintSerFwObjsCollection_RawPtr(loaded_objects);
+    PrintISerFwObjsCollection_RawPtr(loaded_objects);
 
-    return AreEqualSerFwObjsCollection(objects, loaded_objects);
+    return AreEqualISerFwObjsCollection(objects, loaded_objects);
 }
 
 
-void PrintSerFwObjsCollection_SharedPtr(std::vector<std::shared_ptr<infra::SerFwObj>> a_container)
+void PrintISerFwObjsCollection_SharedPtr(std::vector<std::shared_ptr<infra::ISerFwObj>> a_container)
 {
     // Hard-coded printing test:
     std::for_each(a_container.begin(), a_container.end(),
-    [](std::shared_ptr<infra::SerFwObj> a_serFwObjPtr)
+    [](std::shared_ptr<infra::ISerFwObj> a_serFwObjPtr)
     {
         if(a_serFwObjPtr->TypeName() == "Circle")
         {
@@ -147,11 +147,11 @@ void PrintSerFwObjsCollection_SharedPtr(std::vector<std::shared_ptr<infra::SerFw
 }
 
 
-void PrintSerFwObjsCollection_RawPtr(std::vector<infra::SerFwObj*> a_container)
+void PrintISerFwObjsCollection_RawPtr(std::vector<infra::ISerFwObj*> a_container)
 {
     // Hard-coded printing test:
     std::for_each(a_container.begin(), a_container.end(),
-    [](infra::SerFwObj* a_serFwObjPtr)
+    [](infra::ISerFwObj* a_serFwObjPtr)
     {
         if(a_serFwObjPtr->TypeName() == "Circle")
         {

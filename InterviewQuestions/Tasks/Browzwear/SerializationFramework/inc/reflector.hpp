@@ -7,25 +7,25 @@
 #include <utility> // std::pair
 #include <type_traits> // std::is_same
 #include <unordered_map>
-#include "ser_fw_obj_factory.hpp"
+#include "iser_fw_obj_factory.hpp"
 
 
 namespace ser_fw
 {
 
 // A class that handles "Reflection like action" at Compile-Time instead of Run-Time (Reflection is missing in C++).
-// The Reflector "maps" a string (representing a type name) to a pointer to a Factory Method, that creates a concrete SerFwObj object at Run-Time.
-// Concept of FactoryPtrT: FactoryPtrT must be std::shared_ptr<infra::SerFwObjFactory<RetPtrT>> or infra::SerFwObjFactory<RetPtrT>* type.
-// Concept of RetPtrT: RetPtrT must be std::shared_ptr<infra::SerFwObj> or infra::SerFwObj*.
-template <typename FactoryPtrT = std::shared_ptr<infra::SerFwObjFactory<std::shared_ptr<infra::SerFwObj>>>,
-           typename RetPtrT = std::shared_ptr<infra::SerFwObj>>
+// The Reflector "maps" a string (representing a type name) to a pointer to a Factory Method, that creates a concrete ISerFwObj object at Run-Time.
+// Concept of FactoryPtrT: FactoryPtrT must be std::shared_ptr<ISerFwObjFactory<RetPtrT>> or ISerFwObjFactory<RetPtrT>* type.
+// Concept of RetPtrT: RetPtrT must be std::shared_ptr<ISerFwObj> or ISerFwObj*.
+template <typename FactoryPtrT = std::shared_ptr<infra::ISerFwObjFactory<std::shared_ptr<infra::ISerFwObj>>>,
+           typename RetPtrT = std::shared_ptr<infra::ISerFwObj>>
 class Reflector
 {
-    static_assert(std::is_same<FactoryPtrT, std::shared_ptr<infra::SerFwObjFactory<RetPtrT>>>::value
-        || std::is_same<FactoryPtrT, infra::SerFwObjFactory<RetPtrT>*>::value, "FactoryPtrT must be std::shared_ptr<infra::SerFwObjFactory<RetPtrT>> or infra::SerFwObjFactory<RetPtrT>*");
+    static_assert(std::is_same<FactoryPtrT, std::shared_ptr<infra::ISerFwObjFactory<RetPtrT>>>::value
+        || std::is_same<FactoryPtrT, infra::ISerFwObjFactory<RetPtrT>*>::value, "FactoryPtrT must be std::shared_ptr<ISerFwObjFactory<RetPtrT>> or ISerFwObjFactory<RetPtrT>*");
 
-    static_assert(std::is_same<RetPtrT, std::shared_ptr<infra::SerFwObj>>::value
-        || std::is_same<RetPtrT, infra::SerFwObj*>::value, "RetPtrT must be std::shared_ptr<infra::SerFwObj> or infra::SerFwObj*");
+    static_assert(std::is_same<RetPtrT, std::shared_ptr<infra::ISerFwObj>>::value
+        || std::is_same<RetPtrT, infra::ISerFwObj*>::value, "RetPtrT must be std::shared_ptr<ISerFwObj> or ISerFwObj*");
 
 private:
     class ReflectionProxy

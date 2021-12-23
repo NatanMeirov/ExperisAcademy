@@ -14,8 +14,8 @@ class ExampleFormatter
     : public ser_fw::infra::ISerializationFormatter, public ser_fw::infra::IDeserializationFormatter
 {
 public:
-    virtual std::string Serialize(const ser_fw::Types::TypedParamsMap &a_typedMappedParams) const override;
-    virtual ser_fw::Types::TypedParamsMap Deserialize(const std::string &a_formattedStr) const override;
+    virtual std::string Serialize(const ser_fw::Types::TypedParamsMap& a_typedMappedParams) const override;
+    virtual ser_fw::Types::TypedParamsMap Deserialize(const std::string& a_formattedStr) const override;
 };
 
 } // ser_fw_test

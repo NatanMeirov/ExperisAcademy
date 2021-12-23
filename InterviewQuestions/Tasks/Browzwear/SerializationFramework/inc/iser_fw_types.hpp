@@ -1,5 +1,5 @@
-#ifndef SF_SER_FR_TYPES_HPP
-#define SF_SER_FR_TYPES_HPP
+#ifndef SF_ISER_FR_TYPES_HPP
+#define SF_ISER_FR_TYPES_HPP
 
 
 #include <string>
@@ -28,4 +28,4 @@ struct Types
 } // ser_fw
 
 
-#endif // SF_SER_FR_TYPES_HPP
+#endif // SF_ISER_FR_TYPES_HPP

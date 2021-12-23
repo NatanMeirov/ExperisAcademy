@@ -8,25 +8,25 @@
 #include <type_traits> // std::is_same
 #include "iformatted_file_writer.hpp"
 #include "iserialization_formatter.hpp"
-#include "ser_fw_obj.hpp"
+#include "iser_fw_obj.hpp"
 
 
 namespace ser_fw
 {
 
-// A class that handles writing SerFwObjs to a data file,
-// from a pre-initialized SerFwObjs Container.
-// Concept of IFormattedFileWriterPtr: IFormattedFileWriterPtr must be or std::shared_ptr<infra::IFormattedFileWriter> or infra::IFormattedFileWriter* type.
-// Concept of ISerializationFormatterPtr: ISerializationFormatterPtr must be or std::shared_ptr<infra::ISerializationFormatter> or infra::ISerializationFormatter* type.
+// A class that handles writing ISerFwObjs to a data file,
+// from a pre-initialized ISerFwObjs Container.
+// Concept of IFormattedFileWriterPtr: IFormattedFileWriterPtr must be or std::shared_ptr<IFormattedFileWriter> or IFormattedFileWriter* type.
+// Concept of ISerializationFormatterPtr: ISerializationFormatterPtr must be or std::shared_ptr<ISerializationFormatter> or ISerializationFormatter* type.
 template <typename IFormattedFileWriterPtr = std::shared_ptr<infra::IFormattedFileWriter>,
             typename ISerializationFormatterPtr = std::shared_ptr<infra::ISerializationFormatter>>
 class OutArchive
 {
     static_assert(std::is_same<IFormattedFileWriterPtr, std::shared_ptr<infra::IFormattedFileWriter>>::value
-        || std::is_same<IFormattedFileWriterPtr, infra::IFormattedFileWriter*>::value, "IFormattedFileWriterPtr must be or std::shared_ptr<infra::IFormattedFileWriter> or infra::IFormattedFileWriter*");
+        || std::is_same<IFormattedFileWriterPtr, infra::IFormattedFileWriter*>::value, "IFormattedFileWriterPtr must be or std::shared_ptr<IFormattedFileWriter> or IFormattedFileWriter*");
 
     static_assert(std::is_same<ISerializationFormatterPtr, std::shared_ptr<infra::ISerializationFormatter>>::value
-        || std::is_same<ISerializationFormatterPtr, infra::ISerializationFormatter*>::value, "ISerializationFormatterPtr must be or std::shared_ptr<infra::ISerializationFormatter> or infra::ISerializationFormatter*");
+        || std::is_same<ISerializationFormatterPtr, infra::ISerializationFormatter*>::value, "ISerializationFormatterPtr must be or std::shared_ptr<ISerializationFormatter> or ISerializationFormatter*");
 
 public:
     OutArchive(const std::string& a_datafile, IFormattedFileWriterPtr a_formattedFileWriter, ISerializationFormatterPtr a_formatter);
@@ -35,7 +35,7 @@ public:
     ~OutArchive() = default;
 
     // Concept of C: C must be a container that implements begin(), end(), and must define value_type type.
-    // C::value_type must be std::shared_ptr<SerFwObj> type.
+    // C::value_type must be std::shared_ptr<ISerFwObj> or ISerFwObj* type.
     template <typename C>
     void Write(const C& a_serFwObjects) const;
 
@@ -60,8 +60,8 @@ template <typename IFormattedFileWriterPtr, typename ISerializationFormatterPtr>
 template <typename C>
 void OutArchive<IFormattedFileWriterPtr,ISerializationFormatterPtr>::Write(const C& a_serFwObjects) const
 {
-    static_assert(std::is_same<typename C::value_type, std::shared_ptr<infra::SerFwObj>>::value
-        || std::is_same<typename C::value_type, infra::SerFwObj*>::value, "C::value_type must be std::shared_ptr<infra::SerFwObj> or infra::SerFwObj*");
+    static_assert(std::is_same<typename C::value_type, std::shared_ptr<infra::ISerFwObj>>::value
+        || std::is_same<typename C::value_type, infra::ISerFwObj*>::value, "C::value_type must be std::shared_ptr<ISerFwObj> or ISerFwObj*");
 
     Types::ParsedLinesCollection parsedFormatLines;
 

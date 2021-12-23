@@ -14,8 +14,8 @@ class ExampleFileHandler
     : public ser_fw::infra::IFormattedFileReader, public ser_fw::infra::IFormattedFileWriter
 {
 public:
-    ser_fw::Types::ParsedLinesCollection ReadFile(const std::string &a_datafile) const override;
-    void WriteFile(const ser_fw::Types::ParsedLinesCollection &a_parsedFormatLines, const std::string &a_datafile) const override;
+    virtual ser_fw::Types::ParsedLinesCollection ReadFile(const std::string& a_datafile) const override;
+    virtual void WriteFile(const ser_fw::Types::ParsedLinesCollection& a_parsedFormatLines, const std::string& a_datafile) const override;
 };
 
 } // ser_fw_test

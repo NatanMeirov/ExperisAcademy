@@ -9,29 +9,29 @@
 #include <unordered_map>
 #include "iformatted_file_reader.hpp"
 #include "ideserialization_formatter.hpp"
-#include "ser_fw_obj.hpp"
-#include "ser_fw_obj_factory.hpp"
+#include "iser_fw_obj.hpp"
+#include "iser_fw_obj_factory.hpp"
 #include "reflector.hpp"
 
 
 namespace ser_fw
 {
 
-// A class that handles reading SerFwObjs from a data file,
-// and loading those objects into a SerFwObjs Container, using a Reflector class.
+// A class that handles reading ISerFwObjs from a data file,
+// and loading those objects into a ISerFwObjs Container, using a Reflector class.
 // The Reflector is used to demonstrate a "Reflection like action", but in Compile-Time, instead of Run-Time
 // (Reflection is missing in C++).
-// Concept of IFormattedFileReaderPtr: IFormattedFileReaderPtr must be or std::shared_ptr<infra::IFormattedFileReader> or infra::IFormattedFileReader* type.
-// Concept of IDeserializationFormatterPtr: IDeserializationFormatterPtr must be or std::shared_ptr<infra::IDeserializationFormatter> or infra::IDeserializationFormatter* type.
+// Concept of IFormattedFileReaderPtr: IFormattedFileReaderPtr must be or std::shared_ptr<IFormattedFileReader> or IFormattedFileReader* type.
+// Concept of IDeserializationFormatterPtr: IDeserializationFormatterPtr must be or std::shared_ptr<IDeserializationFormatter> or IDeserializationFormatter* type.
 template <typename IFormattedFileReaderPtr = std::shared_ptr<infra::IFormattedFileReader>,
             typename IDeserializationFormatterPtr = std::shared_ptr<infra::IDeserializationFormatter>>
 class InArchive
 {
     static_assert(std::is_same<IFormattedFileReaderPtr, std::shared_ptr<infra::IFormattedFileReader>>::value
-        || std::is_same<IFormattedFileReaderPtr, infra::IFormattedFileReader*>::value, "IFormattedFileReaderPtr must be or std::shared_ptr<infra::IFormattedFileReader> or infra::IFormattedFileReader*");
+        || std::is_same<IFormattedFileReaderPtr, infra::IFormattedFileReader*>::value, "IFormattedFileReaderPtr must be or std::shared_ptr<IFormattedFileReader> or IFormattedFileReader*");
 
     static_assert(std::is_same<IDeserializationFormatterPtr, std::shared_ptr<infra::IDeserializationFormatter>>::value
-        || std::is_same<IDeserializationFormatterPtr, infra::IDeserializationFormatter*>::value, "IDeserializationFormatterPtr must be or std::shared_ptr<infra::IDeserializationFormatter> or infra::IDeserializationFormatter*");
+        || std::is_same<IDeserializationFormatterPtr, infra::IDeserializationFormatter*>::value, "IDeserializationFormatterPtr must be or std::shared_ptr<IDeserializationFormatter> or IDeserializationFormatter*");
 
 public:
     InArchive(const std::string& a_datafile, IFormattedFileReaderPtr a_formattedFileReader, IDeserializationFormatterPtr a_formatter);
@@ -40,7 +40,7 @@ public:
     ~InArchive() = default;
 
     // Concept of C: C must be a container that implements begin(), end(), push_back() and must define value_type type.
-    // C::value_type must be std::shared_ptr<SerFwObj> type.
+    // C::value_type must be std::shared_ptr<ISerFwObj> or ISerFwObj* type.
     // Concept of ReflectorT: ReflectorT must meet the Reflector<RetPtrT,FactoryPtrT> class requirements,
     // and RetPtrT MUST be the same as typename C::value_type.
     template <typename C, typename ReflectorT>
@@ -67,8 +67,8 @@ template <typename IFormattedFileReaderPtr, typename IDeserializationFormatterPt
 template <typename C, typename ReflectorT>
 void InArchive<IFormattedFileReaderPtr,IDeserializationFormatterPtr>::Read(C& a_serFwObjects, const ReflectorT& a_reflector) const
 {
-    static_assert(std::is_same<typename C::value_type, std::shared_ptr<infra::SerFwObj>>::value
-        || std::is_same<typename C::value_type, infra::SerFwObj*>::value, "C::value_type must be std::shared_ptr<infra::SerFwObj> or infra::SerFwObj*");
+    static_assert(std::is_same<typename C::value_type, std::shared_ptr<infra::ISerFwObj>>::value
+        || std::is_same<typename C::value_type, infra::ISerFwObj*>::value, "C::value_type must be std::shared_ptr<ISerFwObj> or ISerFwObj*");
 
     Types::ParsedLinesCollection parsedFormatLines = m_formattedFileReader->ReadFile(m_datafile);
 
