@@ -16,10 +16,20 @@ namespace ser_fw
 
 // A class that handles writing SerFwObjs to a data file,
 // from a pre-initialized SerFwObjs Container.
+// Concept of IFormattedFileWriterPtr: IFormattedFileWriterPtr must be or std::shared_ptr<infra::IFormattedFileWriter> or infra::IFormattedFileWriter* type.
+// Concept of ISerializationFormatterPtr: ISerializationFormatterPtr must be or std::shared_ptr<infra::ISerializationFormatter> or infra::ISerializationFormatter* type.
+template <typename IFormattedFileWriterPtr = std::shared_ptr<infra::IFormattedFileWriter>,
+            typename ISerializationFormatterPtr = std::shared_ptr<infra::ISerializationFormatter>>
 class OutArchive
 {
+    static_assert(std::is_same<IFormattedFileWriterPtr, std::shared_ptr<infra::IFormattedFileWriter>>::value
+        || std::is_same<IFormattedFileWriterPtr, infra::IFormattedFileWriter*>::value, "IFormattedFileWriterPtr must be or std::shared_ptr<infra::IFormattedFileWriter> or infra::IFormattedFileWriter*");
+
+    static_assert(std::is_same<ISerializationFormatterPtr, std::shared_ptr<infra::ISerializationFormatter>>::value
+        || std::is_same<ISerializationFormatterPtr, infra::ISerializationFormatter*>::value, "ISerializationFormatterPtr must be or std::shared_ptr<infra::ISerializationFormatter> or infra::ISerializationFormatter*");
+
 public:
-    OutArchive(const std::string& a_datafile, std::shared_ptr<infra::IFormattedFileWriter> a_formattedFileWriter, std::shared_ptr<infra::ISerializationFormatter> a_formatter);
+    OutArchive(const std::string& a_datafile, IFormattedFileWriterPtr a_formattedFileWriter, ISerializationFormatterPtr a_formatter);
     OutArchive(const OutArchive& a_other) = default;
     OutArchive& operator=(const OutArchive& a_other) = default;
     ~OutArchive() = default;
@@ -31,21 +41,32 @@ public:
 
 private:
     std::string m_datafile;
-    std::shared_ptr<infra::IFormattedFileWriter> m_formattedFileWriter;
-    std::shared_ptr<infra::ISerializationFormatter> m_formatter;
+    IFormattedFileWriterPtr m_formattedFileWriter;
+    ISerializationFormatterPtr m_formatter;
 };
 
 
 // Inline implementation:
-template <typename C>
-void OutArchive::Write(const C& a_serFwObjects) const
+template <typename IFormattedFileWriterPtr, typename ISerializationFormatterPtr>
+OutArchive<IFormattedFileWriterPtr,ISerializationFormatterPtr>::OutArchive(const std::string& a_datafile, IFormattedFileWriterPtr a_formattedFileWriter, ISerializationFormatterPtr a_formatter)
+: m_datafile(a_datafile)
+, m_formattedFileWriter(a_formattedFileWriter)
+, m_formatter(a_formatter)
 {
-    static_assert(std::is_same<typename C::value_type,std::shared_ptr<infra::SerFwObj>>::value, "C::value_type must be std::shared_ptr<infra::SerFwObj>");
+}
+
+
+template <typename IFormattedFileWriterPtr, typename ISerializationFormatterPtr>
+template <typename C>
+void OutArchive<IFormattedFileWriterPtr,ISerializationFormatterPtr>::Write(const C& a_serFwObjects) const
+{
+    static_assert(std::is_same<typename C::value_type, std::shared_ptr<infra::SerFwObj>>::value
+        || std::is_same<typename C::value_type, infra::SerFwObj*>::value, "C::value_type must be std::shared_ptr<infra::SerFwObj> or infra::SerFwObj*");
 
     Types::ParsedLinesCollection parsedFormatLines;
 
     std::for_each(a_serFwObjects.begin(), a_serFwObjects.end(),
-    [&](std::shared_ptr<infra::SerFwObj> a_serFwObjPtr)
+    [&](typename C::value_type a_serFwObjPtr)
     {
         parsedFormatLines.push_back(
             m_formatter->Serialize({a_serFwObjPtr->TypeName(), a_serFwObjPtr->TransformTo()}));

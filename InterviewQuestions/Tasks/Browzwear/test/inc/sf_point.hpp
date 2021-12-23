@@ -2,6 +2,7 @@
 #define SF_POINT_HPP
 
 
+#include <iostream> // std::cout
 #include <string>
 #include "ser_fw_types.hpp"
 #include "sf_base.hpp"
@@ -19,6 +20,11 @@ public:
     virtual ser_fw::Types::ParamsMap TransformTo() const override;
     virtual void TransformFrom(const ser_fw::Types::ParamsMap& a_paramsMap) override;
     virtual std::string TypeName() const override { return "Point"; }
+
+    // For visual testing:
+    void Print() const { std::cout <<  "Point " << m_name << ": " << "(" << m_x << ", " << m_y << ")\n"; }
+    double X() const { return m_x; }
+    double Y() const { return m_y; }
 
 private:
     double m_x;

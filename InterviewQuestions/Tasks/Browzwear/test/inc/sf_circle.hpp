@@ -19,6 +19,8 @@ public:
     virtual void TransformFrom(const ser_fw::Types::ParamsMap& a_paramsMap) override;
     virtual std::string TypeName() const override { return "Circle"; }
 
+    // For visual testing:
+    void Print() const { std::cout <<  "Circle " << m_name << ": " << "(" << X() << ", " << Y() << "), radius: " << m_radius << "\n"; }
 private:
     unsigned int m_radius;
 };

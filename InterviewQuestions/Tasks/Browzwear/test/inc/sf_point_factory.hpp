@@ -11,11 +11,19 @@
 namespace ser_fw_test
 {
 
-class PointFactory : public ser_fw::infra::SerFwObjFactory
+class PointFactory : public ser_fw::infra::SerFwObjFactory<std::shared_ptr<ser_fw::infra::SerFwObj>>
 {
 public:
     virtual ~PointFactory() = default;
     virtual std::shared_ptr<ser_fw::infra::SerFwObj> Create() const override { return std::make_shared<Point>(); }
+};
+
+
+class RawPointFactory : public ser_fw::infra::SerFwObjFactory<ser_fw::infra::SerFwObj*>
+{
+public:
+    virtual ~RawPointFactory() = default;
+    virtual ser_fw::infra::SerFwObj* Create() const override { return new Point(); }
 };
 
 } // ser_fw_test
