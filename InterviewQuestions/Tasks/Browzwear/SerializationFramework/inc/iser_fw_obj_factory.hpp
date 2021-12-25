@@ -16,12 +16,12 @@ namespace infra
 // An interface of an Abstract Factory of ISerFwObj.
 // Each derived CONCRETE class of ISerFwObj, MUST supply an implementation of a
 // derived concrete Factory class that creates a DEFAULT instance of the concrete class (later it will be transformed with other params).
-// Concept pr RetPtrT: RetPtrT must me std::shared_ptr<infra::ISerFwObj> or infra::ISerFwObj* type
+// Concept pr RetPtrT: RetPtrT must me std::shared_ptr<ISerFwObj> or ISerFwObj* type
 template <typename RetPtrT>
 class ISerFwObjFactory
 {
     static_assert(std::is_same<RetPtrT, std::shared_ptr<infra::ISerFwObj>>::value
-        || std::is_same<RetPtrT, infra::ISerFwObj*>::value, "RetPtrT must be std::shared_ptr<infra::ISerFwObj> or infra::ISerFwObj*");
+        || std::is_same<RetPtrT, infra::ISerFwObj*>::value, "RetPtrT must be std::shared_ptr<ISerFwObj> or ISerFwObj*");
 
 public:
     virtual ~ISerFwObjFactory() = default;
