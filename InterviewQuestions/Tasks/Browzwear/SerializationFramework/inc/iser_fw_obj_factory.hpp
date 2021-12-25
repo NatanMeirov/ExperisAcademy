@@ -14,8 +14,9 @@ namespace infra
 {
 
 // An interface of an Abstract Factory of ISerFwObj.
-// Each derived CONCRETE class of ISerFwObj, MUST supply an implementation of a
-// derived concrete Factory class that creates a DEFAULT instance of the concrete class (later it will be transformed with other params).
+// Each derived concrete class of ISerFwObj, MUST supply an implementation of a
+// derived concrete Factory class, that would be used to creates an instance of the concrete class (later this instance will be transformed with other params
+// (after the deserialization), so the parameters for the creation are not important at all - they may be default or something else).
 // Concept pr RetPtrT: RetPtrT must me std::shared_ptr<ISerFwObj> or ISerFwObj* type
 template <typename RetPtrT>
 class ISerFwObjFactory
