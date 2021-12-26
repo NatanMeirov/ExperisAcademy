@@ -18,7 +18,7 @@ namespace infra
 // derived concrete Factory class, that would be used to creates an instance of the concrete class (later this instance will be transformed with other params
 // (after the deserialization), so the parameters for the creation are not important at all - they may be default or something else).
 // Concept pr RetPtrT: RetPtrT must me std::shared_ptr<ISerFwObj> or ISerFwObj* type
-template <typename RetPtrT>
+template <typename RetPtrT = std::shared_ptr<ISerFwObj>>
 class ISerFwObjFactory
 {
     static_assert(std::is_same<RetPtrT, std::shared_ptr<infra::ISerFwObj>>::value
