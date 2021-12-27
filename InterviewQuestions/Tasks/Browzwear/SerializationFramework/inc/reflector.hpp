@@ -36,7 +36,7 @@ private:
         {
         }
 
-        RetPtrT Invoke();
+        RetPtrT CreateInstance();
 
     private:
         FactoryPtrT m_reflectedFactoryMethod;
@@ -80,7 +80,7 @@ typename Reflector<FactoryPtrT,RetPtrT>::ReflectionProxy Reflector<FactoryPtrT,R
 
 
 template <typename FactoryPtrT, typename RetPtrT>
-RetPtrT Reflector<FactoryPtrT,RetPtrT>::ReflectionProxy::Invoke()
+RetPtrT Reflector<FactoryPtrT,RetPtrT>::ReflectionProxy::CreateInstance()
 {
     return m_reflectedFactoryMethod->Create();
 }
