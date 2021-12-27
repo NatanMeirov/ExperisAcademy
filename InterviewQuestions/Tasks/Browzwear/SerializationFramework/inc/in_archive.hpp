@@ -78,7 +78,7 @@ void InArchive<IFormattedFileReaderPtr,IDeserializationFormatterPtr>::Read(C& a_
         Types::TypedParamsMap paramsWithTypeIndication = m_formatter->Deserialize(a_formattedStr);
         std::string type = paramsWithTypeIndication.first; // For readability
 
-        typename C::value_type serFwObjPtr = a_reflector.Reflect(type).Invoke();
+        typename C::value_type serFwObjPtr = a_reflector.Reflect(type).CreateInstance();
         serFwObjPtr->TransformFrom(paramsWithTypeIndication.second); // paramsWithTypeIndication.second == ParamsMap
         a_serFwObjects.push_back(serFwObjPtr);
     });
