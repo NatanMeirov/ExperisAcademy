@@ -67,6 +67,11 @@ template <typename IFormattedFileReaderPtr, typename IDeserializationFormatterPt
 template <typename C, typename ReflectorT>
 void InArchive<IFormattedFileReaderPtr,IDeserializationFormatterPtr>::Read(C& a_serFwObjects, const ReflectorT& a_reflector) const
 {
+	    static_assert(std::is_same<ReflectorT, Reflector<std::shared_ptr<infra::ISerFwObjFactory<std::shared_ptr<infra::ISerFwObj>>>, std::shared_ptr<infra::ISerFwObj>>>::value
+        || std::is_same<ReflectorT, Reflector<std::shared_ptr<infra::ISerFwObjFactory<infra::ISerFwObj*>>, infra::ISerFwObj*>>::value
+        || std::is_same<ReflectorT, Reflector<infra::ISerFwObjFactory<std::shared_ptr<infra::ISerFwObj>>*, std::shared_ptr<infra::ISerFwObj>>>::value
+        || std::is_same<ReflectorT, Reflector<infra::ISerFwObjFactory<infra::ISerFwObj*>*, infra::ISerFwObj*>>::value, "ReflectorT must meet the Reflector<RetPtrT,FactoryPtrT> class requirements");
+
     static_assert(std::is_same<typename C::value_type, std::shared_ptr<infra::ISerFwObj>>::value
         || std::is_same<typename C::value_type, infra::ISerFwObj*>::value, "C::value_type must be std::shared_ptr<ISerFwObj> or ISerFwObj*");
 
