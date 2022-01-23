@@ -20,7 +20,7 @@ public:
     virtual std::string TypeName() const override { return "Circle"; }
 
     // For visual testing:
-    void Print() const { std::cout <<  "Circle " << m_name << ": " << "(" << X() << ", " << Y() << "), radius: " << m_radius << "\n"; }
+    void Print() const override { Point::Print(); std::cout << ", radius: " << m_radius; }
 private:
     unsigned int m_radius;
 };

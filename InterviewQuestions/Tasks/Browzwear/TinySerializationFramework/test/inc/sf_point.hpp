@@ -22,9 +22,7 @@ public:
     virtual std::string TypeName() const override { return "Point"; }
 
     // For visual testing:
-    void Print() const { std::cout <<  "Point " << m_name << ": " << "(" << m_x << ", " << m_y << ")\n"; }
-    double X() const { return m_x; }
-    double Y() const { return m_y; }
+    void Print() const override { std::cout <<  TypeName() << " " << m_name << ": " << "(" << m_x << ", " << m_y << ")"; }
 
 private:
     double m_x;

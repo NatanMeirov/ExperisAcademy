@@ -1,5 +1,0 @@
-Point|y,2.000000|x,1.000000|name,p1|
-Point|y,12.000000|x,50.000000|name,p2|
-Circle|radius,10|y,0.000000|x,0.000000|name,c1|
-Circle|radius,5|y,5.000000|x,5.000000|name,c2|
-Circle|radius,20|y,100.000000|x,1000.000000|name,c3|

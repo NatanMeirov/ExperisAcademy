@@ -132,15 +132,8 @@ void PrintISerFwObjsCollection_SharedPtr(std::vector<std::shared_ptr<ISerFwObj>>
     std::for_each(a_container.begin(), a_container.end(),
     [](std::shared_ptr<ISerFwObj> a_serFwObjPtr)
     {
-        if(a_serFwObjPtr->TypeName() == "Circle")
-        {
-            std::static_pointer_cast<Circle>(a_serFwObjPtr)->Print();
-        }
-
-        if(a_serFwObjPtr->TypeName() == "Point")
-        {
-            std::static_pointer_cast<Point>(a_serFwObjPtr)->Print();
-        }
+        std::static_pointer_cast<Base>(a_serFwObjPtr)->Print();
+        std::cout << std::endl;
     });
 }
 
@@ -151,14 +144,7 @@ void PrintISerFwObjsCollection_RawPtr(std::vector<ISerFwObj*> a_container)
     std::for_each(a_container.begin(), a_container.end(),
     [](ISerFwObj* a_serFwObjPtr)
     {
-        if(a_serFwObjPtr->TypeName() == "Circle")
-        {
-            static_cast<Circle*>(a_serFwObjPtr)->Print();
-        }
-
-        if(a_serFwObjPtr->TypeName() == "Point")
-        {
-            static_cast<Point*>(a_serFwObjPtr)->Print();
-        }
+        static_cast<Base*>(a_serFwObjPtr)->Print();
+        std::cout << std::endl;
     });
 }
